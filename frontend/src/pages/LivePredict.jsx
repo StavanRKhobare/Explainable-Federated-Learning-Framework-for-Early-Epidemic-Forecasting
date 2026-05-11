@@ -3,7 +3,7 @@ import Plot from '../PlotlyChart'
 
 export default function LivePredict() {
   const [data, setData] = useState(null)
-  const [timeIdx, setTimeIdx] = useState(-1)
+  const [timeIdx, setTimeIdx] = useState(549)  // default: 2019 W34 — peak monsoon, 33 true outbreaks
   const [totalWindows, setTotalWindows] = useState(0)
   const [loading, setLoading] = useState(false)
   const [modelInfo, setModelInfo] = useState(null)
@@ -14,7 +14,7 @@ export default function LivePredict() {
 
   useEffect(() => {
     fetch('/api/model-info').then(r => r.json()).then(setModelInfo).catch(() => {})
-    runPrediction(-1)
+    runPrediction(549)  // load peak monsoon window by default
   }, [])
 
   useEffect(() => {
@@ -83,6 +83,10 @@ export default function LivePredict() {
             <div className="mono" style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginTop: 4 }}>
               Window {timeIdx >= 0 ? timeIdx : totalWindows - 1} / {totalWindows - 1}
               {data && ` · ${data.year} Week ${data.week}`}
+              {timeIdx === 549 && <span style={{ color: 'var(--emerald-500)', marginLeft: 6 }}>★ Peak monsoon (default)</span>}
+            </div>
+            <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', marginTop: 2 }}>
+              💡 Default shows 2019 W34 — peak outbreak season with 33 true outbreaks. Slide to explore other periods.
             </div>
           </div>
           <div style={{ display: 'flex', gap: '0.8rem' }}>

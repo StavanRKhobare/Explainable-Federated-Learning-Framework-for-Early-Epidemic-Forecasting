@@ -140,11 +140,13 @@ class FedXGNN(nn.Module):
 
 # ── GLOBAL STATE ──────────────────────────────────────────────────────────────
 model = None
+model_params = {}
+
 X = None          # (N_TIME, N_NODES, N_DYN)
 X_stat = None     # (N_NODES, N_STAT)
 Y_clf = None
 Obs_mask = None
-Y_reg = None      # (N_TIME, N_NODES) Actual cases
+Y_reg = None      # (N_TIME, N_NODES) Actual cases (raw)
 edge_index = None
 edge_attr = None
 windows = None
@@ -162,7 +164,8 @@ LB = 4
 scaler_dyn = None
 
 def load_everything():
-    global model, X, X_stat, Y_clf, Obs_mask, edge_index, edge_attr, scaler_dyn
+    global model, model_params
+    global X, X_stat, Y_clf, Obs_mask, edge_index, edge_attr, scaler_dyn
     global windows, ts, unique_codes, node_to_idx, idx_to_code
     global district_info, edges_raw, N_NODES, N_TIME, N_DYN, N_STAT, LB
 
@@ -190,7 +193,9 @@ def load_everything():
     train_cut = split_idx + LB
     train_mask = df["t_idx"] < train_cut
 
-    # Apply log1p to case-related columns to match Phase 3 training pipeline
+    # Apply log1p to ALL case-related columns to match the training pipeline exactly.
+    # The model/fedxgnn_best.pt (epoch 193) was trained after log1p was applied to
+    # cases, cases_lag1, cases_lag2, cases_lag3 BEFORE StandardScaler.
     log_cols = [c for c in df.columns if "cases" in c.lower()]
     for c in log_cols:
         df[c] = np.log1p(df[c])
@@ -218,6 +223,8 @@ def load_everything():
             if feat in avail_dyn:
                 X[t, n, fi] = getattr(row, feat, 0.0)
         Y_clf[t, n] = row.is_outbreak
+        # Y_reg stores the log1p(cases) value since that's what's in df now
+        # We'll expm1 it when displaying to show real counts
         Y_reg[t, n] = getattr(row, "cases", 0.0)
         Obs_mask[t, n] = True
 
@@ -253,38 +260,36 @@ def load_everything():
         obs_m = Obs_mask[t + LB]
         windows.append((x_win, y_c, y_r, obs_m, t + LB))
 
-    # Load model — override CFG with values stored in checkpoint
+    # Load single model
     print("[BOOT] Loading model checkpoint...")
     ckpt = torch.load(MODEL_PT, map_location=DEVICE, weights_only=False)
+    m_cfg = CFG.copy()
     if isinstance(ckpt, dict) and "cfg" in ckpt:
         ckpt_cfg = ckpt["cfg"]
-        # Copy inference-relevant keys from checkpoint CFG
         for key in ["gru_hidden","tgat_hidden","embed_dim","temporal_heads","spatial_heads","dropout","lookback","train_ratio","target_log"]:
-            if key in ckpt_cfg:
-                CFG[key] = ckpt_cfg[key]
-        # eval mode disables dropout, so set to 0.0 for inference
-        CFG["dropout"] = 0.0
+            if key in ckpt_cfg: m_cfg[key] = ckpt_cfg[key]
+    m_cfg["dropout"] = 0.0
 
-    mdl = FedXGNN(CFG, N_DYN, N_STAT).to(DEVICE)
+    mdl = FedXGNN(m_cfg, N_DYN, N_STAT).to(DEVICE)
     if isinstance(ckpt, dict) and "model_state" in ckpt:
         mdl.load_state_dict(ckpt["model_state"])
-        epoch_info = f"epoch {ckpt.get('epoch','?')}"
     elif isinstance(ckpt, dict) and any(k.startswith("client") for k in ckpt.keys()):
         mdl.load_state_dict(ckpt)
-        epoch_info = "state_dict"
     else:
         mdl = ckpt
-        epoch_info = "full model object"
     mdl.eval()
     model = mdl
-    print(f"[BOOT] Model loaded — {epoch_info}, {sum(p.numel() for p in mdl.parameters())} params")
+    model_params = {
+        "cfg": m_cfg,
+        "is_target_log": m_cfg.get("target_log", False),
+        "cases_mean": ckpt.get("cases_mean", 0.0) if isinstance(ckpt, dict) else 0.0,
+        "cases_std": ckpt.get("cases_std", 1.0) if isinstance(ckpt, dict) else 1.0,
+    }
+    print(f"[BOOT] Model loaded — epoch {ckpt.get('epoch','?')}, {sum(p.numel() for p in mdl.parameters())} params, target_log={m_cfg.get('target_log')}")
 
-    # Store normalized edge_attr globally
+    # Store normalized edge_attr globally (topology is shared)
     globals()["edge_attr"] = edge_attr_norm
     globals()["edge_attr_raw"] = torch.tensor(ew_list, dtype=torch.float32)
-    globals()["is_target_log"] = CFG.get("target_log", False)
-    globals()["cases_mean"] = ckpt.get("cases_mean", 0.0) if isinstance(ckpt, dict) else 0.0
-    globals()["cases_std"] = ckpt.get("cases_std", 1.0) if isinstance(ckpt, dict) else 1.0
 
     print(f"[BOOT] Ready — {N_NODES} districts, {N_TIME} timesteps, {len(windows)} windows")
 
@@ -303,24 +308,24 @@ def run_window(t_win_idx):
         probs = logit.sigmoid().cpu().numpy()
         preds_r_norm = cases_pred.cpu().numpy()
         
-        # Inverse transform regression
-        c_mean, c_std = globals().get("cases_mean", 0.0), globals().get("cases_std", 1.0)
+        # Inverse transform: un-normalize then un-log
+        c_mean = model_params["cases_mean"]
+        c_std  = model_params["cases_std"]
         preds_r = preds_r_norm * c_std + c_mean
-        
-        if globals().get("is_target_log", False):
-            # If trained on log(1+y), then actual = exp(norm * std + mean) - 1
+        if model_params["is_target_log"]:
             preds_r = np.expm1(preds_r)
-        
-        # Ensure non-negative
         preds_r = np.maximum(preds_r, 0.0)
-        
-    return probs, preds_r, y_c.numpy(), y_r.numpy(), t_target
+    
+    # Y_reg is stored as log1p(cases) — convert back to raw for display
+    actual_cases = np.expm1(y_r.numpy())
+    return probs, preds_r, y_c.numpy(), actual_cases, t_target
 
 
 def run_federated_demo(t_win_idx, district_indices):
     """Run inference step-by-step, capturing intermediate tensors for the demo."""
     if t_win_idx < 0 or t_win_idx >= len(windows):
         return None
+    
     x_win, y_c, y_r, obs_m, t_target = windows[t_win_idx]
     x_d = torch.nan_to_num(x_win.to(DEVICE), nan=0.0)
     x_s = X_stat.to(DEVICE)
@@ -328,34 +333,32 @@ def run_federated_demo(t_win_idx, district_indices):
     ea = edge_attr.to(DEVICE)
 
     with torch.no_grad():
-        # Step 1: GRU
         _, h_n = model.client.gru(x_d)
-        h_gru = h_n[-1]  # (N, 32)
-
-        # Step 2: Temporal GAT
-        h_tgat = model.client.tgat(x_d)  # (N, 32)
-
-        # Step 3: Static encoding
+        h_gru = h_n[-1]
+        h_tgat = model.client.tgat(x_d)
         parts = [h_gru, h_tgat]
         if model.client.static_enc is not None:
             parts.append(model.client.static_enc(x_s))
-
-        # Step 4: Client fusion → embedding
-        client_emb = model.client.fusion(torch.cat(parts, dim=-1))  # (N, 32)
-
-        # Step 5: Spatial DGAT
-        spatial_emb = model.server(client_emb, ei, ea)  # (N, 32)
-
-        # Step 6: Dual-task head
+        client_emb = model.client.fusion(torch.cat(parts, dim=-1))
+        spatial_emb = model.server(client_emb, ei, ea)
         fused = torch.cat([client_emb, spatial_emb], dim=-1)
-        cases_pred, logit = model.head(fused)
+        cases_pred_norm, logit = model.head(fused)
         probs = logit.sigmoid()
+        
+        c_mean = model_params["cases_mean"]
+        c_std  = model_params["cases_std"]
+        cases_pred = cases_pred_norm.cpu().numpy() * c_std + c_mean
+        if model_params["is_target_log"]:
+            cases_pred = np.expm1(cases_pred)
+        cases_pred = np.maximum(cases_pred, 0.0)
+
+    # Y_reg stored as log1p — convert back
+    actual_cases = np.expm1(y_r.numpy())
 
     results = []
     for n_idx in district_indices:
         code = idx_to_code[n_idx]
         info = next((d for d in district_info if d["censuscode"] == code), {})
-        # Get raw feature names and values for the last timestep of the window
         raw_feats = {}
         feat_names = CFG["dynamic_features"]
         raw_feats_array = scaler_dyn.inverse_transform([x_d[n_idx, -1].cpu().numpy()])[0]
@@ -374,7 +377,7 @@ def run_federated_demo(t_win_idx, district_indices):
             "spatial_embedding": [round(float(v), 4) for v in spatial_emb[n_idx].tolist()[:8]],
             "outbreak_prob": round(float(probs[n_idx]), 4),
             "cases_pred": round(float(cases_pred[n_idx]), 4),
-            "actual_cases": float(y_r[n_idx]),
+            "actual_cases": float(actual_cases[n_idx]),
             "ground_truth": int(y_c[n_idx]),
         })
     return results
@@ -397,7 +400,7 @@ def get_districts():
 
 @app.get("/api/graph")
 def get_graph(t: int = Query(default=-1, description="Window index, -1 for last")):
-    """Return spatial graph with nodes, edges, and predictions for a given time window."""
+    """Return spatial graph with nodes, edges, and predictions."""
     t_idx = t if t >= 0 else len(windows) - 1
     result = run_window(t_idx)
     if result is None:
@@ -694,7 +697,7 @@ def custom_predict(req: CustomPredictRequest):
             for fi, _ in enumerate(feat_names):
                 x_d[n_idx, t_w, fi] = scaled_vals[fi]
 
-    # Now run step-by-step inference
+    # Run step-by-step inference on the full graph with overlaid user data
     with torch.no_grad():
         _, h_n = model.client.gru(x_d)
         h_gru = h_n[-1]
@@ -705,8 +708,15 @@ def custom_predict(req: CustomPredictRequest):
         client_emb = model.client.fusion(torch.cat(parts, dim=-1))
         spatial_emb = model.server(client_emb, ei, ea)
         fused = torch.cat([client_emb, spatial_emb], dim=-1)
-        cases_pred, logit = model.head(fused)
+        cases_pred_norm, logit = model.head(fused)
         probs = logit.sigmoid()
+
+        c_mean = model_params["cases_mean"]
+        c_std  = model_params["cases_std"]
+        cases_pred = cases_pred_norm.cpu().numpy() * c_std + c_mean
+        if model_params["is_target_log"]:
+            cases_pred = np.expm1(cases_pred)
+        cases_pred = np.maximum(cases_pred, 0.0)
 
     results = []
     for n_idx in target_indices:
