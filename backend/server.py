@@ -40,7 +40,8 @@ CFG = dict(
     temporal_heads  = 4,
     spatial_heads   = 4,
     train_ratio     = 0.75,
-    dropout         = 0.0,
+    dropout         = 0.5,  # Phase 3 model trained with dropout=0.5
+    target_log      = True, # Phase 3 model trained on log(1+y)
 )
 
 # ── MODEL DEFINITIONS (same as run_inference.py) ─────────────────────────────
@@ -189,6 +190,11 @@ def load_everything():
     train_cut = split_idx + LB
     train_mask = df["t_idx"] < train_cut
 
+    # Apply log1p to case-related columns to match Phase 3 training pipeline
+    log_cols = [c for c in df.columns if "cases" in c.lower()]
+    for c in log_cols:
+        df[c] = np.log1p(df[c])
+
     scaler_dyn = StandardScaler()
     scaler_stat = StandardScaler()
     scaler_dyn.fit(df.loc[train_mask, avail_dyn])
@@ -247,18 +253,31 @@ def load_everything():
         obs_m = Obs_mask[t + LB]
         windows.append((x_win, y_c, y_r, obs_m, t + LB))
 
-    # Load model
+    # Load model — override CFG with values stored in checkpoint
     print("[BOOT] Loading model checkpoint...")
-    mdl = FedXGNN(CFG, N_DYN, N_STAT).to(DEVICE)
     ckpt = torch.load(MODEL_PT, map_location=DEVICE, weights_only=False)
+    if isinstance(ckpt, dict) and "cfg" in ckpt:
+        ckpt_cfg = ckpt["cfg"]
+        # Copy inference-relevant keys from checkpoint CFG
+        for key in ["gru_hidden","tgat_hidden","embed_dim","temporal_heads","spatial_heads","dropout","lookback","train_ratio","target_log"]:
+            if key in ckpt_cfg:
+                CFG[key] = ckpt_cfg[key]
+        # eval mode disables dropout, so set to 0.0 for inference
+        CFG["dropout"] = 0.0
+
+    mdl = FedXGNN(CFG, N_DYN, N_STAT).to(DEVICE)
     if isinstance(ckpt, dict) and "model_state" in ckpt:
         mdl.load_state_dict(ckpt["model_state"])
+        epoch_info = f"epoch {ckpt.get('epoch','?')}"
     elif isinstance(ckpt, dict) and any(k.startswith("client") for k in ckpt.keys()):
         mdl.load_state_dict(ckpt)
+        epoch_info = "state_dict"
     else:
         mdl = ckpt
+        epoch_info = "full model object"
     mdl.eval()
     model = mdl
+    print(f"[BOOT] Model loaded — {epoch_info}, {sum(p.numel() for p in mdl.parameters())} params")
 
     # Store normalized edge_attr globally
     globals()["edge_attr"] = edge_attr_norm
@@ -590,7 +609,7 @@ def get_district_node(censuscode: int):
     result = run_federated_demo(t_idx, [n_idx])
     if result is None:
         return {"error": "Inference failed"}
-    row_ts = ts.iloc[windows[t_idx][3]]
+    row_ts = ts.iloc[windows[t_idx][4]]
     # Get neighbors
     neighbors = []
     for i in range(edge_index.shape[1]):
@@ -663,7 +682,13 @@ def custom_predict(req: CustomPredictRequest):
         # Overlay user data into the tensor
         for t_w, week in enumerate(weeks):
             week_dict = week.model_dump()
-            raw_vals = [float(week_dict.get(fn, 0.0)) for fn in feat_names]
+            raw_vals = []
+            for fn in feat_names:
+                v = float(week_dict.get(fn, 0.0))
+                # Apply log1p to cases just like training
+                if "cases" in fn.lower():
+                    v = np.log1p(v)
+                raw_vals.append(v)
             # scale the values using scaler_dyn so the model doesn't blow up
             scaled_vals = scaler_dyn.transform([raw_vals])[0]
             for fi, _ in enumerate(feat_names):
