@@ -153,18 +153,18 @@ triggering a false alarm in the other.
     {
       "censuscode": 583,
       "weeks": [
-        { "temp_k": 273.0, "preci_mm": 0.0, "LAI": 1.0, "cases_lag3": 0, "cases_lag2": 0, "cases_lag1": 0, "week_sin": 0, "week_cos": 1, "is_monsoon": 0 },
-        { "temp_k": 273.0, "preci_mm": 0.0, "LAI": 1.0, "cases_lag3": 0, "cases_lag2": 0, "cases_lag1": 0, "week_sin": 0, "week_cos": 1, "is_monsoon": 0 },
-        { "temp_k": 273.0, "preci_mm": 0.0, "LAI": 1.0, "cases_lag3": 0, "cases_lag2": 0, "cases_lag1": 0, "week_sin": 0, "week_cos": 1, "is_monsoon": 0 },
+        { "temp_k": 273.0, "preci_mm": 0.0, "LAI": 1.0, "cases_lag3": 0, "cases_lag2": 0, "cases_lag1": 10, "week_sin": 0, "week_cos": 1, "is_monsoon": 0 },
+        { "temp_k": 273.0, "preci_mm": 0.0, "LAI": 1.0, "cases_lag3": 0, "cases_lag2": 10, "cases_lag1": 0, "week_sin": 0, "week_cos": 1, "is_monsoon": 0 },
+        { "temp_k": 273.0, "preci_mm": 0.0, "LAI": 1.0, "cases_lag3": 10, "cases_lag2": 0, "cases_lag1": 0, "week_sin": 0, "week_cos": 1, "is_monsoon": 0 },
         { "temp_k": 273.0, "preci_mm": 0.0, "LAI": 1.0, "cases_lag3": 0, "cases_lag2": 0, "cases_lag1": 0, "week_sin": 0, "week_cos": 1, "is_monsoon": 0 }
       ]
     },
     {
       "censuscode": 584,
       "weeks": [
-        { "temp_k": 273.0, "preci_mm": 0.0, "LAI": 1.0, "cases_lag3": 0, "cases_lag2": 0, "cases_lag1": 0, "week_sin": 0, "week_cos": 1, "is_monsoon": 0 },
-        { "temp_k": 273.0, "preci_mm": 0.0, "LAI": 1.0, "cases_lag3": 0, "cases_lag2": 0, "cases_lag1": 0, "week_sin": 0, "week_cos": 1, "is_monsoon": 0 },
-        { "temp_k": 273.0, "preci_mm": 0.0, "LAI": 1.0, "cases_lag3": 0, "cases_lag2": 0, "cases_lag1": 0, "week_sin": 0, "week_cos": 1, "is_monsoon": 0 },
+        { "temp_k": 273.0, "preci_mm": 0.0, "LAI": 1.0, "cases_lag3": 0, "cases_lag2": 0, "cases_lag1": 10, "week_sin": 0, "week_cos": 1, "is_monsoon": 0 },
+        { "temp_k": 273.0, "preci_mm": 0.0, "LAI": 1.0, "cases_lag3": 0, "cases_lag2": 10, "cases_lag1": 0, "week_sin": 0, "week_cos": 1, "is_monsoon": 0 },
+        { "temp_k": 273.0, "preci_mm": 0.0, "LAI": 1.0, "cases_lag3": 10, "cases_lag2": 0, "cases_lag1": 0, "week_sin": 0, "week_cos": 1, "is_monsoon": 0 },
         { "temp_k": 273.0, "preci_mm": 0.0, "LAI": 1.0, "cases_lag3": 0, "cases_lag2": 0, "cases_lag1": 0, "week_sin": 0, "week_cos": 1, "is_monsoon": 0 }
       ]
     }
