@@ -1,0 +1,10 @@
+# Option A Requirements (For Kaggle / Real API)
+openmeteo-requests
+requests-cache
+retry-requests
+pandas
+numpy
+
+# Option B Requirements (For Local / Synthetic)
+pandas
+numpy

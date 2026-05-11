@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Data generation cache
+.cache.sqlite
+final_datasets/temp_weather/
+
+# IDE
+.vscode/
+.idea/
+*.suo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Large zips
+*.zip
+
+# Patch scripts (internal use only)
+patch_notebook.py
+
+# Node / React
+node_modules/
+frontend/dist/
+frontend/build/
+.env
+.env.*
+
+# Scratch and Large Files
+scratch*.py
+test_*.py
+predictions.json

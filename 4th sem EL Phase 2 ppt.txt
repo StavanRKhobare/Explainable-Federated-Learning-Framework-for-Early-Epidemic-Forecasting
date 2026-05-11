@@ -1,0 +1,182 @@
+Friday, 08 May 2026
+1
+Federated Learning Framework for Early Epidemic Forecasting
+CSE Cluster
+
+2
+Team Details
+Dr. Krishnappa H K
+Professor-CSE Department
+Rohith S Panchamukhi (1RV24CS234)
+Avyaya S Yekkar
+(1RV24CS057)
+Stavan Rahul Khobare (1RV24CS284)
+Kaizen S
+(1RV24CY025 )
+Monday, 11th May
+2
+
+Monday, 11th May
+3
+EL Phase-II
+Presentation Outline
+Introduction
+Project Overview
+Tools and Techniques Used
+Project Progress
+Analysis of Partial Results
+Deliverables and Outcomes
+Future work (Remaining tasks)
+Conclusion
+3
+
+Slide No. 4
+Introduction
+Explainable Federated Graph Neural Network for Epidemic Forecasting is an AI-based system designed to predict dengue and malaria outbreak risk using district-level disease trends, weather conditions, and spatial relationships between regions.
+The project combines temporal learning and graph neural networks to understand how outbreaks evolve over time and spread across neighboring districts. A split federated architecture is used where local clients process temporal data and generate embeddings, while a central graph model analyzes spatial disease spread and predicts outbreak risk.
+In Phase 2, the project progressed from system design to implementation by developing the data pipeline, graph-based prediction model, inference engine, and interactive dashboard for district-level outbreak visualization and analysis.
+Monday, 11th May
+
+Slide No. 5
+Project Overview
+The proposed system is a spatio-temporal epidemic forecasting framework developed to predict disease outbreak risk at the district level. The project focuses primarily on dengue forecasting using historical case trends, weather conditions, population statistics, and spatial relationships between neighboring districts.
+The architecture is divided into two major components:
+Client-side temporal processing, where local district data such as previous case counts, rainfall, and temperature are analyzed to learn outbreak trends over time.
+Server-side spatial graph learning, where districts are represented as nodes in a graph and neighboring districts are connected through edges to model geographical disease spread.
+The system combines temporal embeddings from local clients with a Graph Neural Network (GNN) at the central server to generate outbreak predictions and hotspot alerts. The project also includes an inference pipeline and an interactive dashboard for visualization, explainability, and district-level outbreak analysis.
+Monday, 11th May
+5
+
+Saturday, 09 May 2026
+6
+Project Overview
+
+Tools & Libraries
+Python – Core programming language used for model development and data processing
+PyTorch – Deep learning framework used for training neural network models
+PyTorch Geometric – Library used for implementing Graph Neural Networks (GNNs)
+Pandas & NumPy – Used for data cleaning, preprocessing, and numerical operations
+Scikit-learn – Used for evaluation metrics and preprocessing utilities
+NetworkX – Used for graph construction and district connectivity modeling
+Plotly – Used for interactive dashboard visualizations and heatmaps
+HTML, CSS & JavaScript – Used for developing the interactive epidemic dashboard
+AI / ML Techniques
+Graph Neural Networks (GNN)
+Graph Attention Networks (GAT)
+GRU-based Temporal Learning
+Temporal Attention Mechanism
+Spatio-Temporal Graph Modeling
+Slide No. 7
+Tools and Techniques Used
+Monday, 11th May
+
+Graph & Spatial Modelling
+District-Level Spatial Graph Construction
+Neighbour Adjacency Mapping
+Spatial Disease Spread Analysis
+Federated Architecture
+Split Federated Learning Simulation
+Local Temporal Embedding Generation
+Centralized Spatial Graph Learning
+Visualization & Explainability
+Interactive Risk Heatmaps
+Temporal Attention Visualization
+District-Level Outbreak Analysis
+Explainable AI (XAI)
+Slide No. 8
+Tools and Techniques Used
+Monday, 11th May
+
+Slide No. 9
+Project Progress
+Monday, 11th May
+
+Slide No. 10
+Analysis of Partial Results
+Monday, 11th May
+
+Model Training Behaviour
+Overall Learning Performance
+The training loss decreases steadily across epochs, indicating stable learning and successful optimization of the model.
+Validation loss remains relatively low and stable, suggesting that the model is generalizing well without severe overfitting.
+Regression Performance (MAE & RMSE)
+MAE and RMSE gradually decrease during training, showing improvement in predicting outbreak trends and disease intensity.
+Lower regression error indicates that the model is learning temporal disease progression effectively.
+Outbreak Classification Performance (AUC-ROC)
+The model achieves validation AUC values close to 0.96, demonstrating strong capability in distinguishing outbreak and non-outbreak districts.
+High AUC values indicate effective spatial and temporal pattern learning.
+
+Slide No. 11
+Analysis of Partial Results
+Monday, 11th May
+
+Precision-Recall Performance (AUPRC)
+AUPRC improves progressively during training, showing better identification of outbreak-positive districts despite class imbalance.
+This indicates that the model is learning meaningful outbreak-related features rather than random patterns.
+F1-Score Analysis
+F1-score shows gradual improvement throughout training.
+However, some imbalance between precision and recall still exists due to the relatively small number of outbreak-positive samples.
+Saturday, 09 May 2026
+Slide No. 12
+Analysis of Partial Results
+
+Partial System Outcomes
+Successfully Implemented
+District-level spatio-temporal outbreak prediction
+Spatial graph learning using district connectivity
+Temporal trend analysis using sequential disease data
+Interactive outbreak inference and hotspot generation
+Explainability through temporal attention visualization
+Current Limitations
+Federated learning workflow is currently simulated rather than fully distributed.
+Precision and recall require further optimization for rare outbreak scenarios.
+Real-time deployment and live client-server communication are part of future work.
+Overall Observation
+The current results demonstrate that the proposed architecture is capable of learning meaningful spatial and temporal outbreak patterns while generating district-level outbreak predictions and explainable hotspot insights.
+Slide No. 13
+Analysis of Partial Results
+Monday, 11th May
+
+AI-Based Epidemic Forecasting Model: Developed a spatio-temporal Graph Neural Network for district-level outbreak prediction.
+Spatial Disease Graph Framework: Constructed district connectivity graphs to model geographical disease spread.
+Model Training & Inference Pipeline: Implemented complete training, validation, and outbreak inference workflow.
+Interactive Dashboard System: Developed visualization dashboard for outbreak heatmaps, hotspot alerts, district-level analysis and prediction monitoring
+Explainability Module: Added temporal attention visualization and outbreak interpretation features.
+ Unified Processed Dataset: Created cleaned and feature-engineered master dataset integrating disease data, weather data, population statistics and spatial adjacency information
+Outcomes Achieved: Successful district-level outbreak prediction capability, validation AUC reaching approximately 0.96, meaningful spatial and temporal pattern learning, hotspot identification and outbreak risk analysis and functional epidemic intelligence prototype with visualization support
+
+Slide No. 14
+Deliverables and Outcomes
+Monday, 11th May
+
+Federated Learning Enhancement
+Implement fully distributed client-server federated training using frameworks such as Flower or OpenFL.
+Simulate real multi-client communication and decentralized learning.
+Advanced Privacy Mechanisms
+Integrate differential privacy and secure aggregation techniques.
+Improve privacy preservation during embedding and gradient sharing.
+ Real-Time Deployment
+Develop API-based real-time outbreak prediction services.
+Enable live dashboard updates and automated alert systems.
+ Model & Data Improvements
+Incorporate additional epidemiological and environmental datasets.
+Improve handling of class imbalance and rare outbreak events.
+Explore advanced spatio-temporal graph architectures.
+Enhanced Explainability
+Add advanced XAI techniques such as SHAP and district influence tracing.
+Generate automated outbreak reasoning reports.
+Slide No. 15
+Future Work (Remaining Tasks)
+Monday, 11th May
+
+16
+Conclusion
+The project successfully demonstrates a spatio-temporal epidemic forecasting framework capable of predicting district-level outbreak risk using Graph Neural Networks and temporal learning techniques.
+By integrating disease trends, weather conditions, and spatial district relationships, the system is able to learn meaningful outbreak patterns and generate hotspot predictions with strong classification performance.
+The implementation of inference pipelines, explainability modules, and interactive outbreak visualization transforms the project from a conceptual architecture into a functional AI-driven epidemic intelligence prototype.
+The project also establishes a strong foundation for future development in decentralized healthcare AI, real-time outbreak monitoring, and scalable public health forecasting systems.
+Monday, 11th May
+16
+
+17
+Monday, 11th May
