@@ -22,9 +22,9 @@ np.random.seed(42)
 
 # ── Paths (relative to project root) ──────────────────────────────────────────
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DATA_PATH    = os.path.join(PROJECT_ROOT, "data", "processed", "training_dataset_real_weather.csv")
+DATA_PATH    = os.path.join(PROJECT_ROOT, "data", "training_dataset_enhanced_v2.csv")
 EDGE_PATH    = os.path.join(PROJECT_ROOT, "data", "graph", "graph_edges.csv")
-MODEL_PT     = os.path.join(PROJECT_ROOT, "outputs", "fedxgnn_best.pt")
+MODEL_PT     = os.path.join(PROJECT_ROOT, "model", "fedxgnn_best.pt")
 
 DEVICE = torch.device("cpu")
 
