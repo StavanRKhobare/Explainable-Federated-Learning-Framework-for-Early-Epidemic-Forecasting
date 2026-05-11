@@ -641,7 +641,7 @@ def custom_predict(req: CustomPredictRequest):
 
     # Use the last window as a baseline
     t_last = len(windows) - 1
-    x_win_base, y_c, obs_m, t_target = windows[t_last]
+    x_win_base, y_c, y_r, obs_m, t_target = windows[t_last]
     x_d = torch.nan_to_num(x_win_base.to(DEVICE), nan=0.0).clone()
     x_s = X_stat.to(DEVICE)
     ei = edge_index.to(DEVICE)
