@@ -143,6 +143,7 @@ X = None          # (N_TIME, N_NODES, N_DYN)
 X_stat = None     # (N_NODES, N_STAT)
 Y_clf = None
 Obs_mask = None
+Y_reg = None      # (N_TIME, N_NODES) Actual cases
 edge_index = None
 edge_attr = None
 windows = None
@@ -202,6 +203,7 @@ def load_everything():
     X = torch.zeros(N_TIME, N_NODES, N_DYN, dtype=torch.float32)
     X_stat = torch.zeros(N_NODES, N_STAT, dtype=torch.float32)
     Y_clf = torch.zeros(N_TIME, N_NODES, dtype=torch.float32)
+    Y_reg = torch.zeros(N_TIME, N_NODES, dtype=torch.float32)
     Obs_mask = torch.zeros(N_TIME, N_NODES, dtype=torch.bool)
 
     for row in df.itertuples(index=False):
@@ -210,6 +212,7 @@ def load_everything():
             if feat in avail_dyn:
                 X[t, n, fi] = getattr(row, feat, 0.0)
         Y_clf[t, n] = row.is_outbreak
+        Y_reg[t, n] = getattr(row, "cases", 0.0)
         Obs_mask[t, n] = True
 
     if avail_stat:
@@ -240,8 +243,9 @@ def load_everything():
     for t in range(N_TIME - LB):
         x_win = X[t:t+LB].permute(1, 0, 2)
         y_c = Y_clf[t + LB]
+        y_r = Y_reg[t + LB]
         obs_m = Obs_mask[t + LB]
-        windows.append((x_win, y_c, obs_m, t + LB))
+        windows.append((x_win, y_c, y_r, obs_m, t + LB))
 
     # Load model
     print("[BOOT] Loading model checkpoint...")
@@ -259,6 +263,9 @@ def load_everything():
     # Store normalized edge_attr globally
     globals()["edge_attr"] = edge_attr_norm
     globals()["edge_attr_raw"] = torch.tensor(ew_list, dtype=torch.float32)
+    globals()["is_target_log"] = CFG.get("target_log", False)
+    globals()["cases_mean"] = ckpt.get("cases_mean", 0.0) if isinstance(ckpt, dict) else 0.0
+    globals()["cases_std"] = ckpt.get("cases_std", 1.0) if isinstance(ckpt, dict) else 1.0
 
     print(f"[BOOT] Ready — {N_NODES} districts, {N_TIME} timesteps, {len(windows)} windows")
 
@@ -268,19 +275,34 @@ def run_window(t_win_idx):
     """Run inference on window index (0-based into windows list)."""
     if t_win_idx < 0 or t_win_idx >= len(windows):
         return None
-    x_win, y_c, obs_m, t_target = windows[t_win_idx]
+    
+    x_win, y_c, y_r, obs_m, t_target = windows[t_win_idx]
+    
     with torch.no_grad():
         x_d = torch.nan_to_num(x_win.to(DEVICE), nan=0.0)
-        _, logit = model(x_d, X_stat.to(DEVICE), edge_index.to(DEVICE), edge_attr.to(DEVICE))
+        cases_pred, logit = model(x_d, X_stat.to(DEVICE), edge_index.to(DEVICE), edge_attr.to(DEVICE))
         probs = logit.sigmoid().cpu().numpy()
-    return probs, y_c.numpy(), t_target
+        preds_r_norm = cases_pred.cpu().numpy()
+        
+        # Inverse transform regression
+        c_mean, c_std = globals().get("cases_mean", 0.0), globals().get("cases_std", 1.0)
+        preds_r = preds_r_norm * c_std + c_mean
+        
+        if globals().get("is_target_log", False):
+            # If trained on log(1+y), then actual = exp(norm * std + mean) - 1
+            preds_r = np.expm1(preds_r)
+        
+        # Ensure non-negative
+        preds_r = np.maximum(preds_r, 0.0)
+        
+    return probs, preds_r, y_c.numpy(), y_r.numpy(), t_target
 
 
 def run_federated_demo(t_win_idx, district_indices):
     """Run inference step-by-step, capturing intermediate tensors for the demo."""
     if t_win_idx < 0 or t_win_idx >= len(windows):
         return None
-    x_win, y_c, obs_m, t_target = windows[t_win_idx]
+    x_win, y_c, y_r, obs_m, t_target = windows[t_win_idx]
     x_d = torch.nan_to_num(x_win.to(DEVICE), nan=0.0)
     x_s = X_stat.to(DEVICE)
     ei = edge_index.to(DEVICE)
@@ -333,6 +355,7 @@ def run_federated_demo(t_win_idx, district_indices):
             "spatial_embedding": [round(float(v), 4) for v in spatial_emb[n_idx].tolist()[:8]],
             "outbreak_prob": round(float(probs[n_idx]), 4),
             "cases_pred": round(float(cases_pred[n_idx]), 4),
+            "actual_cases": float(y_r[n_idx]),
             "ground_truth": int(y_c[n_idx]),
         })
     return results
@@ -360,7 +383,7 @@ def get_graph(t: int = Query(default=-1, description="Window index, -1 for last"
     result = run_window(t_idx)
     if result is None:
         return {"error": "Invalid time window"}
-    probs, truths, t_target = result
+    probs, preds_r, truths_c, truths_r, t_target = result
     row_ts = ts.iloc[t_target]
 
     nodes = []
@@ -375,7 +398,9 @@ def get_graph(t: int = Query(default=-1, description="Window index, -1 for last"
             "lat": float(info.get("lat", 0)),
             "lon": float(info.get("lon", 0)),
             "prob": round(float(probs[n_idx]), 4),
-            "truth": int(truths[n_idx]),
+            "pred_cases": round(float(preds_r[n_idx]), 2),
+            "actual_cases": int(truths_r[n_idx]),
+            "truth": int(truths_c[n_idx]),
         })
 
     # Unique undirected edges
@@ -415,7 +440,7 @@ def get_timeline(start: int = 0, end: int = -1):
     for wi in range(start_idx, end_idx):
         result = run_window(wi)
         if result is None: continue
-        probs, truths, t_target = result
+        probs, preds_r, truths_c, truths_r, t_target = result
         row_ts = ts.iloc[t_target]
 
         # Only include districts with prob > 0.05 or truth == 1 to keep response small
@@ -429,7 +454,9 @@ def get_timeline(start: int = 0, end: int = -1):
                     "name": info.get("district", ""),
                     "state": info.get("state", ""),
                     "prob": round(float(probs[n_idx]), 4),
-                    "truth": int(truths[n_idx]),
+                    "pred_cases": round(float(preds_r[n_idx]), 2),
+                    "actual_cases": int(truths_r[n_idx]),
+                    "truth": int(truths_c[n_idx]),
                 })
 
         timeline.append({
@@ -438,6 +465,7 @@ def get_timeline(start: int = 0, end: int = -1):
             "week": int(row_ts.iso_week),
             "alerts": sorted(preds, key=lambda x: -x["prob"]),
             "n_high_risk": sum(1 for p in preds if p["prob"] > 0.3),
+            "n_outbreaks": sum(1 for p in preds if p["truth"] == 1),
         })
     return {"timeline": timeline, "total": len(windows)}
 
@@ -486,7 +514,7 @@ def predict(t: int = Query(default=-1, description="Window index")):
     result = run_window(t_idx)
     if result is None:
         return {"error": "Invalid time window"}
-    probs, truths, t_target = result
+    probs, preds_r, truths_c, truths_r, t_target = result
     row_ts = ts.iloc[t_target]
 
     all_preds = []
@@ -500,7 +528,9 @@ def predict(t: int = Query(default=-1, description="Window index")):
             "lat": float(info.get("lat", 0)),
             "lon": float(info.get("lon", 0)),
             "prob": round(float(probs[n_idx]), 4),
-            "truth": int(truths[n_idx]),
+            "pred_cases": round(float(preds_r[n_idx]), 2),
+            "actual_cases": int(truths_r[n_idx]),
+            "truth": int(truths_c[n_idx]),
         })
 
     all_preds.sort(key=lambda x: -x["prob"])
@@ -512,7 +542,7 @@ def predict(t: int = Query(default=-1, description="Window index")):
         "total_windows": len(windows),
         "predictions": all_preds,
         "top_10": all_preds[:10],
-        "n_outbreaks_true": int(truths.sum()),
+        "n_outbreaks_true": int(truths_c.sum()),
         "n_high_risk": sum(1 for p in all_preds if p["prob"] > 0.3),
         "avg_prob": round(float(probs.mean()), 4),
         "max_prob": round(float(probs.max()), 4),

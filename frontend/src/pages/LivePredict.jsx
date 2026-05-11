@@ -217,7 +217,20 @@ export default function LivePredict() {
                   )}
 
                   {nodeDetail?.district && (
-                    <div style={{ marginTop: '0.5rem' }}>
+                    <div style={{ marginTop: '1rem', borderTop: '1px solid var(--slate-100)', paddingTop: '1rem' }}>
+                      <div className="card-title" style={{ fontSize: '0.75rem', color: 'var(--slate-500)', marginBottom: '0.8rem' }}>Inference vs Ground Truth</div>
+                      
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', marginBottom: '1rem' }}>
+                        <div className="mini-metric">
+                          <div className="value">{nodeDetail.district.pred_cases}</div>
+                          <div className="label">Pred. Cases</div>
+                        </div>
+                        <div className="mini-metric">
+                          <div className="value">{nodeDetail.district.actual_cases}</div>
+                          <div className="label">Actual Cases</div>
+                        </div>
+                      </div>
+
                       <div style={{ fontSize: '0.72rem', color: 'var(--slate-400)', marginBottom: '0.3rem' }}>Client Embedding (first 8 dims)</div>
                       <div className="embedding-grid">
                         {nodeDetail.district.client_embedding?.slice(0, 8).map((v, i) => {
@@ -225,9 +238,6 @@ export default function LivePredict() {
                           const bg = v >= 0 ? `rgba(37, 99, 235, ${0.15 + intensity * 0.75})` : `rgba(239, 68, 68, ${0.15 + intensity * 0.75})`
                           return <div key={i} className="embedding-cell" style={{ background: bg }} title={`[${i}]=${v}`}>{v.toFixed(1)}</div>
                         })}
-                      </div>
-                      <div style={{ marginTop: '0.5rem', fontSize: '0.72rem', color: 'var(--slate-400)' }}>
-                        Graph neighbors: {nodeDetail.neighbors?.length || 0}
                       </div>
                     </div>
                   )}
@@ -239,7 +249,7 @@ export default function LivePredict() {
                 <div className="card-title" style={{ marginBottom: '0.8rem' }}>🏆 Top 10 Riskiest</div>
                 <div className="table-container" style={{ maxHeight: '400px' }}>
                   <table>
-                    <thead><tr><th>#</th><th>District</th><th>Risk</th><th></th></tr></thead>
+                    <thead><tr><th>#</th><th>District</th><th>Risk</th><th>Actual</th></tr></thead>
                     <tbody>
                       {top10.map((p, i) => (
                         <tr key={p.code} onClick={() => { setSelectedNode(p); fetch(`/api/district-node/${p.code}`).then(r => r.json()).then(setNodeDetail) }}
@@ -261,9 +271,10 @@ export default function LivePredict() {
                             </div>
                           </td>
                           <td>
-                            <span className={p.truth ? 'badge badge-red' : 'badge badge-green'}>
-                              {p.truth ? '⚠️' : '✓'}
-                            </span>
+                            <div className="mono" style={{ fontSize: '0.85rem', fontWeight: 600, color: p.truth ? 'var(--red-500)' : 'var(--slate-400)' }}>
+                              {p.actual_cases}
+                            </div>
+                            <div style={{ fontSize: '0.6rem', color: 'var(--slate-400)' }}>cases</div>
                           </td>
                         </tr>
                       ))}

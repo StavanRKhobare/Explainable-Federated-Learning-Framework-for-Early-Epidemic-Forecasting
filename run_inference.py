@@ -18,8 +18,8 @@ torch.manual_seed(42)
 np.random.seed(42)
 
 DEVICE    = torch.device("cpu")
-DATA_PATH = "data/processed/training_dataset_real_weather.csv"
-EDGE_PATH = "data/graph/graph_edges.csv"
+DATA_PATH = "final_datasets/training_dataset_real_weather.csv"
+EDGE_PATH = "final_datasets/graph_edges.csv"
 MODEL_PT  = "outputs/fedxgnn_best.pt"
 OUT_JSON  = "predictions.json"
 
