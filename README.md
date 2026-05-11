@@ -247,61 +247,83 @@ Training was performed on Kaggle (NVIDIA Tesla T4 GPU) using `training_dataset_r
 
 ---
 
-## 🛠️ Getting Started
+## 🚀 Getting Started
+
+The project is split into a **FastAPI Backend** (Model Inference) and a **React Frontend** (Vite Intelligence Dashboard).
 
 ### Prerequisites
+- Python 3.10+
+- Node.js 18+
+- Active `venv` with requirements installed
+
+### 1. Start the Intelligence Backend
+The backend loads the trained `.pt` model and serves real-time inference via REST API.
 ```bash
-pip install torch torch-geometric pandas numpy scikit-learn matplotlib plotly
+# From the project root
+./venv/bin/python backend/server.py
 ```
+*Running on: `http://localhost:8000`*
 
-### 1. Model Inference
-To generate fresh predictions from the trained model:
+### 2. Start the React Dashboard
+The frontend provides the interactive map, XAI visualizations, and the step-by-step federated demo.
 ```bash
-python run_inference.py
+cd frontend
+npm install
+npm run dev
 ```
-
-### 2. View Dashboard
-Open `dashboard/epi-fedgnn.html` or `dashboard/dashboard.html` in any modern browser to visualize the results.
-
-### 3. Training
-To re-train the model, upload the `data/` folder to Kaggle and run the `outbreak-prediction.ipynb` notebook.
+*Access at: `http://localhost:3000`*
 
 ---
 
-## How to Reproduce
+## 🏗️ Intelligence Dashboard Features
 
-1. Start from `data/raw/master_dataset_clean.csv` (the original dengue event log)
-2. Run `scripts/generate_real_dense_data.py` to build the dense training set
-3. Upload the `data/` folder to a Kaggle Dataset
-4. Open `outbreak-prediction.ipynb` in Kaggle, set `INPUT_DIR`, and run all cells
-5. Best model checkpoint saved automatically to `fedxgnn_best.pt`
+### 1. Live Model Inference
+- **Play Timeline**: Automatically scrub through the historical 2023–2024 validation window to watch the model predict outbreaks in real-time.
+- **District Deep-Dive**: Click any district on the map to see its raw metadata, local case history, and internal model embeddings.
+- **Top 10 Risk Analysis**: Real-time ranking of the most vulnerable districts in India.
+
+### 2. Split-Federated Learning Demo (XAI)
+A step-by-step walkthrough of the internal tensor flow:
+1.  **Local Dynamic Features**: Weather & Case history (4-week window).
+2.  **GRU Sequence Learning**: Capturing temporal dependencies.
+3.  **Temporal GAT**: Weighting the importance of specific past weeks.
+4.  **Privacy-Preserved Embedding**: Only the 32-dim latent vector is sent to the server.
+5.  **Spatial DGAT**: Server-side graph attention integrating neighbor risk signals.
+6.  **Dual-Task Prediction**: Final Outbreak Probability + Predicted Case Count.
+
+### 3. Custom JSON Inference
+Upload your own hypothetical district data (JSON format) to test "What-If" scenarios. The model is trained to detect **exponential growth signatures** (e.g., 0➔1➔2➔4 cases) as early warning triggers.
 
 ---
 
-## Technical Details
+## 📊 Technical Architecture
 
 ### Model Configuration
-```python
-CFG = {
-    "lookback":        4,      # 4-week sliding window
-    "gru_hidden":      32,
-    "tgat_hidden":     32,
-    "embed_dim":       32,
-    "temporal_heads":  4,
-    "spatial_heads":   4,
-    "epochs":          200,
-    "lr":              5e-4,
-    "weight_decay":    1e-3,
-    "alpha":           0.4,    # 40% regression loss, 60% classification loss
-    "dropout":         0.50,
-    "patience":        50,
-}
-```
+- **Total Parameters**: 38,394 (Optimized for Edge/Mobile deployment)
+- **Checkpoint Size**: 533 KB
+- **Input Dimensions**: 9 Dynamic Features + 2 Static Features
+- **Hidden Dimensions**: 32 (GRU / TGAT / DGAT)
 
-### Graph Construction
-- **Nodes:** 284 Indian districts
-- **Edges:** Shared land border adjacency (weighted by border length in km)
-- **Edge source:** `data/graph/graph_edges.csv` — 492 unique district pairs
+### Dual-Graph Attention (DGAT)
+- **Temporal GAT (Client)**: Learns which specific weeks in the lookback window are most predictive of current risk.
+- **Spatial GAT (Server)**: Learns how disease signals propagate between neighboring districts using land-border shared lengths as edge weights.
+
+### Data Privacy
+- **FedXGNN** ensures that raw health records and local weather data stay on the district client. 
+- Only **non-invertible 32-dimensional embeddings** cross the network boundary, making it a privacy-first epidemic surveillance framework.
+
+---
+
+## 📁 Project Structure
+```text
+├── backend/            # FastAPI server & inference logic
+├── frontend/           # React + Vite + Plotly Dashboard
+│   ├── src/pages/      # Spatial Graph, Live Predict, Federated Demo
+├── data/               # Processed district datasets & graph edges
+├── model/              # Trained PyTorch checkpoints (.pt)
+├── scripts/            # Dataset generation & preprocessing scripts
+└── run_inference.py    # CLI entry point for model validation
+```
 
 ---
 *Developed for the Semester 4 Experiential Project · RVCE 2025*
