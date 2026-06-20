@@ -274,13 +274,20 @@ The project is split into a **FastAPI Backend** (Model Inference) and a **React 
 ### Prerequisites
 - Python 3.10+
 - Node.js 18+
-- Active `venv` with requirements installed
 
 ### 1. Start the Intelligence Backend
 The backend loads the trained `.pt` model and serves real-time inference via REST API.
 ```bash
-# From the project root
-./venv/bin/python backend/server.py
+# 1. Create a virtual environment (optional but recommended)
+python -m venv venv
+# On Windows: venv\Scripts\activate
+# On Mac/Linux: source venv/bin/activate
+
+# 2. Install dependencies
+pip install -r requirements.txt
+
+# 3. Start the FastAPI server
+python backend/server.py
 ```
 *Running on: `http://localhost:8000`*
 
