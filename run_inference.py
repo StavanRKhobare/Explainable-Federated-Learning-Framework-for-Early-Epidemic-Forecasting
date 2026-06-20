@@ -18,10 +18,10 @@ torch.manual_seed(42)
 np.random.seed(42)
 
 DEVICE    = torch.device("cpu")
-DATA_PATH = "data/training_dataset_enhanced_v2.csv"
-EDGE_PATH = "data/graph/graph_edges.csv"
-MODEL_PT  = "model/fedxgnn_best.pt"
-OUT_JSON  = "frontend/public/predictions.json"
+DATA_PATH = "final_datasets/training_dataset_enhanced_v2.csv"
+EDGE_PATH = "final_datasets/graph_edges.csv"
+MODEL_PT  = "outputs/fedxgnn_best.pt"
+OUT_JSON  = "predictions.json"
 
 CFG = dict(
     lookback        = 4,
@@ -161,10 +161,6 @@ LB         = CFG["lookback"]
 split_idx  = int((N_TIME - LB) * CFG["train_ratio"])
 train_cut  = split_idx + LB
 train_mask = df["t_idx"] < train_cut
-
-log_cols = [c for c in df.columns if "cases" in c.lower()]
-for c in log_cols:
-    df[c] = np.log1p(df[c])
 
 scaler_dyn  = StandardScaler()
 scaler_stat = StandardScaler()

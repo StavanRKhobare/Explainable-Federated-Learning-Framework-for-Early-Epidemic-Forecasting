@@ -468,7 +468,7 @@ def get_timeline(start: int = 0, end: int = -1):
         # Only include districts with prob > 0.05 or truth == 1 to keep response small
         preds = []
         for n_idx in range(N_NODES):
-            if probs[n_idx] > 0.05 or truths[n_idx] == 1:
+            if probs[n_idx] > 0.05 or truths_c[n_idx] == 1:
                 code = idx_to_code[n_idx]
                 info = next((d for d in district_info if d["censuscode"] == code), {})
                 preds.append({
