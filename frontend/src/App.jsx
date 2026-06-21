@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom'
 import SpatialGraph from './pages/SpatialGraph'
 import FederatedDemo from './pages/FederatedDemo'
 import LivePredict from './pages/LivePredict'
+import MultiNodeSimulation from './pages/MultiNodeSimulation'
 
 function Navbar() {
   return (
@@ -20,6 +21,9 @@ function Navbar() {
         <NavLink to="/predict" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
           Live Inference
         </NavLink>
+        <NavLink to="/simulation" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+          Edge Simulation
+        </NavLink>
       </div>
       <div className="nav-status">
         <div className="pulse-dot" />
@@ -37,6 +41,7 @@ export default function App() {
         <Route path="/" element={<SpatialGraph />} />
         <Route path="/federated" element={<FederatedDemo />} />
         <Route path="/predict" element={<LivePredict />} />
+        <Route path="/simulation" element={<MultiNodeSimulation />} />
       </Routes>
     </BrowserRouter>
   )

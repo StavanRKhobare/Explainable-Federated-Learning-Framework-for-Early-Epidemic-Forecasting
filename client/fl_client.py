@@ -35,7 +35,7 @@ class DengueClient(fl.client.NumPyClient):
         self.load_local_data()
 
     def load_local_data(self):
-        data_path = os.path.join(PROJECT_ROOT, "data", "training_dataset_enhanced_v2.csv")
+        data_path = os.path.join(PROJECT_ROOT, "data", "training_dataset_with_ner.csv")
         df = pd.read_csv(data_path)
         df = df[df["censuscode"] == self.censuscode].copy()
         

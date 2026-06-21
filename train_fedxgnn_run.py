@@ -1,8 +1,8 @@
 """
-train_fedxgnn.py  —  Kaggle Training Script
+train_fedxgnn.py  -  Kaggle Training Script
 ============================================
 Split-Federated DGAT for Dengue Epidemic Forecasting
-Architecture: Split-FedSTGNN (client GRU+TemporalGAT  →  server SpatialGAT  →  dual-task head)
+Architecture: Split-FedSTGNN (client GRU+TemporalGAT  ->  server SpatialGAT  ->  dual-task head)
 
 USAGE (Kaggle):
   1. Upload master_dataset_clean.csv + graph_edges.csv to a Kaggle Dataset
@@ -10,17 +10,17 @@ USAGE (Kaggle):
   3. Run all cells / kernel
 
 What gets TRAINED:
-  • ClientTemporalModel  — GRU + Temporal GAT per district (local trends + incubation spikes)
-  • SpatialDGAT          — learns which neighbouring districts matter most (edge attention weights)
-  • DualTaskHead         — regression (cases) + classification (is_outbreak)
+  • ClientTemporalModel  - GRU + Temporal GAT per district (local trends + incubation spikes)
+  • SpatialDGAT          - learns which neighbouring districts matter most (edge attention weights)
+  • DualTaskHead         - regression (cases) + classification (is_outbreak)
 
 What is STATIC (not trained, used as structure):
-  • The border graph topology (which districts are connected) — from graph_edges.csv
-  • The edge weight values (border lengths) — fed as input features to the Spatial GAT
+  • The border graph topology (which districts are connected) - from graph_edges.csv
+  • The edge weight values (border lengths) - fed as input features to the Spatial GAT
 
 Targets:
-  • cases      → MSE regression loss
-  • is_outbreak → BCE classification loss
+  • cases      -> MSE regression loss
+  • is_outbreak -> BCE classification loss
 """
 
 # ── 0. Installs (Kaggle) ──────────────────────────────────────────────────────
@@ -87,9 +87,10 @@ print(f"Device: {DEVICE}")
 POTENTIAL_INPUTS = [
     "/kaggle/input/final-datasets/final_datasets/",
     "/kaggle/input/final-datasets/",
-    "final_datasets/"
+    "data/",          # ─ local run (project root)
+    "final_datasets/" # ─ legacy fallback
 ]
-INPUT_DIR = POTENTIAL_INPUTS[-1] # Default
+INPUT_DIR = "data/"  # default
 for p in POTENTIAL_INPUTS:
     if os.path.exists(p):
         INPUT_DIR = p
@@ -102,36 +103,44 @@ if os.path.exists("/kaggle/input"):
 OUTPUT_DIR = "/kaggle/working/"
 
 CFG = dict(
-    data_path   = os.path.join(INPUT_DIR, "training_dataset_enhanced_v2.csv"),
-    edges_path  = os.path.join(INPUT_DIR, "graph_edges.csv"),
+    # ── Paths ───────────────────────────────────────────────────────────────
+    # Ross-Macdonald continuous dataset (206,752 rows) + NER features
+    data_path   = "/kaggle/input/datasets/rohithpanchamukhi/training-1st-try/training_dataset_with_ner.csv",
+    edges_path  = "/kaggle/input/datasets/rohithpanchamukhi/final-final-final/final_datasets/graph_edges.csv",
     output_dir  = OUTPUT_DIR,
 
-    # Sliding window
+    # ── Sliding window ───────────────────────────────────────────────────────────
     lookback    = 4,
 
-    # Features
+    # ── Features (14 dynamic + 2 static) ──────────────────────────────────────────────
     dynamic_features = [
+        # Climate & environment
         "temp_k", "preci_mm", "LAI",
+        # Temporal lag (autoregressive case history)
         "cases_lag1", "cases_lag2", "cases_lag3",
+        # Seasonality encodings
         "week_sin", "week_cos", "is_monsoon",
+        # NER clinical signal features
+        "ner_symptoms", "ner_diseases", "ner_pathogens",
+        "ner_travel", "ner_total_notes",
     ],
     static_features = ["population_2024", "pop_density_per_km2_2024"],
     target_reg  = "cases",
     target_clf  = "is_outbreak",
 
-    # Model dims — kept small relative to dataset size (1437 rows)
-    # Rule of thumb: params/samples < 0.1 for generalization
-    gru_hidden      = 32,    # was 64
-    tgat_hidden     = 32,    # was 64
-    embed_dim       = 32,    # was 64  → model now ~25K params
+    # ── Model dims ──────────────────────────────────────────────────────────────────
+    # Dataset now 206K rows - can support larger model without overfitting
+    gru_hidden      = 64,
+    tgat_hidden     = 64,
+    embed_dim       = 64,
     temporal_heads  = 4,
     spatial_heads   = 4,
 
-    # Training
-    epochs          = 200,    # increased epochs for slower LR
-    lr              = 2e-4,   # slightly lower LR for better convergence with log-target
-    weight_decay    = 1e-3,   
-    alpha           = 0.5,    # balanced 50/50 split between log-reg and focal-clf
+    # ── Training ──────────────────────────────────────────────────────────────────────
+    epochs          = 120,
+    lr              = 2e-4,
+    weight_decay    = 1e-3,
+    alpha           = 0.5,    # 50/50 regression vs classification loss
     train_ratio     = 0.75,
     dropout         = 0.50,   
     patience        = 40,     
@@ -142,7 +151,7 @@ os.makedirs(CFG["output_dir"], exist_ok=True)
 
 # ── 3. Data Loading ────────────────────────────────────────────────────────────
 print("\n" + "="*60)
-print("STEP 1 — Loading & Preprocessing Data")
+print("STEP 1 - Loading & Preprocessing Data")
 print("="*60)
 
 df = pd.read_csv(CFG["data_path"])
@@ -154,7 +163,7 @@ if "Disease" in df.columns:
     df = df[df["Disease"].str.lower() == "dengue"].copy()
     print(f"After Dengue filter: {df.shape[0]} rows")
 else:
-    print("No 'Disease' column → assuming dataset is Dengue-only")
+    print("No 'Disease' column -> assuming dataset is Dengue-only")
 
 # Verify essential columns
 REQUIRED = ["iso_year", "iso_week", "censuscode", "cases", "is_outbreak"]
@@ -185,7 +194,7 @@ avail_dyn  = [f for f in CFG["dynamic_features"]  if f in df.columns]
 avail_stat = [f for f in CFG["static_features"]   if f in df.columns]
 miss_dyn   = set(CFG["dynamic_features"]) - set(avail_dyn)
 if miss_dyn:
-    print(f"WARNING — missing dynamic features (zeroed): {miss_dyn}")
+    print(f"WARNING - missing dynamic features (zeroed): {miss_dyn}")
 
 # Calculate train cutoff to prevent future validation data from leaking into scalers
 LB = CFG["lookback"]
@@ -240,7 +249,7 @@ for row in df.itertuples(index=False):
     Obs_mask[t, n] = True
     Obs_mask[t, n] = True
 
-# Static features — take per-node mean across all time steps
+# Static features - take per-node mean across all time steps
 if avail_stat:
     for n_val, grp in df.groupby("node_idx"):
         for si, sf in enumerate(avail_stat):
@@ -254,7 +263,7 @@ print(f"  Y_clf  : {tuple(Y_clf.shape)}       (time, nodes)")
 
 # ── 4. Spatial Graph Construction ─────────────────────────────────────────────
 print("\n" + "="*60)
-print("STEP 2 — Building Spatial Graph")
+print("STEP 2 - Building Spatial Graph")
 print("="*60)
 
 edges_df = pd.read_csv(CFG["edges_path"])
@@ -264,7 +273,7 @@ print(f"Edges file cols: {edges_df.columns.tolist()}")
 if "source_censuscode" in edges_df.columns:
     SRC_COL, DST_COL, WT_COL = "source_censuscode", "target_censuscode", "shared_border_km"
 elif "district_1" in edges_df.columns:
-    # Build a district-name → censuscode → node_idx lookup
+    # Build a district-name -> censuscode -> node_idx lookup
     name_to_idx = (df.drop_duplicates("node_idx")
                      .set_index("district")["node_idx"]
                      .to_dict())
@@ -304,7 +313,7 @@ print(f"edge_index shape: {tuple(edge_index.shape)}")
 
 # ── 5. Sliding Window Dataset ─────────────────────────────────────────────────
 print("\n" + "="*60)
-print("STEP 3 — Creating Sliding Windows  (lookback={})".format(CFG["lookback"]))
+print("STEP 3 - Creating Sliding Windows  (lookback={})".format(CFG["lookback"]))
 print("="*60)
 
 LB = CFG["lookback"]
@@ -323,9 +332,9 @@ train_win = windows[:split]
 val_win   = windows[split:]
 print(f"Train : {len(train_win)}  |  Val : {len(val_win)}")
 
-# ── 6. Model Definitions (inline — copy of models/ for single-file Kaggle) ────
+# ── 6. Model Definitions (inline - copy of models/ for single-file Kaggle) ────
 print("\n" + "="*60)
-print("STEP 4 — Defining Models")
+print("STEP 4 - Defining Models")
 print("="*60)
 
 # ── 6a. Temporal GAT ──────────────────────────────────────────────────────────
@@ -421,7 +430,7 @@ class DualTaskHead(nn.Module):
         self.trunk    = nn.Sequential(nn.Linear(in_dim, 64), nn.LayerNorm(64),
                                       nn.GELU(), nn.Dropout(dropout))
         self.reg_head = nn.Sequential(nn.Linear(64, 32), nn.GELU(), nn.Linear(32, 1))
-        # No Sigmoid here — BCEWithLogitsLoss takes raw logits (numerically stable)
+        # No Sigmoid here - BCEWithLogitsLoss takes raw logits (numerically stable)
         self.clf_head = nn.Sequential(nn.Linear(64, 32), nn.GELU(), nn.Linear(32, 1))
 
     def forward(self, fused):
@@ -451,20 +460,20 @@ class FedXGNN(nn.Module):
         self.head   = DualTaskHead(in_dim=2 * E, dropout=cfg["dropout"])
 
     def forward(self, x_dyn, x_stat, edge_index, edge_attr):
-        # Step 1 — Client: local temporal embedding
+        # Step 1 - Client: local temporal embedding
         local_emb  = self.client(x_dyn, x_stat)          # (N, E)
 
-        # Step 2 — Server: spatial refinement using neighbor embeddings
+        # Step 2 - Server: spatial refinement using neighbor embeddings
         spatial_emb = self.server(local_emb, edge_index, edge_attr)  # (N, E)
 
-        # Step 3 — Head: dual-task prediction
+        # Step 3 - Head: dual-task prediction
         fused = torch.cat([local_emb, spatial_emb], dim=-1)  # (N, 2E)
         return self.head(fused)                               # cases_pred, outbreak_prob
 
 
 # ── 7. Training Setup ─────────────────────────────────────────────────────────
 print("\n" + "="*60)
-print("STEP 5 — Training")
+print("STEP 5 - Training")
 print("="*60)
 
 model = FedXGNN(CFG, N_DYN, N_STAT).to(DEVICE)
@@ -531,7 +540,7 @@ def run_epoch(window_list, train=True):
                                                edge_index_d, edge_attr_d)
 
             # Only compute loss on districts that actually reported (non-zero target).
-            # NOTE: do NOT use feature-based active_nodes — StandardScaler makes
+            # NOTE: do NOT use feature-based active_nodes - StandardScaler makes
             # week_sin/cos non-zero for every node, collapsing the mask to all-True.
             # Apply mask to only evaluate on observed data, not zero-padded fake nodes
             mask = obs_m
@@ -555,7 +564,7 @@ def run_epoch(window_list, train=True):
             all_y_reg.extend(y_r[mask].cpu().numpy())
             all_p_reg.extend(cases_pred[mask].detach().cpu().numpy())
             all_y_clf.extend(y_c[mask].cpu().numpy())
-            # Convert logits → probabilities only for AUC metric reporting
+            # Convert logits -> probabilities only for AUC metric reporting
             all_p_clf.extend(outbreak_prob[mask].detach().sigmoid().cpu().numpy())
 
     n = len(window_list)
@@ -648,7 +657,7 @@ for epoch in range(1, CFG["epochs"] + 1):
             "cases_std":   log_std,    # Stores log_std if target_log is True
             "node_to_idx": node_to_idx,
         }, os.path.join(CFG["output_dir"], "fedxgnn_best.pt"))
-        print(f"  ✓ Best AUPRC={best_val_auprc:.4f}  saved.")
+        print(f"  OK Best AUPRC={best_val_auprc:.4f}  saved.")
     else:
         patience_ctr += 1
         if patience_ctr >= CFG["patience"]:
@@ -700,14 +709,14 @@ best_vl_mae   = min(history["val_mae"])   if history["val_mae"]   else 0.0
 print("\n" + "="*60)
 print("TRAINING COMPLETE")
 print("="*60)
-print(f"  Best Val AUPRC  : {best_val_auprc:.4f}   ← primary metric (early stopping)")
+print(f"  Best Val AUPRC  : {best_val_auprc:.4f}   <- primary metric (early stopping)")
 print(f"  Best Val AUC    : {best_vl_auc:.4f}")
 print(f"  Best Val F1     : {best_vl_f1:.4f}")
 print(f"  Best Val MAE    : {best_vl_mae:.4f}   (normalised cases)")
 print(f"\nSaved files in {CFG['output_dir']}:")
-print("  fedxgnn_best.pt       — best AUPRC checkpoint (use for inference)")
-print("  fedxgnn_final.pt      — final epoch weights")
-print("  training_curves.png   — 6-panel metric curves")
+print("  fedxgnn_best.pt       - best AUPRC checkpoint (use for inference)")
+print("  fedxgnn_final.pt      - final epoch weights")
+print("  training_curves.png   - 6-panel metric curves")
 
 # ── 11. Save Metrics Log (metrics.json) ───────────────────────────────────────
 import json, datetime
@@ -758,7 +767,7 @@ metrics_path = os.path.join(CFG["output_dir"], "metrics.json")
 with open(metrics_path, "w") as f:
     json.dump(metrics_out, f, indent=2)
 
-print(f"\n  metrics.json          — full validation metrics log")
+print(f"\n  metrics.json          - full validation metrics log")
 print(f"\n  Val AUC-ROC : {best_vl_auc:.4f}")
 print(f"  Val AUPRC   : {best_vl_auprc:.4f}")
 print(f"  Val F1      : {best_vl_f1:.4f}")

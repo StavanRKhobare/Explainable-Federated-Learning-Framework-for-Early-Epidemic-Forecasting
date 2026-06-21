@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FedXGNN Hospital Edge Node</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+    <style>
+        :root {
+            --blue-50: #eff6ff; --blue-100: #dbeafe; --blue-400: #60a5fa; --blue-500: #3b82f6; --blue-600: #2563eb; --blue-700: #1d4ed8;
+            --emerald-400: #34d399; --emerald-500: #10b981; --emerald-600: #059669;
+            --amber-400: #fbbf24; --amber-500: #f59e0b;
+            --red-400: #f87171; --red-500: #ef4444; --red-600: #dc2626;
+            --purple-500: #8b5cf6;
+            --slate-50: #f8fafc; --slate-100: #f1f5f9; --slate-200: #e2e8f0;
+            --slate-300: #cbd5e1; --slate-400: #94a3b8; --slate-500: #64748b;
+            --slate-600: #475569; --slate-700: #334155; --slate-800: #1e293b; --slate-900: #0f172a;
+            --white: #ffffff;
+            --radius-lg: 24px; --radius: 16px; --radius-sm: 12px; --radius-xs: 8px;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--slate-50); color: var(--slate-800);
+            margin: 0; padding: 0; min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--slate-200);
+            padding: 0 2rem; height: 64px;
+            display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+        }
+        .nav-brand {
+            display: flex; align-items: center; gap: 10px;
+            font-weight: 700; font-size: 1.15rem; color: var(--slate-900);
+        }
+        .nav-brand .dot {
+            width: 12px; height: 12px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--blue-400), var(--blue-600));
+            box-shadow: 0 2px 4px rgba(37,99,235,0.3);
+        }
+        .nav-status {
+            display: flex; align-items: center; gap: 8px;
+            font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--slate-500);
+            background: var(--slate-100); padding: 6px 12px; border-radius: 20px;
+        }
+        .pulse-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--emerald-500);
+            animation: pulse 2s infinite;
+            margin-left: 6px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; box-shadow: 0 0 4px rgba(16, 185, 129, 0.3); }
+            50% { opacity: 1; box-shadow: 0 0 12px rgba(16, 185, 129, 0.6); }
+        }
+
+        /* Alert Banner */
+        #alert-banner {
+            display: none; padding: 14px 2rem; text-align: center; font-weight: 700; font-size: 0.95rem;
+            border-bottom: 1px solid transparent; transition: all 0.3s;
+            backdrop-filter: blur(8px);
+        }
+        .alert-high { background: rgba(254, 226, 226, 0.9); color: var(--red-600); border-color: #fca5a5; }
+        .alert-medium { background: rgba(254, 243, 199, 0.9); color: var(--amber-600); border-color: #fcd34d; }
+        .alert-low { background: rgba(220, 252, 231, 0.9); color: var(--emerald-600); border-color: #86efac; }
+
+        /* Layout */
+        .page { padding: 2rem; max-width: 1440px; margin: 0 auto; }
+        .grid-main { display: grid; grid-template-columns: 1fr 380px; gap: 1.5rem; }
+
+        /* Cards */
+        .card {
+            background: var(--white); border: 1px solid var(--slate-200);
+            border-radius: var(--radius); padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+            margin-bottom: 1.5rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+        }
+        .card-title {
+            font-size: 0.8rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.05em; color: var(--slate-500);
+            margin-bottom: 1.2rem; display: flex; justify-content: space-between; align-items: center;
+        }
+
+        /* Metrics */
+        .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.2rem; margin-bottom: 2rem; }
+        .metric-box {
+            background: var(--white); border: 1px solid var(--slate-200);
+            border-radius: var(--radius); padding: 1.5rem; text-align: center;
+            position: relative; overflow: hidden;
+        }
+        .metric-val { font-family: 'DM Serif Display', serif; font-size: 2.2rem; color: var(--slate-800); line-height: 1; margin-bottom: 8px; }
+        .metric-lbl { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--slate-400); }
+
+        .prob-bar { width: 100%; height: 6px; background: var(--slate-100); border-radius: 3px; overflow: hidden; margin-top: 12px; }
+        .prob-fill { height: 100%; background: var(--emerald-500); transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.8s; }
+
+        /* Forms & Buttons */
+        .form-group { margin-bottom: 1.2rem; }
+        .form-group label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--slate-600); margin-bottom: 6px; }
+        input[type="number"], input[type="text"] {
+            width: 100%; padding: 12px; border: 1px solid var(--slate-200); border-radius: var(--radius-xs);
+            font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; box-sizing: border-box;
+            background: var(--slate-50); color: var(--slate-800); transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        input:focus { outline: none; border-color: var(--blue-400); box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2); background: var(--white); }
+
+        .btn {
+            padding: 12px 24px; border-radius: var(--radius-sm); font-family: inherit; font-size: 0.9rem; font-weight: 700;
+            border: none; cursor: pointer; transition: all 0.2s; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn-primary { background: linear-gradient(135deg, var(--blue-500), var(--blue-700)); color: var(--white); box-shadow: 0 4px 6px rgba(37,99,235,0.2); }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 8px rgba(37,99,235,0.3); }
+        .btn-emerald { background: linear-gradient(135deg, var(--emerald-400), var(--emerald-600)); color: var(--white); box-shadow: 0 4px 6px rgba(16,185,129,0.2); }
+        .btn-emerald:hover { transform: translateY(-1px); box-shadow: 0 6px 8px rgba(16,185,129,0.3); }
+        .btn-outline { background: transparent; border: 1px solid var(--slate-300); color: var(--slate-700); }
+        .btn-outline:hover { background: var(--slate-50); border-color: var(--slate-400); }
+
+        /* Tables */
+        table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.85rem; }
+        th { text-align: left; padding: 12px; color: var(--slate-500); font-weight: 600; border-bottom: 2px solid var(--slate-100); font-size: 0.75rem; text-transform: uppercase; background: var(--slate-50); }
+        th:first-child { border-top-left-radius: var(--radius-xs); }
+        th:last-child { border-top-right-radius: var(--radius-xs); }
+        td { padding: 12px; border-bottom: 1px solid var(--slate-100); color: var(--slate-700); }
+        tr:last-child td { border-bottom: none; }
+
+        /* Console */
+        .console {
+            background: #0f172a; border-radius: var(--radius-sm); padding: 16px;
+            height: 220px; overflow-y: auto; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: #34d399;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .console-line { margin-bottom: 6px; line-height: 1.4; }
+        .console-time { color: var(--slate-500); margin-right: 8px; }
+
+        /* Embedding Grid */
+        .embedding-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; margin-top: 16px; }
+        .emb-cell {
+            aspect-ratio: 1; border-radius: 6px; display: flex; align-items: center; justify-content: center;
+            font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: rgba(255,255,255,0.95);
+            transition: transform 0.2s, box-shadow 0.2s; cursor: pointer;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1);
+        }
+        .emb-cell:hover { transform: scale(1.15); z-index: 10; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+
+        /* Transmission Flow */
+        .flow-container { display: flex; align-items: center; justify-content: space-between; background: var(--slate-50); padding: 1.5rem; border-radius: var(--radius-sm); margin-bottom: 1.5rem; border: 1px solid var(--slate-100); }
+        .flow-node { text-align: center; background: var(--white); padding: 10px 16px; border-radius: var(--radius-xs); box-shadow: 0 2px 4px rgba(0,0,0,0.02); border: 1px solid var(--slate-200); z-index: 2; position: relative; }
+        .flow-icon { font-size: 1.8rem; margin-bottom: 6px; }
+        .flow-lbl { font-size: 0.75rem; font-weight: 700; color: var(--slate-600); }
+        
+        .flow-arrow-container { flex: 1; position: relative; height: 2px; margin: 0 -10px; z-index: 1; }
+        .flow-line { position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--slate-200); }
+        .flow-fill { position: absolute; top: 0; left: 0; width: 0%; height: 2px; background: var(--blue-500); transition: width 0s; }
+        
+        .transmitting .flow-fill { animation: flow-progress 1.5s ease-in-out; }
+        @keyframes flow-progress { 0% { width: 0%; } 100% { width: 100%; } }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--slate-300); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--slate-400); }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <div class="nav-brand">
+            <div class="dot"></div>
+            FedXGNN Hospital Edge Node
+        </div>
+        <div class="nav-status">
+            <span id="nav-hospital">Loading...</span> <span style="color: var(--slate-300);">|</span> 
+            District: <strong id="nav-census" style="color: var(--slate-700);">---</strong>
+            <div class="pulse-dot"></div>
+        </div>
+    </div>
+
+    <div id="alert-banner">
+        ⚠️ ALERT: Outbreak probability updated
+    </div>
+
+    <div class="page">
+        <!-- Top Metrics -->
+        <div class="metrics-grid">
+            <div class="metric-box">
+                <div class="metric-val" id="metric-prob" style="color: var(--slate-800);">--%</div>
+                <div class="metric-lbl">Local Outbreak Risk</div>
+                <div class="prob-bar"><div class="prob-fill" id="prob-fill" style="width: 0%"></div></div>
+            </div>
+            <div class="metric-box">
+                <div class="metric-val" id="metric-pred" style="color: var(--blue-600);">--</div>
+                <div class="metric-lbl">Predicted Cases</div>
+            </div>
+            <div class="metric-box">
+                <div class="metric-val" id="metric-actual" style="color: var(--slate-600);">--</div>
+                <div class="metric-lbl">Actual EHR Cases</div>
+            </div>
+            <div class="metric-box">
+                <div class="metric-val" id="metric-status" style="color: var(--slate-400); font-size: 1.4rem; padding-top: 8px;">WAITING</div>
+                <div class="metric-lbl" style="margin-top: 12px;">Central Sync Status</div>
+            </div>
+        </div>
+
+        <div class="grid-main">
+            <!-- Left Column -->
+            <div class="left-col">
+                <div class="card">
+                    <div class="card-title">
+                        <span>Central Spatial Graph Feed</span>
+                        <span style="font-size: 0.7rem; font-weight: normal; background: var(--blue-50); color: var(--blue-600); padding: 4px 8px; border-radius: 12px;">Live Global Context</span>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                        <!-- Timeline -->
+                        <div>
+                            <div style="font-size: 0.75rem; font-weight: 700; color: var(--slate-500); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+                                <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--blue-500);"></div>
+                                LOCAL CASE HISTORY
+                            </div>
+                            <div id="timeline-chart" style="height: 160px; background: var(--slate-50); border-radius: var(--radius-xs); border: 1px solid var(--slate-100);"></div>
+                        </div>
+                        <!-- SHAP -->
+                        <div>
+                            <div style="font-size: 0.75rem; font-weight: 700; color: var(--slate-500); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+                                <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--purple-500);"></div>
+                                TOP RISK DRIVERS (SHAP)
+                            </div>
+                            <div id="shap-chart" style="height: 160px; background: var(--slate-50); border-radius: var(--radius-xs); border: 1px solid var(--slate-100);"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">
+                        <span>Local Privacy-Preserving EHR Processing</span>
+                        <span style="font-size: 0.7rem; font-weight: normal; color: var(--slate-400);">No raw data leaves device</span>
+                    </div>
+                    <div style="display: flex; gap: 1.5rem; align-items: stretch;">
+                        <div style="flex: 1; display: flex; flex-direction: column;">
+                            <div style="flex: 1; border: 2px dashed var(--slate-300); border-radius: var(--radius-sm); padding: 2rem 1.5rem; text-align: center; cursor: pointer; background: var(--slate-50); transition: all 0.2s; display: flex; flex-direction: column; justify-content: center; align-items: center;" onclick="document.getElementById('file-input').click()" onmouseover="this.style.borderColor='var(--blue-400)'; this.style.background='var(--blue-50)'" onmouseout="this.style.borderColor='var(--slate-300)'; this.style.background='var(--slate-50)'">
+                                <div style="font-size: 2rem; margin-bottom: 12px;">📄</div>
+                                <p style="font-size: 0.9rem; font-weight: 600; color: var(--slate-700); margin: 0;" id="file-label">Upload EHR Files (.pdf, .txt)</p>
+                                <p style="font-size: 0.75rem; color: var(--slate-500); margin-top: 8px; max-width: 200px;">Data parsed locally via clinical NLP</p>
+                                <input type="file" id="file-input" style="display: none;" onchange="handleFileUpload(event)">
+                            </div>
+                        </div>
+                        <div style="flex: 1.8; border: 1px solid var(--slate-200); border-radius: var(--radius-sm); overflow: hidden;">
+                            <div style="max-height: 220px; overflow-y: auto;">
+                                <table id="ehr-table">
+                                    <thead><tr><th>Document</th><th>Temp</th><th>Dengue</th><th>Action</th></tr></thead>
+                                    <tbody><tr><td colspan="4" style="text-align: center; color: var(--slate-400); padding: 2rem;">No files parsed yet. Upload EHRs to begin.</td></tr></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-bottom: 0;">
+                    <div class="card-title">
+                        <span>Outgoing Local Embedding</span>
+                        <span style="font-size: 0.7rem; font-weight: normal; background: var(--emerald-50); color: var(--emerald-600); padding: 4px 8px; border-radius: 12px;">32-Dim Secure Vector</span>
+                    </div>
+                    <div class="embedding-grid" id="embedding-grid">
+                        <div style="grid-column: span 8; text-align: center; color: var(--slate-400); padding: 2rem; font-size: 0.85rem; background: var(--slate-50); border-radius: var(--radius-xs);">
+                            Transmit environmental & clinical data to generate temporal embedding
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="right-col">
+                <div class="card">
+                    <div class="card-title">Edge-to-Server Telemetry</div>
+                    
+                    <div class="flow-container" id="flow-anim">
+                        <div class="flow-node">
+                            <div class="flow-icon">🏥</div>
+                            <div class="flow-lbl">Edge NLP</div>
+                        </div>
+                        <div class="flow-arrow-container">
+                            <div class="flow-line"></div>
+                            <div class="flow-fill"></div>
+                        </div>
+                        <div class="flow-node">
+                            <div class="flow-icon">🔐</div>
+                            <div class="flow-lbl">T-GAT</div>
+                        </div>
+                        <div class="flow-arrow-container">
+                            <div class="flow-line"></div>
+                            <div class="flow-fill"></div>
+                        </div>
+                        <div class="flow-node">
+                            <div class="flow-icon">🌐</div>
+                            <div class="flow-lbl">Server</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Weekly Positive Cases (from NLP)</label>
+                        <input type="number" id="week-cases" value="0" readonly style="background: var(--slate-100); color: var(--slate-500); font-weight: bold;">
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div class="form-group">
+                            <label>Temperature (K)</label>
+                            <input type="number" id="week-temp" step="0.1" value="298.5">
+                        </div>
+                        <div class="form-group">
+                            <label>Precipitation (mm)</label>
+                            <input type="number" id="week-precip" step="0.1" value="12.4">
+                        </div>
+                    </div>
+                    <button class="btn btn-emerald" onclick="sendEmbedding()" style="margin-top: 8px;">
+                        🚀 Transmit Vector & Sync
+                    </button>
+                </div>
+
+                <div class="card" style="padding: 0; display: flex; flex-direction: column;">
+                    <div class="card-title" style="padding: 1.5rem 1.5rem 0; border: none; margin-bottom: 0;">System Logs</div>
+                    <div class="console" id="console" style="border-radius: 0 0 var(--radius) var(--radius); flex: 1; border-top: 1px solid var(--slate-800);">
+                        <div class="console-line"><span class="console-time">[*]</span> Edge Node Initialized. Welcome to FedXGNN.</div>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="generateReport()" style="margin-top: 1.5rem;">
+                    📄 Generate Detailed PDF/HTML Report
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inject JS state from server here -->
+    <script id="init-data" type="application/json">
+        {}
+    </script>
+
+    <script>
+        let CONFIG = { censuscode: 572, name: 'Bangalore Hospital', port: 8001 };
+        
+        function initApp() {
+            try {
+                const initData = JSON.parse(document.getElementById('init-data').textContent);
+                if (initData.censuscode) CONFIG = initData;
+            } catch(e) {}
+            
+            document.getElementById('nav-hospital').innerText = CONFIG.name;
+            document.getElementById('nav-census').innerText = CONFIG.censuscode;
+            
+            log('Connected to local endpoint. Awaiting central sync.');
+            loadTimeline();
+            loadEHRTable();
+            startPolling();
+        }
+
+        function log(msg) {
+            const c = document.getElementById('console');
+            const d = document.createElement('div');
+            d.className = 'console-line';
+            d.innerHTML = `<span class="console-time">[${new Date().toLocaleTimeString()}]</span> ${msg}`;
+            c.appendChild(d);
+            c.scrollTop = c.scrollHeight;
+        }
+
+        // --- Polling Epidemic Status ---
+        let pollInterval = null;
+        function startPolling() {
+            if(pollInterval) clearInterval(pollInterval);
+            pollInterval = setInterval(fetchEpidemicStatus, 5000);
+            fetchEpidemicStatus();
+        }
+
+        async function fetchEpidemicStatus() {
+            try {
+                const res = await fetch(`/api/epidemic-status`);
+                if(!res.ok) return;
+                const data = await res.json();
+                updateDashboardUI(data);
+            } catch(err) {
+                console.error("Polling error:", err);
+            }
+        }
+
+        function updateDashboardUI(data) {
+            if(!data || !data.status) return;
+            const st = data.status;
+            
+            // Top metrics
+            document.getElementById('metric-prob').innerText = (st.outbreak_prob * 100).toFixed(1) + '%';
+            document.getElementById('metric-pred').innerText = st.pred_cases.toFixed(0);
+            document.getElementById('metric-actual').innerText = st.actual_cases;
+            
+            const probFill = document.getElementById('prob-fill');
+            probFill.style.width = `${st.outbreak_prob * 100}%`;
+            
+            let color = 'var(--emerald-500)';
+            if(st.outbreak_prob > 0.5) color = 'var(--red-500)';
+            else if(st.outbreak_prob > 0.3) color = 'var(--amber-500)';
+            
+            probFill.style.backgroundColor = color;
+            document.getElementById('metric-prob').style.color = color;
+            document.getElementById('metric-status').innerText = 'SYNCED';
+            document.getElementById('metric-status').style.color = 'var(--emerald-500)';
+
+            // Alert banner
+            const banner = document.getElementById('alert-banner');
+            if(st.alert_level === 'HIGH') {
+                banner.style.display = 'block';
+                banner.className = 'alert-high';
+                banner.innerHTML = `🚨 <strong>CRITICAL ALERT:</strong> High Outbreak Risk (${(st.outbreak_prob*100).toFixed(1)}%) detected for ${st.district}. Please review mitigation strategies.`;
+            } else if(st.alert_level === 'MEDIUM') {
+                banner.style.display = 'block';
+                banner.className = 'alert-medium';
+                banner.innerHTML = `⚠️ <strong>WARNING:</strong> Elevated Outbreak Risk (${(st.outbreak_prob*100).toFixed(1)}%) in ${st.district}. Monitor cases closely.`;
+            } else {
+                banner.style.display = 'none';
+            }
+
+            // Update SHAP if available
+            if(data.shap && data.shap.feature_importance) {
+                drawShapChart(data.shap.feature_importance.slice(0, 5));
+            }
+            
+            // Update embedding grid if available
+            if(data.embedding) {
+                drawEmbeddingGrid(data.embedding);
+            }
+        }
+
+        // --- Charts ---
+        function drawTimelineChart(records) {
+            if (!records || records.length === 0) return;
+            const trace = {
+                x: records.map(r => `W${r.week}`),
+                y: records.map(r => r.cases),
+                type: 'scatter', mode: 'lines+markers',
+                line: { color: '#3b82f6', width: 3, shape: 'spline' },
+                marker: { size: 8, color: '#2563eb', symbol: 'circle' },
+                fill: 'tozeroy', fillcolor: 'rgba(59, 130, 246, 0.1)'
+            };
+            Plotly.newPlot('timeline-chart', [trace], {
+                margin: {t:20, b:30, l:40, r:20},
+                paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+                xaxis: { showgrid: false, tickfont: { family: 'DM Sans', color: '#64748b' } }, 
+                yaxis: { showgrid: true, gridcolor: '#e2e8f0', tickfont: { family: 'DM Sans', color: '#64748b' } }
+            }, {displayModeBar: false, responsive: true});
+        }
+
+        function drawShapChart(features) {
+            if (!features || features.length === 0) return;
+            const trace = {
+                x: features.map(f => f.importance).reverse(),
+                y: features.map(f => f.feature.replace('_', ' ').toUpperCase()).reverse(),
+                type: 'bar', orientation: 'h',
+                marker: { 
+                    color: features.map(f => f.importance).reverse(),
+                    colorscale: [[0, '#d8b4fe'], [1, '#7e22ce']]
+                }
+            };
+            Plotly.newPlot('shap-chart', [trace], {
+                margin: {t:20, b:30, l:90, r:20},
+                paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+                xaxis: { showgrid: true, gridcolor: '#e2e8f0', tickfont: { family: 'DM Sans', color: '#64748b' } }, 
+                yaxis: { showgrid: false, tickfont: { family: 'DM Sans', size: 10, color: '#475569', weight: 600 } }
+            }, {displayModeBar: false, responsive: true});
+        }
+
+        function drawEmbeddingGrid(emb) {
+            const grid = document.getElementById('embedding-grid');
+            grid.innerHTML = '';
+            // Determine max abs for color scaling
+            const maxVal = Math.max(...emb.map(Math.abs)) || 1;
+            
+            // Limit to 32 dims for the visual grid
+            const displayEmb = emb.slice(0, 32);
+            
+            displayEmb.forEach((val, i) => {
+                const cell = document.createElement('div');
+                cell.className = 'emb-cell';
+                const intensity = Math.min(Math.abs(val) / maxVal, 1);
+                
+                if(val >= 0) {
+                    cell.style.backgroundColor = `rgba(37, 99, 235, ${0.2 + intensity*0.8})`;
+                } else {
+                    cell.style.backgroundColor = `rgba(239, 68, 68, ${0.2 + intensity*0.8})`;
+                }
+                
+                cell.innerText = val.toFixed(1);
+                cell.title = `Dim ${i}: ${val.toFixed(4)}`;
+                grid.appendChild(cell);
+            });
+        }
+
+        // --- Actions ---
+        async function loadTimeline() {
+            try {
+                const res = await fetch('/api/local-timeline');
+                const data = await res.json();
+                drawTimelineChart(data);
+            } catch(e) { console.error(e); }
+        }
+
+        async function loadEHRTable() {
+            try {
+                const res = await fetch('/api/ehrs');
+                const data = await res.json();
+                const tb = document.querySelector('#ehr-table tbody');
+                tb.innerHTML = '';
+                if(data.length === 0) {
+                    tb.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--slate-400); padding: 2rem;">No files parsed yet. Upload EHRs to begin.</td></tr>';
+                    document.getElementById('week-cases').value = 0;
+                    return;
+                }
+                let posCases = 0;
+                data.forEach((d, i) => {
+                    if(d.dengue_status === 1) posCases++;
+                    tb.innerHTML += `<tr>
+                        <td style="font-weight: 500;">${d.filename}</td>
+                        <td class="mono">${d.temperature_c}°C</td>
+                        <td>
+                            <span style="display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; background: ${d.dengue_status===1 ? '#fee2e2' : '#dcfce7'}; color: ${d.dengue_status===1 ? '#b91c1c' : '#15803d'};">
+                                ${d.dengue_status===1 ? 'Positive' : 'Negative'}
+                            </span>
+                        </td>
+                        <td>
+                            <button onclick="deleteEhr(${i})" style="border:none;background:var(--red-50);color:var(--red-600);cursor:pointer;font-size:0.75rem;font-weight:bold;padding:4px 8px;border-radius:4px;transition:background 0.2s;" onmouseover="this.style.background='var(--red-100)'" onmouseout="this.style.background='var(--red-50)'">Remove</button>
+                        </td>
+                    </tr>`;
+                });
+                document.getElementById('week-cases').value = posCases;
+            } catch(e) {}
+        }
+
+        async function handleFileUpload(e) {
+            const file = e.target.files[0];
+            if(!file) return;
+            const fd = new FormData();
+            fd.append('file', file);
+            document.getElementById('file-label').innerText = "Processing via NLP model...";
+            try {
+                const res = await fetch('/api/upload-ehr', {method: 'POST', body: fd});
+                const d = await res.json();
+                log(`Parsed EHR ${file.name}. Result: ${d.dengue_status === 1 ? 'Positive' : 'Negative'}`);
+                loadEHRTable();
+            } catch(e) { log("EHR process failed"); }
+            document.getElementById('file-label').innerText = "Upload EHR Files (.pdf, .txt)";
+            e.target.value = ''; // Reset input
+        }
+
+        async function deleteEhr(idx) {
+            await fetch(`/api/ehrs/${idx}`, {method: 'DELETE'});
+            loadEHRTable();
+        }
+
+        async function sendEmbedding() {
+            const cases = document.getElementById('week-cases').value;
+            const temp = document.getElementById('week-temp').value;
+            const precip = document.getElementById('week-precip').value;
+            
+            document.getElementById('flow-anim').classList.add('transmitting');
+            log('Computing 32-dim local T-GAT embedding vector...');
+            
+            try {
+                const res = await fetch('/api/transmit', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({cases: parseInt(cases), temp_k: parseFloat(temp), preci_mm: parseFloat(precip)})
+                });
+                const data = await res.json();
+                
+                if (data.embedding) {
+                    drawEmbeddingGrid(data.embedding);
+                }
+                
+                log(`Secure embedding transmitted. Central Server: ${data.server_status}`);
+                
+                // Immediately fetch updated epidemic status
+                setTimeout(fetchEpidemicStatus, 500);
+                
+            } catch(e) { log("Transmit error: " + e); }
+            
+            setTimeout(() => { document.getElementById('flow-anim').classList.remove('transmitting'); }, 1500);
+        }
+
+        function generateReport() {
+            window.open('/api/download-report', '_blank');
+        }
+
+        // Boot
+        window.onload = initApp;
+    </script>
+</body>
+</html>

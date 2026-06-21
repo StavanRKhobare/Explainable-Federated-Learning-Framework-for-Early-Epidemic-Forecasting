@@ -47,3 +47,9 @@ frontend/build/
 scratch*.py
 test_*.py
 predictions.json
+
+# Demo temporary outputs
+chenges-temp/
+report.json
+report_output.json
+server_logs.txt

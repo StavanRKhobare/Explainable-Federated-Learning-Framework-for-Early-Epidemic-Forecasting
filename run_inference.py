@@ -20,9 +20,9 @@ np.random.seed(42)
 ROOT = os.path.dirname(os.path.abspath(__file__))
 DEVICE = torch.device("cpu")
 
-DEFAULT_DATA_PATH = os.path.join(ROOT, "data", "training_dataset_enhanced_v2.csv")
+DEFAULT_DATA_PATH = os.path.join(ROOT, "data", "training_dataset_with_ner.csv")
 DEFAULT_EDGE_PATH = os.path.join(ROOT, "data", "graph", "graph_edges.csv")
-DEFAULT_MODEL_PT  = os.path.join(ROOT, "outputs", "fedxgnn_best.pt")
+DEFAULT_MODEL_PT  = os.path.join(ROOT, "model", "fedxgnn_best.pt")
 ALT_DATA_ROOT     = os.path.join(os.path.dirname(ROOT), "4th sem dataset", "final_datasets")
 ALT_MODEL_ROOT    = os.path.join(os.path.dirname(ROOT), "4th sem dataset", "models")
 
@@ -43,13 +43,19 @@ OUT_JSON = os.path.join(ROOT, "predictions.json")
 
 CFG = dict(
     lookback        = 4,
-    dynamic_features= ["temp_k","preci_mm","LAI","cases_lag1","cases_lag2","cases_lag3","week_sin","week_cos","is_monsoon"],
+    dynamic_features= [
+        "temp_k", "preci_mm", "LAI",
+        "cases_lag1", "cases_lag2", "cases_lag3",
+        "week_sin", "week_cos", "is_monsoon",
+        "ner_symptoms", "ner_diseases", "ner_pathogens",
+        "ner_travel", "ner_total_notes",
+    ],
     static_features = ["population_2024","pop_density_per_km2_2024"],
     target_reg      = "cases",
     target_clf      = "is_outbreak",
-    gru_hidden      = 32,
-    tgat_hidden     = 32,
-    embed_dim       = 32,
+    gru_hidden      = 64,
+    tgat_hidden     = 64,
+    embed_dim       = 64,
     temporal_heads  = 4,
     spatial_heads   = 4,
     train_ratio     = 0.75,

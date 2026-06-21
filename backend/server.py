@@ -36,13 +36,19 @@ DEVICE = torch.device("cpu")
 
 CFG = dict(
     lookback        = 4,
-    dynamic_features= ["temp_k","preci_mm","LAI","cases_lag1","cases_lag2","cases_lag3","week_sin","week_cos","is_monsoon"],
+    dynamic_features= [
+        "temp_k", "preci_mm", "LAI",
+        "cases_lag1", "cases_lag2", "cases_lag3",
+        "week_sin", "week_cos", "is_monsoon",
+        "ner_symptoms", "ner_diseases", "ner_pathogens",
+        "ner_travel", "ner_total_notes",
+    ],
     static_features = ["population_2024","pop_density_per_km2_2024"],
     target_reg      = "cases",
     target_clf      = "is_outbreak",
-    gru_hidden      = 32,
-    tgat_hidden     = 32,
-    embed_dim       = 32,
+    gru_hidden      = 64,
+    tgat_hidden     = 64,
+    embed_dim       = 64,
     temporal_heads  = 4,
     spatial_heads   = 4,
     train_ratio     = 0.75,
@@ -79,7 +85,7 @@ class TemporalGAT(nn.Module):
         return self.drop((h[:, -1, :] + h.mean(1)) / 2.0)
 
 class ClientTemporalModel(nn.Module):
-    def __init__(self, n_dyn, n_stat, gru_h=32, tgat_h=32, embed_dim=32, n_heads=4, T=4, dropout=0.0):
+    def __init__(self, n_dyn, n_stat, gru_h=64, tgat_h=64, embed_dim=64, n_heads=4, T=4, dropout=0.0):
         super().__init__()
         self.gru  = nn.GRU(n_dyn, gru_h, num_layers=2, batch_first=True, dropout=0.0)
         self.tgat = TemporalGAT(n_dyn, tgat_h, embed_dim, n_heads, T, dropout)
@@ -101,7 +107,7 @@ class ClientTemporalModel(nn.Module):
         return self.fusion(torch.cat(parts, dim=-1))
 
 class SpatialDGAT(nn.Module):
-    def __init__(self, embed_dim=32, hidden_dim=32, n_heads=4, dropout=0.0):
+    def __init__(self, embed_dim=64, hidden_dim=64, n_heads=4, dropout=0.0):
         super().__init__()
         self.edge_enc = nn.Linear(1, n_heads)
         self.gat1 = GATConv(embed_dim, hidden_dim // n_heads, heads=n_heads, concat=True, dropout=dropout, edge_dim=n_heads)
@@ -118,7 +124,7 @@ class SpatialDGAT(nn.Module):
         return self.drop(h + node_emb)
 
 class DualTaskHead(nn.Module):
-    def __init__(self, in_dim=64, dropout=0.0):
+    def __init__(self, in_dim=128, dropout=0.0):
         super().__init__()
         self.trunk = nn.Sequential(nn.Linear(in_dim, 64), nn.LayerNorm(64), nn.GELU(), nn.Dropout(dropout))
         self.reg_head = nn.Sequential(nn.Linear(64, 32), nn.GELU(), nn.Linear(32, 1))
@@ -230,8 +236,8 @@ def load_everything():
             if feat in avail_dyn:
                 X[t, n, fi] = getattr(row, feat, 0.0)
         Y_clf[t, n] = row.is_outbreak
-        # Y_reg stores the log1p(cases) value since that's what's in df now
-        # We'll expm1 it when displaying to show real counts
+        # Y_reg stores the log1p(cases) value since that's what's in df now (it was applied globally earlier)
+        # However, earlier code used `getattr(row, "cases", 0.0)`.
         Y_reg[t, n] = getattr(row, "cases", 0.0)
         Obs_mask[t, n] = True
 
@@ -350,7 +356,8 @@ def run_window(t_win_idx):
             pass
             
     # Y_reg is stored as log1p(cases) — convert back to raw for display
-    actual_cases = np.expm1(y_r.numpy())
+    # prevent overflow
+    actual_cases = np.expm1(np.clip(y_r.numpy(), -100, 100))
     
     # Override actual cases for live client nodes to show active telemetry
     for n_idx, cases_val in live_edge_cases.items():
@@ -391,7 +398,8 @@ def run_federated_demo(t_win_idx, district_indices):
         cases_pred = np.maximum(cases_pred, 0.0)
 
     # Y_reg stored as log1p — convert back
-    actual_cases = np.expm1(y_r.numpy())
+    # prevent overflow in case something went wrong
+    actual_cases = np.expm1(np.clip(y_r.numpy(), -100, 100))
 
     results = []
     for n_idx in district_indices:
@@ -415,7 +423,7 @@ def run_federated_demo(t_win_idx, district_indices):
             "spatial_embedding": [round(float(v), 4) for v in spatial_emb[n_idx].tolist()[:8]],
             "outbreak_prob": round(float(probs[n_idx]), 4),
             "cases_pred": round(float(cases_pred[n_idx]), 4),
-            "actual_cases": float(actual_cases[n_idx]),
+            "actual_cases": round(float(actual_cases[n_idx]), 2),
             "ground_truth": int(y_c[n_idx]),
         })
     return results
@@ -428,6 +436,12 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 @app.on_event("startup")
 def startup():
     load_everything()
+
+
+@app.get("/health")
+def health_check():
+    """Health check for Docker container."""
+    return {"status": "ok"}
 
 
 @app.get("/api/districts")
@@ -459,7 +473,7 @@ def get_graph(t: int = Query(default=-1, description="Window index, -1 for last"
             "lon": float(info.get("lon", 0)),
             "prob": round(float(probs[n_idx]), 4),
             "pred_cases": round(float(preds_r[n_idx]), 2),
-            "actual_cases": int(truths_r[n_idx]),
+            "actual_cases": int(np.nan_to_num(truths_r[n_idx], nan=0, posinf=1000, neginf=0)),
             "truth": int(truths_c[n_idx]),
         })
 
@@ -915,6 +929,137 @@ def get_spatial_xai(censuscode: int, t: int = Query(default=-1)):
     # Sort neighbors by importance
     neighbors = sorted(neighbors, key=lambda x: -x["importance"])
     return neighbors
+
+@app.get("/api/epidemic-status/{censuscode}")
+def get_epidemic_status(censuscode: int):
+    """Run spatial inference using latest live embedding and return outbreak probability."""
+    n_idx = node_to_idx.get(censuscode)
+    if n_idx is None:
+        raise HTTPException(status_code=404, detail=f"Censuscode {censuscode} not found")
+    t_idx = len(windows) - 1
+    x_win, y_c, y_r, obs_m, t_target = windows[t_idx]
+    row_ts = ts.iloc[t_target]
+    with torch.no_grad():
+        x_d = torch.nan_to_num(x_win.to(DEVICE), nan=0.0)
+        local_emb = model.client(x_d, X_stat.to(DEVICE))
+        for nid, emb_list in live_edge_embeddings.items():
+            local_emb[nid] = torch.tensor(emb_list, dtype=torch.float32, device=DEVICE)
+        spatial_emb = model.server(local_emb, edge_index.to(DEVICE), edge_attr.to(DEVICE))
+        fused = torch.cat([local_emb, spatial_emb], dim=-1)
+        cases_pred_norm, logit = model.head(fused)
+        probs = logit.sigmoid().cpu().numpy()
+        c_mean = model_params["cases_mean"]; c_std = model_params["cases_std"]
+        cases_pred = cases_pred_norm.cpu().numpy() * c_std + c_mean
+        if model_params["is_target_log"]: cases_pred = np.expm1(cases_pred)
+        cases_pred = np.maximum(cases_pred, 0.0)
+    info = next((d for d in district_info if d["censuscode"] == censuscode), {})
+    neighbor_info = []
+    for i in range(edge_index.shape[1]):
+        s, d_n = int(edge_index[0, i]), int(edge_index[1, i])
+        if s == n_idx:
+            nb_code = idx_to_code[d_n]
+            nb_info = next((di for di in district_info if di["censuscode"] == nb_code), {})
+            neighbor_info.append({"censuscode": int(nb_code), "name": nb_info.get("district", ""), "state": nb_info.get("state", ""), "prob": round(float(probs[d_n]), 4), "pred_cases": round(float(cases_pred[d_n]), 2), "actual_cases": int(np.expm1(y_r[d_n].item()))})
+    neighbor_info.sort(key=lambda x: -x["prob"])
+    prob_val = float(probs[n_idx])
+    pred_cases_val = float(cases_pred[n_idx])
+    actual_cases_val = int(np.expm1(y_r[n_idx].item()))
+    live_cases = live_edge_cases.get(n_idx, actual_cases_val)
+    alert_level = "HIGH" if prob_val > 0.5 else "MEDIUM" if prob_val > 0.3 else "LOW"
+    return {"censuscode": censuscode, "district": info.get("district", "Unknown"), "state": info.get("state", "Unknown"), "outbreak_prob": round(prob_val, 4), "pred_cases": round(pred_cases_val, 2), "actual_cases": actual_cases_val, "live_cases_reported": int(live_cases), "alert_level": alert_level, "uses_live_embedding": n_idx in live_edge_embeddings, "year": int(row_ts.iso_year), "week": int(row_ts.iso_week), "neighbors": neighbor_info[:8], "n_neighbors": len(neighbor_info)}
+
+@app.get("/api/embedding-analytics")
+def get_embedding_analytics():
+    """Return analytics about current live edge embeddings: L2 norms, cosine similarities."""
+    CLIENT_CODES = [572, 632, 94]
+    CLIENT_NAMES = {572: "Bangalore", 632: "Coimbatore", 94: "New Delhi"}
+    t_idx = len(windows) - 1
+    x_win, y_c, y_r, _, t_target = windows[t_idx]
+    row_ts = ts.iloc[t_target]
+    with torch.no_grad():
+        x_d = torch.nan_to_num(x_win.to(DEVICE), nan=0.0)
+        local_emb = model.client(x_d, X_stat.to(DEVICE))
+        for nid, emb_list in live_edge_embeddings.items():
+            local_emb[nid] = torch.tensor(emb_list, dtype=torch.float32, device=DEVICE)
+        spatial_emb = model.server(local_emb, edge_index.to(DEVICE), edge_attr.to(DEVICE))
+        fused_all = torch.cat([local_emb, spatial_emb], -1)
+        cases_all, logit_all = model.head(fused_all)
+        probs_all = logit_all.sigmoid().cpu().numpy()
+        c_mean = model_params["cases_mean"]; c_std = model_params["cases_std"]
+        cases_arr = cases_all.cpu().numpy() * c_std + c_mean
+        if model_params["is_target_log"]: cases_arr = np.expm1(np.maximum(cases_arr, 0))
+        else: cases_arr = np.maximum(cases_arr, 0)
+    nodes_data = []
+    embeddings_matrix = []
+    for code in CLIENT_CODES:
+        n_idx2 = node_to_idx.get(code)
+        if n_idx2 is None: continue
+        emb = local_emb[n_idx2].cpu().numpy()
+        embeddings_matrix.append(emb)
+        actual_cases = int(np.expm1(y_r[n_idx2].item()))
+        nodes_data.append({"censuscode": code, "name": CLIENT_NAMES.get(code, str(code)), "embedding": [round(float(v), 4) for v in emb], "l2_norm": round(float(np.linalg.norm(emb)), 4), "mean": round(float(np.mean(emb)), 4), "std": round(float(np.std(emb)), 4), "outbreak_prob": round(float(probs_all[n_idx2]), 4), "pred_cases": round(float(cases_arr[n_idx2]), 2), "actual_cases": actual_cases, "is_live": n_idx2 in live_edge_embeddings})
+    cosine_matrix = []
+    for e1 in embeddings_matrix:
+        row = [round(float(np.dot(e1, e2) / (np.linalg.norm(e1) * np.linalg.norm(e2) + 1e-8)), 4) for e2 in embeddings_matrix]
+        cosine_matrix.append(row)
+    return {"nodes": nodes_data, "cosine_similarity": cosine_matrix, "node_names": [CLIENT_NAMES.get(c, str(c)) for c in CLIENT_CODES if node_to_idx.get(c) is not None], "year": int(row_ts.iso_year), "week": int(row_ts.iso_week), "embed_dim": CFG["embed_dim"]}
+
+@app.get("/api/shap-summary/{censuscode}")
+def get_shap_summary(censuscode: int, t: int = Query(default=-1)):
+    """Return full SHAP heatmap matrix [4 weeks x N features] for visualization."""
+    t_idx = t if t >= 0 else len(windows) - 1
+    n_idx = node_to_idx.get(censuscode)
+    if n_idx is None:
+        raise HTTPException(status_code=404, detail="District not found")
+    x_win, y_c, y_r, _, t_target = windows[t_idx]
+    row_ts = ts.iloc[t_target]
+    x_dyn_node = x_win[n_idx].unsqueeze(0)
+    x_stat_node = X_stat[n_idx].unsqueeze(0)
+    shap_vals = xai_engine.explain_local_temporal(x_dyn_node, x_stat_node)
+    feature_names = CFG["dynamic_features"]
+    matrix = [[round(float(shap_vals[wi, fi]), 6) for fi in range(len(feature_names))] for wi in range(4)]
+    feature_importance = []
+    for fi, fname in enumerate(feature_names):
+        vals = [abs(float(shap_vals[w, fi])) for w in range(4)]
+        feature_importance.append({"feature": fname, "importance": round(float(np.mean(vals)), 6), "max_abs": round(float(max(vals)), 6)})
+    feature_importance.sort(key=lambda x: -x["importance"])
+    info = next((d for d in district_info if d["censuscode"] == censuscode), {})
+    return {"censuscode": censuscode, "district": info.get("district", "Unknown"), "state": info.get("state", "Unknown"), "matrix": matrix, "features": feature_names, "feature_importance": feature_importance, "week_labels": ["t-4", "t-3", "t-2", "t-1"], "actual_cases": int(np.expm1(y_r[n_idx].item())), "year": int(row_ts.iso_year), "week": int(row_ts.iso_week)}
+
+@app.get("/api/report-data/{censuscode}")
+def get_report_data(censuscode: int):
+    """Assemble full analytics bundle for downloadable HTML report."""
+    n_idx = node_to_idx.get(censuscode)
+    if n_idx is None:
+        raise HTTPException(status_code=404, detail="District not found")
+    t_idx = len(windows) - 1
+    info = next((d for d in district_info if d["censuscode"] == censuscode), {})
+    status = get_epidemic_status(censuscode)
+    shap_data = get_shap_summary(censuscode, t=t_idx)
+    spatial_data = get_spatial_xai(censuscode, t=t_idx)
+    timeline_data = []
+    for wi in range(max(0, t_idx - 11), t_idx + 1):
+        x_win_h, y_c_h, y_r_h, _, t_tgt_h = windows[wi]
+        row_ts_h = ts.iloc[t_tgt_h]
+        with torch.no_grad():
+            x_d_h = torch.nan_to_num(x_win_h.to(DEVICE), nan=0.0)
+            local_h = model.client(x_d_h, X_stat.to(DEVICE))
+            spatial_h = model.server(local_h, edge_index.to(DEVICE), edge_attr.to(DEVICE))
+            fused_h = torch.cat([local_h, spatial_h], -1)
+            cases_h, logit_h = model.head(fused_h)
+            prob_h = float(logit_h[n_idx].sigmoid())
+            c_mean = model_params["cases_mean"]; c_std = model_params["cases_std"]
+            pred_c_raw = cases_h[n_idx].item() * c_std + c_mean
+            pred_c = float(np.expm1(max(pred_c_raw, 0))) if model_params["is_target_log"] else float(max(pred_c_raw, 0))
+        timeline_data.append({"year": int(row_ts_h.iso_year), "week": int(row_ts_h.iso_week), "prob": round(prob_h, 4), "pred_cases": round(pred_c, 2), "actual_cases": int(np.expm1(y_r_h[n_idx].item())), "truth": int(y_c_h[n_idx].item())})
+    with torch.no_grad():
+        x_win_c, _, _, _, _ = windows[t_idx]
+        x_d_c = torch.nan_to_num(x_win_c.to(DEVICE), nan=0.0)
+        local_c = model.client(x_d_c, X_stat.to(DEVICE))
+        if n_idx in live_edge_embeddings:
+            local_c[n_idx] = torch.tensor(live_edge_embeddings[n_idx], dtype=torch.float32, device=DEVICE)
+        emb_full = [round(float(v), 4) for v in local_c[n_idx].cpu().tolist()]
+    return {"district": info.get("district", "Unknown"), "state": info.get("state", "Unknown"), "censuscode": censuscode, "status": status, "shap": shap_data, "spatial_xai": spatial_data[:10], "timeline": timeline_data, "embedding": emb_full, "model_info": {"name": "FedXGNN (Split-Federated Graph Neural Network)", "params": sum(p.numel() for p in model.parameters()), "embed_dim": CFG["embed_dim"], "lookback": CFG["lookback"]}, "generated_at": str(pd.Timestamp.now().isoformat())}
 
 
 if __name__ == "__main__":

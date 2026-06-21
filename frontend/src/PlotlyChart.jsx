@@ -1,4 +1,4 @@
-import Plotly from 'plotly.js-dist-min'
+import Plotly from 'plotly.js-dist'
 import createPlotlyComponent from 'react-plotly.js/factory'
 
 const Plot = createPlotlyComponent(Plotly)

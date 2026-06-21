@@ -11,7 +11,15 @@ services:
       - .:/app
     environment:
       - PORT=8000
+      - PYTHONUNBUFFERED=1
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     restart: unless-stopped
+
 
   client-bangalore:
     build:
@@ -25,8 +33,10 @@ services:
       - CENSUSCODE=572
       - NAME=Bangalore General Hospital
       - SERVER_URL=http://server:8000
+      - PYTHONUNBUFFERED=1
     depends_on:
-      - server
+      server:
+        condition: service_healthy
     restart: unless-stopped
 
   client-chennai:
@@ -41,6 +51,42 @@ services:
       - CENSUSCODE=632
       - NAME=Chennai Medical College
       - SERVER_URL=http://server:8000
+      - PYTHONUNBUFFERED=1
     depends_on:
-      - server
+      server:
+        condition: service_healthy
     restart: unless-stopped
+
+  client-delhi:
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+    container_name: fedxgnn-client-delhi
+    ports:
+      - "8003:8003"
+    environment:
+      - PORT=8003
+      - CENSUSCODE=94
+      - NAME=New Delhi Hospital
+      - SERVER_URL=http://server:8000
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      server:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: fedxgnn-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_BACKEND_URL=http://server:8000
+    depends_on:
+      server:
+        condition: service_healthy
+    restart: unless-stopped
+
+

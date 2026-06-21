@@ -19,11 +19,15 @@ class XAIEngine:
         
         # We want to explain the embedding output or a simplified version.
         # Since SHAP works best with flat inputs, we define a wrapper function.
+        num_weeks = x_dyn_node.shape[1]
+        num_features = x_dyn_node.shape[2]
+        flat_size = num_weeks * num_features
+
         def wrapper(x_flat):
-            # x_flat is (B, 36) -> reshape to (B, 4, 9)
+            # x_flat is (B, flat_size) -> reshape to (B, num_weeks, num_features)
             x_tensor = torch.tensor(x_flat, dtype=torch.float32, device=self.device)
             B = x_tensor.shape[0]
-            x_reshaped = x_tensor.view(B, 4, 9)
+            x_reshaped = x_tensor.reshape(B, num_weeks, num_features)
             # Replicate static features for batch
             stat_rep = x_stat_node.repeat(B, 1).to(self.device)
             emb = client_model(x_reshaped, stat_rep)
@@ -31,16 +35,16 @@ class XAIEngine:
             return emb.mean(dim=-1).detach().cpu().numpy()
 
         # Reshape input to flat array for SHAP
-        flat_input = x_dyn_node.view(1, -1).cpu().numpy()
+        flat_input = x_dyn_node.reshape(1, -1).cpu().numpy()
         
         # Build background dataset (zeros or slightly perturbed)
-        background = np.zeros((5, 36))
+        background = np.zeros((5, flat_size))
         
         explainer = shap.KernelExplainer(wrapper, background)
         shap_values = explainer.shap_values(flat_input)
         
-        # Reshape SHAP values back to (4, 9)
-        shap_reshaped = shap_values[0].reshape(4, 9)
+        # Reshape SHAP values back to (num_weeks, num_features)
+        shap_reshaped = shap_values[0].reshape(num_weeks, num_features)
         return shap_reshaped
 
     def explain_spatial_gnn(self, x_d, x_s, edge_index, edge_attr, target_node_idx):
@@ -58,8 +62,10 @@ class XAIEngine:
                 self.edge_index = edge_index
                 self.edge_attr = edge_attr
                 
-            def forward(self, local_emb):
-                spatial_emb = self.server(local_emb, self.edge_index, self.edge_attr)
+            def forward(self, local_emb, edge_index=None):
+                # Use provided edge_index if available (Explainer passes it)
+                curr_edge_index = edge_index if edge_index is not None else self.edge_index
+                spatial_emb = self.server(local_emb, curr_edge_index, self.edge_attr)
                 fused = torch.cat([local_emb, spatial_emb], dim=-1)
                 _, logit = self.head(fused)
                 return logit
