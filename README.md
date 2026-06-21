@@ -256,104 +256,82 @@ Training was performed on Kaggle (NVIDIA Tesla T4 GPU) using the Phase 3 dataset
 ---
 
 ## 📁 Project Structure
-- `dashboard/`: Contains the interactive web interface (`epi-fedgnn.html` and `dashboard.html`).
-- `data/`: Raw and processed datasets, including graph edges and district data.
-- `model/`: Saved model checkpoints (e.g., `fedxgnn_best.pt`).
-- `scripts/`: Data generation scripts for fetching weather and synthesizing data.
-- `outputs/`: Model checkpoints and training logs.
-- `run_inference.py`: Core logic for generating dashboard-ready predictions from the trained model.
-- `train_fedxgnn_run.py`: The federated training script.
-- `outbreak-prediction.ipynb`: Main training notebook (run on Kaggle).
 
----
+The project has been expanded into a fully distributed, end-to-end edge-to-server system:
 
-## 🚀 Getting Started
-
-The project is split into a **FastAPI Backend** (Model Inference) and a **React Frontend** (Vite Intelligence Dashboard).
-
-### Prerequisites
-- Python 3.10+
-- Node.js 18+
-
-### 1. Start the Intelligence Backend
-The backend loads the trained `.pt` model and serves real-time inference via REST API.
-```bash
-# 1. Create a virtual environment (optional but recommended)
-python -m venv venv
-# On Windows: venv\Scripts\activate
-# On Mac/Linux: source venv/bin/activate
-
-# 2. Install dependencies
-pip install -r requirements.txt
-
-# 3. Start the FastAPI server
-python backend/server.py
-```
-*Running on: `http://localhost:8000`*
-
-### 2. Start the React Dashboard
-The frontend provides the interactive map, XAI visualizations, and the step-by-step federated demo.
-```bash
-cd frontend
-npm install
-npm run dev
-```
-*Access at: `http://localhost:3000`*
-
----
-
-## 🏗️ Intelligence Dashboard Features
-
-### 1. Live Model Inference
-- **Play Timeline**: Automatically scrub through the historical 2023–2024 validation window to watch the model predict outbreaks in real-time.
-- **District Deep-Dive**: Click any district on the map to see its raw metadata, local case history, and internal model embeddings.
-- **Top 10 Risk Analysis**: Real-time ranking of the most vulnerable districts in India.
-
-### 2. Split-Federated Learning Demo (XAI)
-A step-by-step walkthrough of the internal tensor flow:
-1.  **Local Dynamic Features**: Weather & Case history (4-week window).
-2.  **GRU Sequence Learning**: Capturing temporal dependencies.
-3.  **Temporal GAT**: Weighting the importance of specific past weeks.
-4.  **Privacy-Preserved Embedding**: Only the 32-dim latent vector is sent to the server.
-5.  **Spatial DGAT**: Server-side graph attention integrating neighbor risk signals.
-6.  **Dual-Task Prediction**: Final Outbreak Probability + Predicted Case Count.
-
-### 3. Custom JSON Inference
-Upload your own hypothetical district data (JSON format) to test "What-If" scenarios. The model is trained to detect **exponential growth signatures** (e.g., 0➔1➔2➔4 cases) as early warning triggers.
-
----
-
-## 📊 Technical Architecture
-
-### Model Configuration
-- **Total Parameters**: 38,394 (Optimized for Edge/Mobile deployment)
-- **Checkpoint Size**: 533 KB
-- **Input Dimensions**: 9 Dynamic Features + 2 Static Features
-- **Hidden Dimensions**: 32 (GRU / TGAT / DGAT)
-
-### Dual-Graph Attention (DGAT)
-- **Temporal GAT (Client)**: Learns which specific weeks in the lookback window are most predictive of current risk.
-- **Spatial GAT (Server)**: Learns how disease signals propagate between neighboring districts using land-border shared lengths as edge weights.
-
-### Data Privacy
-- **FedXGNN** ensures that raw health records and local weather data stay on the district client. 
-- Only **non-invertible 32-dimensional embeddings** cross the network boundary, making it a privacy-first epidemic surveillance framework.
-
----
-
-## 📁 Project Structure
 ```text
-├── backend/            # FastAPI server & inference logic
-├── frontend/           # React + Vite + Plotly Dashboard
-│   ├── src/pages/      # Spatial Graph, Live Predict, Federated Demo
-├── data/               # Processed district datasets & graph edges
+├── backend/            # FastAPI central server & XAI (SHAP/GNNExplainer) engines
+├── client/             # Edge Hospital Node UI, EHR parser, and Flower FL client
+├── frontend/           # React + Vite + Plotly Intelligence Dashboard
+├── data/               # Graph border edges and historical case datasets
 ├── model/              # Trained PyTorch checkpoints (.pt)
-├── scripts/            # Dataset generation & preprocessing scripts
-└── run_inference.py    # CLI entry point for model validation
+├── docker-compose.yml  # Multi-node local docker orchestration
+├── Dockerfile.server   # Container config for GNN server
+├── Dockerfile.client   # Container config for Edge client nodes
+└── requirements.txt    # Shared Python dependencies
 ```
 
 ---
-*Developed for the Semester 4 Experiential Project · RVCE 2025*
-*Federated Graph Neural Networks for Public Health Surveillance*
+
+## 🚀 Getting Started & Local Run
+
+You can run the entire ecosystem (1 Server + 2 Clients) easily in two ways:
+
+### Method A — Using Docker Compose (Recommended)
+Orchestrate the GNN central server, Bangalore hospital node, and Chennai hospital node instantly:
+```bash
+docker-compose up --build
+```
+- **Main React Dashboard**: `http://localhost:3001` (if running Vite frontend locally)
+- **Central GNN Backend**: `http://localhost:8000`
+- **Bangalore Hospital Edge**: `http://localhost:8001`
+- **Chennai Hospital Edge**: `http://localhost:8002`
+
+### Method B — Running Locally with Python Virtualenv
+
+1. **Start the Central GNN Backend**:
+   ```bash
+   ./venv/bin/python backend/server.py
+   ```
+   *Running on `http://localhost:8000`*
+
+2. **Start the Hospital Edge Clients**:
+   - **Bangalore Node**:
+     ```bash
+     ./venv/bin/python client/client_app.py --port 8001 --censuscode 572 --name "Bangalore General Hospital"
+     ```
+   - **Chennai Node**:
+     ```bash
+     ./venv/bin/python client/client_app.py --port 8002 --censuscode 632 --name "Chennai Medical College"
+     ```
+
+3. **Start the React Intelligence Dashboard**:
+   ```bash
+   cd frontend
+   npm run dev
+   ```
+   *Running on `http://localhost:3001`*
+
+---
+
+## 🏗️ Interactive Features
+
+### 1. Offline EHR Clinical Parsing
+Hospitals can drag and drop clinical patient files (PDF/DOCX/TXT) into their edge dashboard. The rule-based NLP extraction parses details locally:
+- **Zero Data Leakage**: Patient data remains completely local.
+- **Embedded Transmission**: The edge model runs local GRU + Temporal GAT layers and sends only a secure 32-dim embedding to the server.
+
+### 2. Live Heartbeat & Telemetry
+The central React dashboard features an **Active Edge Clients Panel** that polls connected hospitals in real-time. Whenever an edge hospital sends a weekly report, the central server captures it, and the node lights up in the central console.
+
+### 3. Integrated Explainable AI (XAI)
+Click any district on the map to trigger two parallel XAI pipelines:
+- **Temporal SHAP**: Outlines exactly which features (like Rainfall, Temperature, or cases from specific past weeks) contributed to the risk prediction.
+- **Spatial GNNExplainer**: Highlights which neighboring districts contributed most to the selected node's risk, explaining the spatial disease propagation pathway.
+
+---
+
+*Developed for the Semester 4 Experiential Project · RVCE 2026*
+*Explainable Federated Graph Neural Networks for Epidemic Surveillance*
 
 [LICENSE](LICENSE)

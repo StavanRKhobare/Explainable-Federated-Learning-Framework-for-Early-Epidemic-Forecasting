@@ -1,0 +1,22 @@
+
+    ========================================
+    METROPOLITAN HOSPITAL - CLINICAL RECORD
+    ========================================
+    Patient Name: Priya Patel
+    Age / Sex: 28 / Female
+    Date: 2026-06-20
+    
+    SYMPTOMS & VITALS:
+    Subject reports mild dry cough and slight runny nose. No body aches or rashes.
+    Recorded Vitals:
+      - Blood Pressure: 115/75 mmHg
+      - Pulse: 72 bpm
+      - Temperature: 98.6 F (Normal)
+      
+    DIAGNOSIS & LAB RESULTS:
+    Dengue NS1 Antigen Test: NEGATIVE (not detected)
+    COVID-19 Rapid Test: Negative
+    
+    RECOMMENDATION:
+    Mild seasonal cold. Advised warm fluids and throat lozenges.
+    

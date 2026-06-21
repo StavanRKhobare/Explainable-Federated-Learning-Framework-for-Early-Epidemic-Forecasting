@@ -75,8 +75,21 @@ export default function FederatedDemo() {
   const [error, setError] = useState('')
   const [mode, setMode] = useState('upload') // 'upload' or 'preset'
   const [districts, setDistricts] = useState([])
+  const [activeClients, setActiveClients] = useState([])
 
   const totalSteps = 6
+
+  useEffect(() => {
+    const getClients = () => {
+      fetch('/api/active-clients')
+        .then(r => r.json())
+        .then(setActiveClients)
+        .catch(() => {})
+    }
+    getClients()
+    const timer = setInterval(getClients, 2000)
+    return () => clearInterval(timer)
+  }, [])
 
   useEffect(() => {
     fetch('/api/districts').then(r => r.json()).then(setDistricts).catch(() => {})
@@ -141,6 +154,45 @@ export default function FederatedDemo() {
       <div className="page-header">
         <h1 className="page-title">Split-Federated Learning Demo</h1>
         <p className="page-subtitle">Upload custom JSON data for 2 districts → watch the model process it step-by-step through the privacy-preserving pipeline</p>
+      </div>
+
+      {/* Active Clients Panel */}
+      <div className="card" style={{ marginBottom: '1.5rem', background: 'rgba(16, 185, 129, 0.05)', borderColor: 'rgba(16, 185, 129, 0.3)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.8rem' }}>
+          <div>
+            <div className="card-title" style={{ color: 'var(--emerald-600)', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ display: 'inline-block', width: 10, height: 10, background: '#10b981', borderRadius: '50%' }}></span>
+              Connected Edge Clients ({activeClients.length})
+            </div>
+            <p style={{ fontSize: '0.8rem', color: 'var(--slate-500)', margin: '4px 0 0 0' }}>
+              Hospitals running local models and transmitting weekly embeddings to this central server.
+            </p>
+          </div>
+          {activeClients.length > 0 && (
+            <button className="btn btn-outline" style={{ borderColor: '#ef4444', color: '#ef4444', padding: '6px 12px', fontSize: '0.75rem' }}
+              onClick={() => fetch('/api/clear-active-clients', { method: 'POST' }).then(() => setActiveClients([]))}>
+              Reset Overlay
+            </button>
+          )}
+        </div>
+        
+        <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem', flexWrap: 'wrap' }}>
+          {activeClients.length === 0 ? (
+            <div style={{ fontSize: '0.8rem', color: 'var(--slate-400)', fontStyle: 'italic' }}>
+              No active edge nodes transmitting. Run client_app.py to connect a hospital.
+            </div>
+          ) : (
+            activeClients.map(c => (
+              <div key={c.censuscode} style={{ background: '#ffffff', border: '1px solid var(--slate-200)', padding: '8px 16px', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ width: 8, height: 8, background: '#10b981', borderRadius: '50%' }}></div>
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>{c.district}</div>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)' }}>Code: {c.censuscode} · State: {c.state}</div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
       </div>
 
       {/* Input Section */}

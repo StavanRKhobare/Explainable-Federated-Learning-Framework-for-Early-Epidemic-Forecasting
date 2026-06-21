@@ -1,0 +1,28 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements
+COPY requirements.txt .
+
+# Install PyTorch CPU directly for speed
+RUN pip install --no-cache-dir torch==2.2.0 --extra-index-url https://download.pytorch.org/whl/cpu
+
+# Install remaining dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir uvicorn fastapi pypdf python-docx python-multipart flwr requests shap
+
+# Copy files
+COPY . .
+
+ENV PORT=8001
+ENV CENSUSCODE=572
+ENV NAME="Bangalore General Hospital"
+ENV SERVER_URL="http://server:8000"
+
+CMD python client/client_app.py --port $PORT --censuscode $CENSUSCODE --name "$NAME" --server $SERVER_URL

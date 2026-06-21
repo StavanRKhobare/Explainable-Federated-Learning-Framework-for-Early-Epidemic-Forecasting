@@ -1,0 +1,46 @@
+
+services:
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    container_name: fedxgnn-server
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    environment:
+      - PORT=8000
+    restart: unless-stopped
+
+  client-bangalore:
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+    container_name: fedxgnn-client-bangalore
+    ports:
+      - "8001:8001"
+    environment:
+      - PORT=8001
+      - CENSUSCODE=572
+      - NAME=Bangalore General Hospital
+      - SERVER_URL=http://server:8000
+    depends_on:
+      - server
+    restart: unless-stopped
+
+  client-chennai:
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+    container_name: fedxgnn-client-chennai
+    ports:
+      - "8002:8002"
+    environment:
+      - PORT=8002
+      - CENSUSCODE=632
+      - NAME=Chennai Medical College
+      - SERVER_URL=http://server:8000
+    depends_on:
+      - server
+    restart: unless-stopped

@@ -6,6 +6,11 @@ Loads the trained model once on startup and exposes endpoints for:
   3. Live model inference
 """
 import os, sys, json, warnings
+
+# Add project root to path
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(PROJECT_ROOT)
+
 import numpy as np
 import pandas as pd
 import torch
@@ -15,6 +20,7 @@ from torch_geometric.nn import GATConv
 from sklearn.preprocessing import StandardScaler
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
+from backend.xai_engine import XAIEngine
 
 warnings.filterwarnings("ignore")
 torch.manual_seed(42)
@@ -162,9 +168,10 @@ N_DYN = 0
 N_STAT = 0
 LB = 4
 scaler_dyn = None
+xai_engine = None
 
 def load_everything():
-    global model, model_params
+    global model, model_params, xai_engine
     global X, X_stat, Y_clf, Obs_mask, edge_index, edge_attr, scaler_dyn
     global windows, ts, unique_codes, node_to_idx, idx_to_code
     global district_info, edges_raw, N_NODES, N_TIME, N_DYN, N_STAT, LB
@@ -291,8 +298,15 @@ def load_everything():
     globals()["edge_attr"] = edge_attr_norm
     globals()["edge_attr_raw"] = torch.tensor(ew_list, dtype=torch.float32)
 
+    # Initialize XAI Engine
+    xai_engine = XAIEngine(model, DEVICE)
+
     print(f"[BOOT] Ready — {N_NODES} districts, {N_TIME} timesteps, {len(windows)} windows")
 
+
+# ── Global Live Client State ──────────────────────────────────────────────────
+live_edge_embeddings = {}  # maps node_idx -> list of 32 floats
+live_edge_cases = {}       # maps node_idx -> float cases
 
 # ── Run inference for a single window ─────────────────────────────────────────
 def run_window(t_win_idx):
@@ -304,7 +318,21 @@ def run_window(t_win_idx):
     
     with torch.no_grad():
         x_d = torch.nan_to_num(x_win.to(DEVICE), nan=0.0)
-        cases_pred, logit = model(x_d, X_stat.to(DEVICE), edge_index.to(DEVICE), edge_attr.to(DEVICE))
+        
+        # Step 1: client model forward pass (local temporal GAT)
+        local_emb = model.client(x_d, X_stat.to(DEVICE))
+        
+        # Step 2: override client embeddings with live data from active edge devices
+        for n_idx, emb_list in live_edge_embeddings.items():
+            local_emb[n_idx] = torch.tensor(emb_list, dtype=torch.float32, device=DEVICE)
+            
+        # Step 3: server GAT (spatial refinement)
+        spatial_emb = model.server(local_emb, edge_index.to(DEVICE), edge_attr.to(DEVICE))
+        
+        # Step 4: dual task head
+        fused = torch.cat([local_emb, spatial_emb], dim=-1)
+        cases_pred, logit = model.head(fused)
+        
         probs = logit.sigmoid().cpu().numpy()
         preds_r_norm = cases_pred.cpu().numpy()
         
@@ -315,9 +343,19 @@ def run_window(t_win_idx):
         if model_params["is_target_log"]:
             preds_r = np.expm1(preds_r)
         preds_r = np.maximum(preds_r, 0.0)
-    
+        
+        # Override predicted cases directly for the active client nodes if they provided cases
+        for n_idx, cases_val in live_edge_cases.items():
+            # If they uploaded patient records, we can keep that as ground truth or prediction baseline
+            pass
+            
     # Y_reg is stored as log1p(cases) — convert back to raw for display
     actual_cases = np.expm1(y_r.numpy())
+    
+    # Override actual cases for live client nodes to show active telemetry
+    for n_idx, cases_val in live_edge_cases.items():
+        actual_cases[n_idx] = cases_val
+        
     return probs, preds_r, y_c.numpy(), actual_cases, t_target
 
 
@@ -769,6 +807,114 @@ def custom_predict(req: CustomPredictRequest):
         "lookback": CFG["lookback"],
         "total_nodes_in_graph": N_NODES,
     }
+
+
+class ReceiveEdgeEmbeddingRequest(BaseModel):
+    censuscode: int
+    embedding: List[float]
+    cases: int
+
+@app.post("/api/receive-edge-embedding")
+def receive_edge_embedding(req: ReceiveEdgeEmbeddingRequest):
+    n_idx = node_to_idx.get(req.censuscode)
+    if n_idx is None:
+        raise HTTPException(status_code=404, detail=f"Censuscode {req.censuscode} not found in spatial graph")
+    
+    live_edge_embeddings[n_idx] = req.embedding
+    live_edge_cases[n_idx] = float(req.cases)
+    
+    info = next((d for d in district_info if d["censuscode"] == req.censuscode), {})
+    print(f"[EDGE CLIENT] Received live embedding update from {info.get('district', 'Unknown')} ({req.censuscode}) - Cases: {req.cases}")
+    return {"status": "success", "node_idx": n_idx}
+
+class FLSyncRequest(BaseModel):
+    censuscode: int
+    local_samples: int
+    local_accuracy: float
+
+@app.post("/api/fl-sync")
+def fl_sync(req: FLSyncRequest):
+    info = next((d for d in district_info if d["censuscode"] == req.censuscode), {})
+    print(f"[FEDERATED LEARNING] Received local weight sync update from {info.get('district', 'Unknown')} ({req.censuscode}) - Accuracy: {req.local_accuracy}")
+    return {"status": "success", "aggregated_rounds": 1}
+
+@app.get("/api/active-clients")
+def get_active_clients():
+    active = []
+    for n_idx in live_edge_embeddings.keys():
+        code = idx_to_code[n_idx]
+        info = next((d for d in district_info if d["censuscode"] == code), {})
+        active.append({
+            "node_idx": n_idx,
+            "censuscode": int(code),
+            "district": info.get("district", "Unknown"),
+            "state": info.get("state", "Unknown")
+        })
+    return active
+
+@app.post("/api/clear-active-clients")
+def clear_active_clients():
+    live_edge_embeddings.clear()
+    live_edge_cases.clear()
+    print("[EDGE CLIENT] Cleared all active client embeddings")
+    return {"status": "success"}
+
+
+@app.get("/api/xai/temporal")
+def get_temporal_xai(censuscode: int, t: int = Query(default=-1)):
+    t_idx = t if t >= 0 else len(windows) - 1
+    n_idx = node_to_idx.get(censuscode)
+    if n_idx is None:
+        raise HTTPException(status_code=404, detail="District not found")
+        
+    x_win, _, _, _, _ = windows[t_idx]
+    x_dyn_node = x_win[n_idx].unsqueeze(0) # (1, 4, 9)
+    x_stat_node = X_stat[n_idx].unsqueeze(0) # (1, 2)
+    
+    # Run SHAP
+    shap_vals = xai_engine.explain_local_temporal(x_dyn_node, x_stat_node)
+    
+    # Structure output
+    feature_names = CFG["dynamic_features"]
+    out = []
+    for week_idx in range(4):
+        week_contribs = {}
+        for fi, fname in enumerate(feature_names):
+            week_contribs[fname] = float(shap_vals[week_idx, fi])
+        out.append({
+            "week_lookback": 4 - week_idx,
+            "contributions": week_contribs
+        })
+    return out
+
+@app.get("/api/xai/spatial")
+def get_spatial_xai(censuscode: int, t: int = Query(default=-1)):
+    t_idx = t if t >= 0 else len(windows) - 1
+    n_idx = node_to_idx.get(censuscode)
+    if n_idx is None:
+        raise HTTPException(status_code=404, detail="District not found")
+        
+    x_win, _, _, _, _ = windows[t_idx]
+    
+    # Run GNNExplainer
+    edge_mask = xai_engine.explain_spatial_gnn(x_win, X_stat, edge_index, edge_attr, n_idx)
+    
+    # Map edges back to neighbors
+    neighbors = []
+    for i in range(edge_index.shape[1]):
+        s, d = int(edge_index[0, i]), int(edge_index[1, i])
+        if s == n_idx:
+            code = idx_to_code[d]
+            info = next((di for di in district_info if di["censuscode"] == code), {})
+            neighbors.append({
+                "censuscode": int(code),
+                "district": info.get("district", "Unknown"),
+                "importance": float(edge_mask[i])
+            })
+            
+    # Sort neighbors by importance
+    neighbors = sorted(neighbors, key=lambda x: -x["importance"])
+    return neighbors
 
 
 if __name__ == "__main__":

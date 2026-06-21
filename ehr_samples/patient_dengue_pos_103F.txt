@@ -1,0 +1,22 @@
+
+    ========================================
+    METROPOLITAN HOSPITAL - CLINICAL RECORD
+    ========================================
+    Patient Name: Aarav Sharma
+    Age / Sex: 34 / Male
+    Date: 2026-06-20
+    
+    SYMPTOMS & VITALS:
+    Subject reports severe joint pain ("breakbone fever"), headaches behind eyes, and body rash.
+    Recorded Vitals:
+      - Blood Pressure: 120/80 mmHg
+      - Pulse: 85 bpm
+      - Temperature: 103.4 F (High Fever)
+      
+    DIAGNOSIS & LAB RESULTS:
+    Dengue NS1 Antigen Test: POSITIVE (detected)
+    IgM Antibody: Positive
+    
+    RECOMMENDATION:
+    Prescribed paracetamol, strict bed rest, and aggressive hydration. Avoid aspirin/ibuprofen.
+    

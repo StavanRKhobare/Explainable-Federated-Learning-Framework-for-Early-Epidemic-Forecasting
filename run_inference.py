@@ -17,11 +17,29 @@ warnings.filterwarnings("ignore")
 torch.manual_seed(42)
 np.random.seed(42)
 
-DEVICE    = torch.device("cpu")
-DATA_PATH = "final_datasets/training_dataset_enhanced_v2.csv"
-EDGE_PATH = "final_datasets/graph_edges.csv"
-MODEL_PT  = "outputs/fedxgnn_best.pt"
-OUT_JSON  = "predictions.json"
+ROOT = os.path.dirname(os.path.abspath(__file__))
+DEVICE = torch.device("cpu")
+
+DEFAULT_DATA_PATH = os.path.join(ROOT, "data", "training_dataset_enhanced_v2.csv")
+DEFAULT_EDGE_PATH = os.path.join(ROOT, "data", "graph", "graph_edges.csv")
+DEFAULT_MODEL_PT  = os.path.join(ROOT, "outputs", "fedxgnn_best.pt")
+ALT_DATA_ROOT     = os.path.join(os.path.dirname(ROOT), "4th sem dataset", "final_datasets")
+ALT_MODEL_ROOT    = os.path.join(os.path.dirname(ROOT), "4th sem dataset", "models")
+
+DATA_PATH = DEFAULT_DATA_PATH if os.path.exists(DEFAULT_DATA_PATH) else os.path.join(ALT_DATA_ROOT, "training_dataset_enhanced_v2.csv")
+EDGE_PATH = DEFAULT_EDGE_PATH if os.path.exists(DEFAULT_EDGE_PATH) else os.path.join(ALT_DATA_ROOT, "graph_edges.csv")
+MODEL_PT = DEFAULT_MODEL_PT if os.path.exists(DEFAULT_MODEL_PT) else os.path.join(ROOT, "model", "fedxgnn_best.pt")
+if not os.path.exists(MODEL_PT):
+    MODEL_PT = os.path.join(ALT_MODEL_ROOT, "fedxgnn_best.pt")
+
+missing = [p for p in [("DATA_PATH", DATA_PATH), ("EDGE_PATH", EDGE_PATH), ("MODEL_PT", MODEL_PT)] if not os.path.exists(p[1])]
+if missing:
+    raise FileNotFoundError(
+        "Required file(s) not found:\n" + "\n".join([f"  {name}: {path}" for name, path in missing]) +
+        "\n\nPlease verify the project data and model paths."
+)
+
+OUT_JSON = os.path.join(ROOT, "predictions.json")
 
 CFG = dict(
     lookback        = 4,
