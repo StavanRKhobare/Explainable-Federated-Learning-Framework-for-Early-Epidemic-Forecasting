@@ -1,0 +1,142 @@
+{
+  "districts": [
+    {
+      "censuscode": 94,
+      "weeks": [
+        {
+          "temp_k": 302.0,
+          "preci_mm": 2.0,
+          "LAI": 0.32,
+          "cases_lag1": 1,
+          "cases_lag2": 0,
+          "cases_lag3": 0,
+          "week_sin": 0.25,
+          "week_cos": 0.96,
+          "is_monsoon": 0,
+          "ner_symptoms": 1,
+          "ner_diseases": 0,
+          "ner_pathogens": 0,
+          "ner_travel": 1,
+          "ner_total_notes": 4
+        },
+        {
+          "temp_k": 303.5,
+          "preci_mm": 8.0,
+          "LAI": 0.31,
+          "cases_lag1": 2,
+          "cases_lag2": 1,
+          "cases_lag3": 0,
+          "week_sin": 0.35,
+          "week_cos": 0.93,
+          "is_monsoon": 0,
+          "ner_symptoms": 2,
+          "ner_diseases": 1,
+          "ner_pathogens": 0,
+          "ner_travel": 3,
+          "ner_total_notes": 8
+        },
+        {
+          "temp_k": 304.0,
+          "preci_mm": 18.5,
+          "LAI": 0.30,
+          "cases_lag1": 4,
+          "cases_lag2": 2,
+          "cases_lag3": 1,
+          "week_sin": 0.45,
+          "week_cos": 0.89,
+          "is_monsoon": 1,
+          "ner_symptoms": 5,
+          "ner_diseases": 2,
+          "ner_pathogens": 1,
+          "ner_travel": 6,
+          "ner_total_notes": 15
+        },
+        {
+          "temp_k": 303.2,
+          "preci_mm": 25.0,
+          "LAI": 0.30,
+          "cases_lag1": 8,
+          "cases_lag2": 4,
+          "cases_lag3": 2,
+          "week_sin": 0.55,
+          "week_cos": 0.83,
+          "is_monsoon": 1,
+          "ner_symptoms": 10,
+          "ner_diseases": 4,
+          "ner_pathogens": 2,
+          "ner_travel": 12,
+          "ner_total_notes": 28
+        }
+      ]
+    },
+    {
+      "censuscode": 572,
+      "weeks": [
+        {
+          "temp_k": 299.0,
+          "preci_mm": 5.0,
+          "LAI": 0.45,
+          "cases_lag1": 2,
+          "cases_lag2": 1,
+          "cases_lag3": 1,
+          "week_sin": 0.25,
+          "week_cos": 0.96,
+          "is_monsoon": 0,
+          "ner_symptoms": 1,
+          "ner_diseases": 0,
+          "ner_pathogens": 0,
+          "ner_travel": 0,
+          "ner_total_notes": 2
+        },
+        {
+          "temp_k": 299.5,
+          "preci_mm": 8.2,
+          "LAI": 0.45,
+          "cases_lag1": 3,
+          "cases_lag2": 2,
+          "cases_lag3": 1,
+          "week_sin": 0.35,
+          "week_cos": 0.93,
+          "is_monsoon": 0,
+          "ner_symptoms": 2,
+          "ner_diseases": 1,
+          "ner_pathogens": 0,
+          "ner_travel": 1,
+          "ner_total_notes": 4
+        },
+        {
+          "temp_k": 298.8,
+          "preci_mm": 12.0,
+          "LAI": 0.46,
+          "cases_lag1": 3,
+          "cases_lag2": 3,
+          "cases_lag3": 2,
+          "week_sin": 0.45,
+          "week_cos": 0.89,
+          "is_monsoon": 0,
+          "ner_symptoms": 2,
+          "ner_diseases": 1,
+          "ner_pathogens": 0,
+          "ner_travel": 1,
+          "ner_total_notes": 5
+        },
+        {
+          "temp_k": 298.2,
+          "preci_mm": 18.5,
+          "LAI": 0.46,
+          "cases_lag1": 4,
+          "cases_lag2": 3,
+          "cases_lag3": 3,
+          "week_sin": 0.55,
+          "week_cos": 0.83,
+          "is_monsoon": 0,
+          "ner_symptoms": 3,
+          "ner_diseases": 1,
+          "ner_pathogens": 0,
+          "ner_travel": 3,
+          "ner_total_notes": 8
+        }
+      ]
+    }
+  ]
+}

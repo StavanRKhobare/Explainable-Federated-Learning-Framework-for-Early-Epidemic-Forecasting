@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { PRESETS } from '../examples/presets'
 
 const SAMPLE_JSON = {
   districts: [
@@ -106,6 +107,7 @@ function EmbeddingViz({ values, label }) {
 
 function PipelineDemo() {
   const [jsonInput, setJsonInput] = useState(JSON.stringify(SAMPLE_JSON, null, 2))
+  const [selectedPreset, setSelectedPreset] = useState('sample')
   const [data, setData] = useState(null)
   const [step, setStep] = useState(0)
   const [loading, setLoading] = useState(false)
@@ -217,7 +219,50 @@ function PipelineDemo() {
           Paste JSON with 4 weeks of features for 1–2 districts.
           Each week accepts <strong>14 features</strong>: <code>temp_k, preci_mm, LAI, cases_lag1–3, week_sin, week_cos, is_monsoon</code> + NER features <code>ner_symptoms, ner_diseases, ner_pathogens, ner_travel, ner_total_notes</code> (NER fields default to 0 if omitted).
         </p>
-        <textarea value={jsonInput} onChange={e => setJsonInput(e.target.value)}
+        
+        <div style={{ marginBottom: '1rem', background: 'var(--slate-50)', padding: '0.8rem 1rem', borderRadius: '8px', border: '1px solid var(--slate-100)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--slate-600)' }}>Preset Scenarios:</span>
+            <select 
+              value={selectedPreset}
+              onChange={e => {
+                const val = e.target.value;
+                setSelectedPreset(val);
+                if (val === 'sample') {
+                  setJsonInput(JSON.stringify(SAMPLE_JSON, null, 2));
+                } else if (PRESETS[val]) {
+                  setJsonInput(JSON.stringify(PRESETS[val].data, null, 2));
+                }
+              }}
+              style={{ 
+                padding: '6px 12px', 
+                borderRadius: '6px', 
+                border: '1px solid var(--slate-200)', 
+                background: '#fff', 
+                fontSize: '0.8rem',
+                fontWeight: '600',
+                color: 'var(--slate-700)',
+                cursor: 'pointer',
+                outline: 'none'
+              }}
+            >
+              <option value="sample">Default Sample (Bangalore & Mysore Baseline)</option>
+              {Object.entries(PRESETS).map(([key, val]) => (
+                <option key={key} value={key}>{val.name}</option>
+              ))}
+            </select>
+          </div>
+          {selectedPreset !== 'sample' && PRESETS[selectedPreset] && (
+            <div style={{ fontSize: '0.78rem', color: 'var(--slate-500)', marginTop: '0.5rem', borderTop: '1px dashed var(--slate-200)', paddingTop: '0.5rem' }}>
+              💡 <strong>Scenario Info:</strong> {PRESETS[selectedPreset].description}
+            </div>
+          )}
+        </div>
+
+        <textarea value={jsonInput} onChange={e => {
+          setJsonInput(e.target.value);
+          setSelectedPreset('custom');
+        }}
           rows={12} style={{ marginBottom: '0.8rem' }} spellCheck={false} />
         {error && <div className="alert-box alert-risk" style={{ marginBottom: '0.8rem' }}>❌ {error}</div>}
         <div style={{ display: 'flex', gap: '0.8rem', flexWrap: 'wrap' }}>
