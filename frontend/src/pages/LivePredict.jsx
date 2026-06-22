@@ -244,16 +244,12 @@ export default function LivePredict() {
 
                   {nodeDetail?.district && (
                     <div style={{ marginTop: '1rem', borderTop: '1px solid var(--slate-100)', paddingTop: '1rem' }}>
-                      <div className="card-title" style={{ fontSize: '0.75rem', color: 'var(--slate-500)', marginBottom: '0.8rem' }}>Inference vs Ground Truth</div>
+                      <div className="card-title" style={{ fontSize: '0.75rem', color: 'var(--slate-500)', marginBottom: '0.8rem' }}>Inference Details</div>
                       
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', marginBottom: '1rem' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.8rem', marginBottom: '1rem' }}>
                         <div className="mini-metric">
                           <div className="value">{nodeDetail.district.pred_cases}</div>
                           <div className="label">Pred. Cases</div>
-                        </div>
-                        <div className="mini-metric">
-                          <div className="value">{nodeDetail.district.actual_cases}</div>
-                          <div className="label">Actual Cases</div>
                         </div>
                       </div>
 
@@ -382,7 +378,7 @@ export default function LivePredict() {
                 <div className="card-title" style={{ marginBottom: '0.8rem' }}>🏆 Top 10 Riskiest</div>
                 <div className="table-container" style={{ maxHeight: '400px' }}>
                   <table>
-                    <thead><tr><th>#</th><th>District</th><th>Risk</th><th>Actual</th></tr></thead>
+                    <thead><tr><th>#</th><th>District</th><th>Risk</th></tr></thead>
                     <tbody>
                       {top10.map((p, i) => (
                         <tr key={p.code} onClick={() => { setSelectedNode(p); fetch(`/api/district-node/${p.code}`).then(r => r.json()).then(setNodeDetail) }}
@@ -402,12 +398,6 @@ export default function LivePredict() {
                             <div className="mono" style={{ fontSize: '0.72rem', color: p.prob > 0.5 ? 'var(--red-500)' : '#d97706', marginTop: 2 }}>
                               {(p.prob * 100).toFixed(1)}%
                             </div>
-                          </td>
-                          <td>
-                            <div className="mono" style={{ fontSize: '0.85rem', fontWeight: 600, color: p.truth ? 'var(--red-500)' : 'var(--slate-400)' }}>
-                              {p.actual_cases}
-                            </div>
-                            <div style={{ fontSize: '0.6rem', color: 'var(--slate-400)' }}>cases</div>
                           </td>
                         </tr>
                       ))}
