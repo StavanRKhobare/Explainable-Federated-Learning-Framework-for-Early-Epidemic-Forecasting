@@ -1,0 +1,39 @@
+========================================================
+  BANGALORE GENERAL HOSPITAL
+  CLINICAL ELECTRONIC HEALTH RECORD
+========================================================
+Patient ID    : 572-1861
+Patient Name  : Deepak Murthy
+Age / Sex     : 58 / Male
+Address       : Bengaluru Urban, Karnataka
+Visit Date    : 2024-06-02
+Ward          : OPD / General Medicine
+
+PRESENTING COMPLAINT:
+  Patient reports fever with headache, no rash. Blood film negative for malaria. Likely viral fever.
+
+VITALS ON ADMISSION:
+  Temperature   : 38.3 °C  (100.9 °F)  [Normal]
+  Blood Pressure: 115/70 mmHg
+  Heart Rate    : 65 bpm  
+  SpO₂          : 100%
+
+LABORATORY INVESTIGATIONS:
+  Dengue NS1 Antigen    : NEGATIVE
+  Dengue IgM Antibody   : Negative
+  Platelet Count        : 244,104 /µL  [Normal]
+  WBC Count             : 10.9 × 10³/µL  
+  Blood Smear (Malaria) : Negative
+  Hematocrit            : 42%
+
+DIAGNOSIS:
+  Undifferentiated Viral Fever
+
+TREATMENT PLAN:
+  Symptomatic management: antipyretics, ORS for hydration. Advised rest, avoid cold foods. Follow up if fever persists > 3 days. No antibiotic prescribed.
+
+────────────────────────────────────────────────────────
+Reporting Physician : Dr. Rohan Gowda
+Hospital            : Bangalore General Hospital
+Census Code         : 572
+========================================================

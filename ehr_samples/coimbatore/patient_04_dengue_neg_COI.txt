@@ -1,0 +1,39 @@
+========================================================
+  COIMBATORE MEDICAL COLLEGE HOSPITAL
+  CLINICAL ELECTRONIC HEALTH RECORD
+========================================================
+Patient ID    : 632-3725
+Patient Name  : Murugan Pandian
+Age / Sex     : 56 / Male
+Address       : Coimbatore, Tamil Nadu
+Visit Date    : 2024-12-16
+Ward          : OPD / General Medicine
+
+PRESENTING COMPLAINT:
+  Patient reports mild cough, mild rhinorrhoea, and low-grade fever. No rash or joint pain.
+
+VITALS ON ADMISSION:
+  Temperature   : 36.8 °C  (98.2 °F)  [Normal]
+  Blood Pressure: 112/82 mmHg
+  Heart Rate    : 80 bpm  
+  SpO₂          : 99%
+
+LABORATORY INVESTIGATIONS:
+  Dengue NS1 Antigen    : NEGATIVE
+  Dengue IgM Antibody   : Negative
+  Platelet Count        : 262,318 /µL  [Normal]
+  WBC Count             : 4.9 × 10³/µL  
+  Blood Smear (Malaria) : Negative
+  Hematocrit            : 42%
+
+DIAGNOSIS:
+  Acute Viral Respiratory Infection (AVRI)
+
+TREATMENT PLAN:
+  Symptomatic management: antipyretics, ORS for hydration. Advised rest, avoid cold foods. Follow up if fever persists > 3 days. No antibiotic prescribed.
+
+────────────────────────────────────────────────────────
+Reporting Physician : Dr. Murugan Muthusamy
+Hospital            : Coimbatore Medical College Hospital
+Census Code         : 632
+========================================================

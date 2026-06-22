@@ -1,0 +1,39 @@
+========================================================
+  NEW DELHI DISTRICT HOSPITAL
+  CLINICAL ELECTRONIC HEALTH RECORD
+========================================================
+Patient ID    : 94-5710
+Patient Name  : Divya Mishra
+Age / Sex     : 14 / Female
+Address       : New Delhi, Delhi
+Visit Date    : 2024-12-09
+Ward          : OPD / General Medicine
+
+PRESENTING COMPLAINT:
+  Patient reports mild cough, mild rhinorrhoea, and low-grade fever. No rash or joint pain.
+
+VITALS ON ADMISSION:
+  Temperature   : 37.2 °C  (99.0 °F)  [Normal]
+  Blood Pressure: 120/67 mmHg
+  Heart Rate    : 81 bpm  
+  SpO₂          : 99%
+
+LABORATORY INVESTIGATIONS:
+  Dengue NS1 Antigen    : NEGATIVE
+  Dengue IgM Antibody   : Negative
+  Platelet Count        : 142,172 /µL  [Normal]
+  WBC Count             : 4.6 × 10³/µL  
+  Blood Smear (Malaria) : Negative
+  Hematocrit            : 34%
+
+DIAGNOSIS:
+  Acute Viral Respiratory Infection (AVRI)
+
+TREATMENT PLAN:
+  Symptomatic management: antipyretics, ORS for hydration. Advised rest, avoid cold foods. Follow up if fever persists > 3 days. No antibiotic prescribed.
+
+────────────────────────────────────────────────────────
+Reporting Physician : Dr. Sanjay Mishra
+Hospital            : New Delhi District Hospital
+Census Code         : 94
+========================================================

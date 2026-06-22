@@ -1,0 +1,39 @@
+========================================================
+  BANGALORE GENERAL HOSPITAL
+  CLINICAL ELECTRONIC HEALTH RECORD
+========================================================
+Patient ID    : 572-9984
+Patient Name  : Deepa Kumar
+Age / Sex     : 54 / Female
+Address       : Bengaluru Urban, Karnataka
+Visit Date    : 2024-06-19
+Ward          : OPD / General Medicine
+
+PRESENTING COMPLAINT:
+  Patient reports mild cough, mild rhinorrhoea, and low-grade fever. No rash or joint pain.
+
+VITALS ON ADMISSION:
+  Temperature   : 37.9 °C  (100.2 °F)  [Normal]
+  Blood Pressure: 114/68 mmHg
+  Heart Rate    : 90 bpm  
+  SpO₂          : 98%
+
+LABORATORY INVESTIGATIONS:
+  Dengue NS1 Antigen    : NEGATIVE
+  Dengue IgM Antibody   : Negative
+  Platelet Count        : 145,676 /µL  [Normal]
+  WBC Count             : 7.0 × 10³/µL  
+  Blood Smear (Malaria) : Negative
+  Hematocrit            : 42%
+
+DIAGNOSIS:
+  Viral Gastroenteritis
+
+TREATMENT PLAN:
+  Symptomatic management: antipyretics, ORS for hydration. Advised rest, avoid cold foods. Follow up if fever persists > 3 days. No antibiotic prescribed.
+
+────────────────────────────────────────────────────────
+Reporting Physician : Dr. Rohan Patel
+Hospital            : Bangalore General Hospital
+Census Code         : 572
+========================================================

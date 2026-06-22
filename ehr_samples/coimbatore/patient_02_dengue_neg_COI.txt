@@ -1,0 +1,39 @@
+========================================================
+  COIMBATORE MEDICAL COLLEGE HOSPITAL
+  CLINICAL ELECTRONIC HEALTH RECORD
+========================================================
+Patient ID    : 632-4810
+Patient Name  : Meena Subramanian
+Age / Sex     : 14 / Female
+Address       : Coimbatore, Tamil Nadu
+Visit Date    : 2024-01-17
+Ward          : OPD / General Medicine
+
+PRESENTING COMPLAINT:
+  Patient reports loose stools x3, nausea, and mild abdominal pain. No fever.
+
+VITALS ON ADMISSION:
+  Temperature   : 37.7 °C  (99.9 °F)  [Normal]
+  Blood Pressure: 123/83 mmHg
+  Heart Rate    : 73 bpm  
+  SpO₂          : 99%
+
+LABORATORY INVESTIGATIONS:
+  Dengue NS1 Antigen    : NEGATIVE
+  Dengue IgM Antibody   : Negative
+  Platelet Count        : 242,479 /µL  [Normal]
+  WBC Count             : 6.7 × 10³/µL  
+  Blood Smear (Malaria) : Negative
+  Hematocrit            : 36%
+
+DIAGNOSIS:
+  Viral Gastroenteritis
+
+TREATMENT PLAN:
+  Symptomatic management: antipyretics, ORS for hydration. Advised rest, avoid cold foods. Follow up if fever persists > 3 days. No antibiotic prescribed.
+
+────────────────────────────────────────────────────────
+Reporting Physician : Dr. Saravanan Muthusamy
+Hospital            : Coimbatore Medical College Hospital
+Census Code         : 632
+========================================================

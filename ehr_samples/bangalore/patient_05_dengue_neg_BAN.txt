@@ -1,0 +1,39 @@
+========================================================
+  BANGALORE GENERAL HOSPITAL
+  CLINICAL ELECTRONIC HEALTH RECORD
+========================================================
+Patient ID    : 572-2468
+Patient Name  : Kavitha Murthy
+Age / Sex     : 64 / Female
+Address       : Bengaluru Urban, Karnataka
+Visit Date    : 2024-07-07
+Ward          : OPD / General Medicine
+
+PRESENTING COMPLAINT:
+  Patient reports bilateral nasal congestion, post-nasal drip, low-grade fever 99.2°F.
+
+VITALS ON ADMISSION:
+  Temperature   : 36.5 °C  (97.7 °F)  [Normal]
+  Blood Pressure: 113/75 mmHg
+  Heart Rate    : 67 bpm  
+  SpO₂          : 97%
+
+LABORATORY INVESTIGATIONS:
+  Dengue NS1 Antigen    : NEGATIVE
+  Dengue IgM Antibody   : Negative
+  Platelet Count        : 178,965 /µL  [Normal]
+  WBC Count             : 4.6 × 10³/µL  
+  Blood Smear (Malaria) : Negative
+  Hematocrit            : 48%
+
+DIAGNOSIS:
+  Acute Pharyngitis
+
+TREATMENT PLAN:
+  Symptomatic management: antipyretics, ORS for hydration. Advised rest, avoid cold foods. Follow up if fever persists > 3 days. No antibiotic prescribed.
+
+────────────────────────────────────────────────────────
+Reporting Physician : Dr. Deepak Naidu
+Hospital            : Bangalore General Hospital
+Census Code         : 572
+========================================================

@@ -1,0 +1,39 @@
+========================================================
+  COIMBATORE MEDICAL COLLEGE HOSPITAL
+  CLINICAL ELECTRONIC HEALTH RECORD
+========================================================
+Patient ID    : 632-5139
+Patient Name  : Saravanan Pandian
+Age / Sex     : 36 / Male
+Address       : Coimbatore, Tamil Nadu
+Visit Date    : 2024-10-30
+Ward          : Isolation / Dengue Ward
+
+PRESENTING COMPLAINT:
+  Patient reports high-grade fever, myalgia, vomiting, and diffuse skin rash since 3 days.
+
+VITALS ON ADMISSION:
+  Temperature   : 39.5 °C  (103.1 °F)  [HIGH FEVER]
+  Blood Pressure: 106/63 mmHg
+  Heart Rate    : 105 bpm  [Tachycardia]
+  SpO₂          : 95%
+
+LABORATORY INVESTIGATIONS:
+  Dengue NS1 Antigen    : POSITIVE (detected)
+  Dengue IgM Antibody   : Positive
+  Platelet Count        : 35,387 /µL  [CRITICAL – thrombocytopenia]
+  WBC Count             : 4.8 × 10³/µL  
+  Blood Smear (Malaria) : Negative
+  Hematocrit            : 47%
+
+DIAGNOSIS:
+  Dengue Fever – Severe (WHO 2009 criteria)
+
+TREATMENT PLAN:
+  Prescribed paracetamol 500 mg TDS for fever. Strict bed rest and aggressive oral/IV hydration. Avoid NSAIDs (aspirin, ibuprofen). Platelet monitoring every 24 hrs. Patient counselled on warning signs: bleeding, severe abdominal pain, rapid breathing.
+
+────────────────────────────────────────────────────────
+Reporting Physician : Dr. Prasath Muthusamy
+Hospital            : Coimbatore Medical College Hospital
+Census Code         : 632
+========================================================

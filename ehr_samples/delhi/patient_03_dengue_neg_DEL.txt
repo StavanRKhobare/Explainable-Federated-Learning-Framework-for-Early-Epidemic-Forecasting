@@ -1,0 +1,39 @@
+========================================================
+  NEW DELHI DISTRICT HOSPITAL
+  CLINICAL ELECTRONIC HEALTH RECORD
+========================================================
+Patient ID    : 94-7182
+Patient Name  : Nikhil Mishra
+Age / Sex     : 34 / Male
+Address       : New Delhi, Delhi
+Visit Date    : 2024-01-01
+Ward          : OPD / General Medicine
+
+PRESENTING COMPLAINT:
+  Patient reports fever with headache, no rash. Blood film negative for malaria. Likely viral fever.
+
+VITALS ON ADMISSION:
+  Temperature   : 37.9 °C  (100.2 °F)  [Normal]
+  Blood Pressure: 130/69 mmHg
+  Heart Rate    : 81 bpm  
+  SpO₂          : 99%
+
+LABORATORY INVESTIGATIONS:
+  Dengue NS1 Antigen    : NEGATIVE
+  Dengue IgM Antibody   : Negative
+  Platelet Count        : 240,498 /µL  [Normal]
+  WBC Count             : 6.8 × 10³/µL  
+  Blood Smear (Malaria) : Negative
+  Hematocrit            : 45%
+
+DIAGNOSIS:
+  Undifferentiated Viral Fever
+
+TREATMENT PLAN:
+  Symptomatic management: antipyretics, ORS for hydration. Advised rest, avoid cold foods. Follow up if fever persists > 3 days. No antibiotic prescribed.
+
+────────────────────────────────────────────────────────
+Reporting Physician : Dr. Rahul Gupta
+Hospital            : New Delhi District Hospital
+Census Code         : 94
+========================================================

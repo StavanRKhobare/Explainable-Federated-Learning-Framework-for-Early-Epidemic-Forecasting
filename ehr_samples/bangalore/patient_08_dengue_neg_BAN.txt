@@ -1,0 +1,39 @@
+========================================================
+  BANGALORE GENERAL HOSPITAL
+  CLINICAL ELECTRONIC HEALTH RECORD
+========================================================
+Patient ID    : 572-5206
+Patient Name  : Rohan Kumar
+Age / Sex     : 72 / Male
+Address       : Bengaluru Urban, Karnataka
+Visit Date    : 2024-06-01
+Ward          : OPD / General Medicine
+
+PRESENTING COMPLAINT:
+  Patient reports productive cough, sore throat, and mild body ache. Likely viral URTI.
+
+VITALS ON ADMISSION:
+  Temperature   : 37.2 °C  (99.0 °F)  [Normal]
+  Blood Pressure: 127/60 mmHg
+  Heart Rate    : 70 bpm  
+  SpO₂          : 100%
+
+LABORATORY INVESTIGATIONS:
+  Dengue NS1 Antigen    : NEGATIVE
+  Dengue IgM Antibody   : Negative
+  Platelet Count        : 198,800 /µL  [Normal]
+  WBC Count             : 4.8 × 10³/µL  
+  Blood Smear (Malaria) : Negative
+  Hematocrit            : 39%
+
+DIAGNOSIS:
+  Acute Pharyngitis
+
+TREATMENT PLAN:
+  Symptomatic management: antipyretics, ORS for hydration. Advised rest, avoid cold foods. Follow up if fever persists > 3 days. No antibiotic prescribed.
+
+────────────────────────────────────────────────────────
+Reporting Physician : Dr. Deepak Reddy
+Hospital            : Bangalore General Hospital
+Census Code         : 572
+========================================================

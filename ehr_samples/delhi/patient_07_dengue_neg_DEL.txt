@@ -1,0 +1,39 @@
+========================================================
+  NEW DELHI DISTRICT HOSPITAL
+  CLINICAL ELECTRONIC HEALTH RECORD
+========================================================
+Patient ID    : 94-5341
+Patient Name  : Ritu Verma
+Age / Sex     : 44 / Female
+Address       : New Delhi, Delhi
+Visit Date    : 2024-11-28
+Ward          : OPD / General Medicine
+
+PRESENTING COMPLAINT:
+  Patient reports bilateral nasal congestion, post-nasal drip, low-grade fever 99.2°F.
+
+VITALS ON ADMISSION:
+  Temperature   : 36.9 °C  (98.4 °F)  [Normal]
+  Blood Pressure: 119/64 mmHg
+  Heart Rate    : 81 bpm  
+  SpO₂          : 99%
+
+LABORATORY INVESTIGATIONS:
+  Dengue NS1 Antigen    : NEGATIVE
+  Dengue IgM Antibody   : Negative
+  Platelet Count        : 212,836 /µL  [Normal]
+  WBC Count             : 10.0 × 10³/µL  
+  Blood Smear (Malaria) : Negative
+  Hematocrit            : 44%
+
+DIAGNOSIS:
+  Undifferentiated Viral Fever
+
+TREATMENT PLAN:
+  Symptomatic management: antipyretics, ORS for hydration. Advised rest, avoid cold foods. Follow up if fever persists > 3 days. No antibiotic prescribed.
+
+────────────────────────────────────────────────────────
+Reporting Physician : Dr. Nikhil Verma
+Hospital            : New Delhi District Hospital
+Census Code         : 94
+========================================================

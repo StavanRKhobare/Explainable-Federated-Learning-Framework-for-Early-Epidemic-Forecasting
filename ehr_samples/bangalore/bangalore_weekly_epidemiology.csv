@@ -1,0 +1,9 @@
+week,year,total_admissions,dengue_positive,dengue_negative,positivity_rate,severe_cases,avg_temp_c,avg_platelet,hospital,censuscode
+1,2024,81,24,57,0.2963,3,38.14,182077,Bangalore General Hospital,572
+2,2024,84,23,61,0.2738,4,37.92,166762,Bangalore General Hospital,572
+3,2024,58,19,39,0.3276,3,38.06,167373,Bangalore General Hospital,572
+4,2024,57,17,40,0.2982,3,38.17,164831,Bangalore General Hospital,572
+5,2024,55,18,37,0.3273,4,38.11,163158,Bangalore General Hospital,572
+6,2024,75,23,52,0.3067,3,38.07,170192,Bangalore General Hospital,572
+7,2024,47,10,37,0.2128,2,37.83,183864,Bangalore General Hospital,572
+8,2024,61,20,41,0.3279,2,38.14,167451,Bangalore General Hospital,572

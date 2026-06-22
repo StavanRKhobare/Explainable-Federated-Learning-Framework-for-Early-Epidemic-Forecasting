@@ -1,0 +1,39 @@
+========================================================
+  NEW DELHI DISTRICT HOSPITAL
+  CLINICAL ELECTRONIC HEALTH RECORD
+========================================================
+Patient ID    : 94-1762
+Patient Name  : Simran Sharma
+Age / Sex     : 60 / Female
+Address       : New Delhi, Delhi
+Visit Date    : 2024-07-09
+Ward          : OPD / General Medicine
+
+PRESENTING COMPLAINT:
+  Patient reports loose stools x3, nausea, and mild abdominal pain. No fever.
+
+VITALS ON ADMISSION:
+  Temperature   : 37.2 °C  (99.0 °F)  [Normal]
+  Blood Pressure: 126/78 mmHg
+  Heart Rate    : 69 bpm  
+  SpO₂          : 98%
+
+LABORATORY INVESTIGATIONS:
+  Dengue NS1 Antigen    : NEGATIVE
+  Dengue IgM Antibody   : Negative
+  Platelet Count        : 210,021 /µL  [Normal]
+  WBC Count             : 6.1 × 10³/µL  
+  Blood Smear (Malaria) : Negative
+  Hematocrit            : 43%
+
+DIAGNOSIS:
+  Allergic Rhinitis with secondary bacterial sinusitis
+
+TREATMENT PLAN:
+  Symptomatic management: antipyretics, ORS for hydration. Advised rest, avoid cold foods. Follow up if fever persists > 3 days. No antibiotic prescribed.
+
+────────────────────────────────────────────────────────
+Reporting Physician : Dr. Vivek Gupta
+Hospital            : New Delhi District Hospital
+Census Code         : 94
+========================================================

@@ -1,0 +1,39 @@
+========================================================
+  COIMBATORE MEDICAL COLLEGE HOSPITAL
+  CLINICAL ELECTRONIC HEALTH RECORD
+========================================================
+Patient ID    : 632-7420
+Patient Name  : Vijay Krishnan
+Age / Sex     : 30 / Male
+Address       : Coimbatore, Tamil Nadu
+Visit Date    : 2024-09-21
+Ward          : OPD / General Medicine
+
+PRESENTING COMPLAINT:
+  Patient reports productive cough, sore throat, and mild body ache. Likely viral URTI.
+
+VITALS ON ADMISSION:
+  Temperature   : 38.1 °C  (100.6 °F)  [Normal]
+  Blood Pressure: 111/65 mmHg
+  Heart Rate    : 87 bpm  
+  SpO₂          : 98%
+
+LABORATORY INVESTIGATIONS:
+  Dengue NS1 Antigen    : NEGATIVE
+  Dengue IgM Antibody   : Negative
+  Platelet Count        : 151,752 /µL  [Normal]
+  WBC Count             : 4.8 × 10³/µL  
+  Blood Smear (Malaria) : Negative
+  Hematocrit            : 30%
+
+DIAGNOSIS:
+  Acute Viral Respiratory Infection (AVRI)
+
+TREATMENT PLAN:
+  Symptomatic management: antipyretics, ORS for hydration. Advised rest, avoid cold foods. Follow up if fever persists > 3 days. No antibiotic prescribed.
+
+────────────────────────────────────────────────────────
+Reporting Physician : Dr. Murugan Krishnan
+Hospital            : Coimbatore Medical College Hospital
+Census Code         : 632
+========================================================

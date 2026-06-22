@@ -1,0 +1,39 @@
+========================================================
+  BANGALORE GENERAL HOSPITAL
+  CLINICAL ELECTRONIC HEALTH RECORD
+========================================================
+Patient ID    : 572-9501
+Patient Name  : Kiran Murthy
+Age / Sex     : 23 / Male
+Address       : Bengaluru Urban, Karnataka
+Visit Date    : 2024-04-02
+Ward          : OPD / General Medicine
+
+PRESENTING COMPLAINT:
+  Patient reports loose stools x3, nausea, and mild abdominal pain. No fever.
+
+VITALS ON ADMISSION:
+  Temperature   : 38.1 °C  (100.6 °F)  [Normal]
+  Blood Pressure: 115/85 mmHg
+  Heart Rate    : 65 bpm  
+  SpO₂          : 100%
+
+LABORATORY INVESTIGATIONS:
+  Dengue NS1 Antigen    : NEGATIVE
+  Dengue IgM Antibody   : Negative
+  Platelet Count        : 152,255 /µL  [Normal]
+  WBC Count             : 4.8 × 10³/µL  
+  Blood Smear (Malaria) : Negative
+  Hematocrit            : 36%
+
+DIAGNOSIS:
+  Acute Pharyngitis
+
+TREATMENT PLAN:
+  Symptomatic management: antipyretics, ORS for hydration. Advised rest, avoid cold foods. Follow up if fever persists > 3 days. No antibiotic prescribed.
+
+────────────────────────────────────────────────────────
+Reporting Physician : Dr. Vikram Kumar
+Hospital            : Bangalore General Hospital
+Census Code         : 572
+========================================================

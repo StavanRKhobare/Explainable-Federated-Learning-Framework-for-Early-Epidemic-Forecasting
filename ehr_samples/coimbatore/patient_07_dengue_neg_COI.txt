@@ -1,0 +1,39 @@
+========================================================
+  COIMBATORE MEDICAL COLLEGE HOSPITAL
+  CLINICAL ELECTRONIC HEALTH RECORD
+========================================================
+Patient ID    : 632-1876
+Patient Name  : Saravanan Pandian
+Age / Sex     : 54 / Male
+Address       : Coimbatore, Tamil Nadu
+Visit Date    : 2024-12-18
+Ward          : OPD / General Medicine
+
+PRESENTING COMPLAINT:
+  Patient reports bilateral nasal congestion, post-nasal drip, low-grade fever 99.2°F.
+
+VITALS ON ADMISSION:
+  Temperature   : 36.6 °C  (97.9 °F)  [Normal]
+  Blood Pressure: 129/88 mmHg
+  Heart Rate    : 84 bpm  
+  SpO₂          : 98%
+
+LABORATORY INVESTIGATIONS:
+  Dengue NS1 Antigen    : NEGATIVE
+  Dengue IgM Antibody   : Negative
+  Platelet Count        : 148,089 /µL  [Normal]
+  WBC Count             : 4.6 × 10³/µL  
+  Blood Smear (Malaria) : Negative
+  Hematocrit            : 37%
+
+DIAGNOSIS:
+  Allergic Rhinitis with secondary bacterial sinusitis
+
+TREATMENT PLAN:
+  Symptomatic management: antipyretics, ORS for hydration. Advised rest, avoid cold foods. Follow up if fever persists > 3 days. No antibiotic prescribed.
+
+────────────────────────────────────────────────────────
+Reporting Physician : Dr. Balaji Pandian
+Hospital            : Coimbatore Medical College Hospital
+Census Code         : 632
+========================================================

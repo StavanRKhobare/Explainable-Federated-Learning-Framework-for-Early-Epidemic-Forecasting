@@ -1,0 +1,39 @@
+========================================================
+  NEW DELHI DISTRICT HOSPITAL
+  CLINICAL ELECTRONIC HEALTH RECORD
+========================================================
+Patient ID    : 94-7345
+Patient Name  : Rahul Gupta
+Age / Sex     : 62 / Male
+Address       : New Delhi, Delhi
+Visit Date    : 2024-04-20
+Ward          : OPD / General Medicine
+
+PRESENTING COMPLAINT:
+  Patient reports bilateral nasal congestion, post-nasal drip, low-grade fever 99.2°F.
+
+VITALS ON ADMISSION:
+  Temperature   : 37.0 °C  (98.6 °F)  [Normal]
+  Blood Pressure: 119/72 mmHg
+  Heart Rate    : 71 bpm  
+  SpO₂          : 99%
+
+LABORATORY INVESTIGATIONS:
+  Dengue NS1 Antigen    : NEGATIVE
+  Dengue IgM Antibody   : Negative
+  Platelet Count        : 276,696 /µL  [Normal]
+  WBC Count             : 7.0 × 10³/µL  
+  Blood Smear (Malaria) : Negative
+  Hematocrit            : 37%
+
+DIAGNOSIS:
+  Viral Gastroenteritis
+
+TREATMENT PLAN:
+  Symptomatic management: antipyretics, ORS for hydration. Advised rest, avoid cold foods. Follow up if fever persists > 3 days. No antibiotic prescribed.
+
+────────────────────────────────────────────────────────
+Reporting Physician : Dr. Rahul Mishra
+Hospital            : New Delhi District Hospital
+Census Code         : 94
+========================================================

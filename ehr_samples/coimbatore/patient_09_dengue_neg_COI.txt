@@ -1,0 +1,39 @@
+========================================================
+  COIMBATORE MEDICAL COLLEGE HOSPITAL
+  CLINICAL ELECTRONIC HEALTH RECORD
+========================================================
+Patient ID    : 632-8884
+Patient Name  : Saravanan Rajan
+Age / Sex     : 21 / Male
+Address       : Coimbatore, Tamil Nadu
+Visit Date    : 2024-05-20
+Ward          : OPD / General Medicine
+
+PRESENTING COMPLAINT:
+  Patient reports mild cough, mild rhinorrhoea, and low-grade fever. No rash or joint pain.
+
+VITALS ON ADMISSION:
+  Temperature   : 38.0 °C  (100.4 °F)  [Normal]
+  Blood Pressure: 114/67 mmHg
+  Heart Rate    : 73 bpm  
+  SpO₂          : 100%
+
+LABORATORY INVESTIGATIONS:
+  Dengue NS1 Antigen    : NEGATIVE
+  Dengue IgM Antibody   : Negative
+  Platelet Count        : 143,472 /µL  [Normal]
+  WBC Count             : 10.1 × 10³/µL  
+  Blood Smear (Malaria) : Negative
+  Hematocrit            : 47%
+
+DIAGNOSIS:
+  Acute Pharyngitis
+
+TREATMENT PLAN:
+  Symptomatic management: antipyretics, ORS for hydration. Advised rest, avoid cold foods. Follow up if fever persists > 3 days. No antibiotic prescribed.
+
+────────────────────────────────────────────────────────
+Reporting Physician : Dr. Balaji Rajan
+Hospital            : Coimbatore Medical College Hospital
+Census Code         : 632
+========================================================

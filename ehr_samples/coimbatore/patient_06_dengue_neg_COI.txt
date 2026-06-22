@@ -1,0 +1,39 @@
+========================================================
+  COIMBATORE MEDICAL COLLEGE HOSPITAL
+  CLINICAL ELECTRONIC HEALTH RECORD
+========================================================
+Patient ID    : 632-2701
+Patient Name  : Suganya Rajan
+Age / Sex     : 72 / Female
+Address       : Coimbatore, Tamil Nadu
+Visit Date    : 2024-05-26
+Ward          : OPD / General Medicine
+
+PRESENTING COMPLAINT:
+  Patient reports loose stools x3, nausea, and mild abdominal pain. No fever.
+
+VITALS ON ADMISSION:
+  Temperature   : 37.4 °C  (99.3 °F)  [Normal]
+  Blood Pressure: 112/65 mmHg
+  Heart Rate    : 78 bpm  
+  SpO₂          : 99%
+
+LABORATORY INVESTIGATIONS:
+  Dengue NS1 Antigen    : NEGATIVE
+  Dengue IgM Antibody   : Negative
+  Platelet Count        : 186,611 /µL  [Normal]
+  WBC Count             : 6.2 × 10³/µL  
+  Blood Smear (Malaria) : Negative
+  Hematocrit            : 38%
+
+DIAGNOSIS:
+  Allergic Rhinitis with secondary bacterial sinusitis
+
+TREATMENT PLAN:
+  Symptomatic management: antipyretics, ORS for hydration. Advised rest, avoid cold foods. Follow up if fever persists > 3 days. No antibiotic prescribed.
+
+────────────────────────────────────────────────────────
+Reporting Physician : Dr. Arun Rajan
+Hospital            : Coimbatore Medical College Hospital
+Census Code         : 632
+========================================================

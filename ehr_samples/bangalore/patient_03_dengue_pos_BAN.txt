@@ -1,0 +1,39 @@
+========================================================
+  BANGALORE GENERAL HOSPITAL
+  CLINICAL ELECTRONIC HEALTH RECORD
+========================================================
+Patient ID    : 572-4436
+Patient Name  : Mahesh Murthy
+Age / Sex     : 21 / Male
+Address       : Bengaluru Urban, Karnataka
+Visit Date    : 2024-12-13
+Ward          : Isolation / Dengue Ward
+
+PRESENTING COMPLAINT:
+  Patient reports high-grade fever, myalgia, vomiting, and diffuse skin rash since 3 days.
+
+VITALS ON ADMISSION:
+  Temperature   : 40.1 °C  (104.2 °F)  [HIGH FEVER]
+  Blood Pressure: 117/73 mmHg
+  Heart Rate    : 99 bpm  
+  SpO₂          : 97%
+
+LABORATORY INVESTIGATIONS:
+  Dengue NS1 Antigen    : POSITIVE (detected)
+  Dengue IgM Antibody   : Positive
+  Platelet Count        : 88,691 /µL  [Low]
+  WBC Count             : 2.4 × 10³/µL  [Leukopenia]
+  Blood Smear (Malaria) : Negative
+  Hematocrit            : 45%
+
+DIAGNOSIS:
+  Dengue Fever – Non-Severe (WHO 2009 criteria)
+
+TREATMENT PLAN:
+  Prescribed paracetamol 500 mg TDS for fever. Strict bed rest and aggressive oral/IV hydration. Avoid NSAIDs (aspirin, ibuprofen). Platelet monitoring every 24 hrs. Patient counselled on warning signs: bleeding, severe abdominal pain, rapid breathing.
+
+────────────────────────────────────────────────────────
+Reporting Physician : Dr. Vikram Kumar
+Hospital            : Bangalore General Hospital
+Census Code         : 572
+========================================================

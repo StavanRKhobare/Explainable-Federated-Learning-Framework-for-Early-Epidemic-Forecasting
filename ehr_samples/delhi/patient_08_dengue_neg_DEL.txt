@@ -1,0 +1,39 @@
+========================================================
+  NEW DELHI DISTRICT HOSPITAL
+  CLINICAL ELECTRONIC HEALTH RECORD
+========================================================
+Patient ID    : 94-1450
+Patient Name  : Sanjay Singh
+Age / Sex     : 67 / Male
+Address       : New Delhi, Delhi
+Visit Date    : 2024-08-02
+Ward          : OPD / General Medicine
+
+PRESENTING COMPLAINT:
+  Patient reports productive cough, sore throat, and mild body ache. Likely viral URTI.
+
+VITALS ON ADMISSION:
+  Temperature   : 37.5 °C  (99.5 °F)  [Normal]
+  Blood Pressure: 119/87 mmHg
+  Heart Rate    : 65 bpm  
+  SpO₂          : 99%
+
+LABORATORY INVESTIGATIONS:
+  Dengue NS1 Antigen    : NEGATIVE
+  Dengue IgM Antibody   : Negative
+  Platelet Count        : 125,905 /µL  [Normal]
+  WBC Count             : 10.7 × 10³/µL  
+  Blood Smear (Malaria) : Negative
+  Hematocrit            : 43%
+
+DIAGNOSIS:
+  Undifferentiated Viral Fever
+
+TREATMENT PLAN:
+  Symptomatic management: antipyretics, ORS for hydration. Advised rest, avoid cold foods. Follow up if fever persists > 3 days. No antibiotic prescribed.
+
+────────────────────────────────────────────────────────
+Reporting Physician : Dr. Sanjay Verma
+Hospital            : New Delhi District Hospital
+Census Code         : 94
+========================================================

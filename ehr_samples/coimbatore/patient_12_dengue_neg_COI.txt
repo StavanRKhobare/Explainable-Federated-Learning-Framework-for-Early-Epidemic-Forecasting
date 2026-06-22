@@ -1,0 +1,39 @@
+========================================================
+  COIMBATORE MEDICAL COLLEGE HOSPITAL
+  CLINICAL ELECTRONIC HEALTH RECORD
+========================================================
+Patient ID    : 632-3879
+Patient Name  : Senthil Natarajan
+Age / Sex     : 57 / Male
+Address       : Coimbatore, Tamil Nadu
+Visit Date    : 2024-08-24
+Ward          : OPD / General Medicine
+
+PRESENTING COMPLAINT:
+  Patient reports bilateral nasal congestion, post-nasal drip, low-grade fever 99.2°F.
+
+VITALS ON ADMISSION:
+  Temperature   : 37.3 °C  (99.1 °F)  [Normal]
+  Blood Pressure: 113/76 mmHg
+  Heart Rate    : 66 bpm  
+  SpO₂          : 97%
+
+LABORATORY INVESTIGATIONS:
+  Dengue NS1 Antigen    : NEGATIVE
+  Dengue IgM Antibody   : Negative
+  Platelet Count        : 266,304 /µL  [Normal]
+  WBC Count             : 10.5 × 10³/µL  
+  Blood Smear (Malaria) : Negative
+  Hematocrit            : 42%
+
+DIAGNOSIS:
+  Undifferentiated Viral Fever
+
+TREATMENT PLAN:
+  Symptomatic management: antipyretics, ORS for hydration. Advised rest, avoid cold foods. Follow up if fever persists > 3 days. No antibiotic prescribed.
+
+────────────────────────────────────────────────────────
+Reporting Physician : Dr. Senthil Muthusamy
+Hospital            : Coimbatore Medical College Hospital
+Census Code         : 632
+========================================================

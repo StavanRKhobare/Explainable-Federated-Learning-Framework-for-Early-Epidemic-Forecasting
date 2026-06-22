@@ -1,0 +1,39 @@
+========================================================
+  COIMBATORE MEDICAL COLLEGE HOSPITAL
+  CLINICAL ELECTRONIC HEALTH RECORD
+========================================================
+Patient ID    : 632-8046
+Patient Name  : Geetha Pandian
+Age / Sex     : 14 / Female
+Address       : Coimbatore, Tamil Nadu
+Visit Date    : 2024-08-24
+Ward          : Isolation / Dengue Ward
+
+PRESENTING COMPLAINT:
+  Patient reports sudden onset fever with chills, severe backache, and retro-orbital pain.
+
+VITALS ON ADMISSION:
+  Temperature   : 39.7 °C  (103.5 °F)  [HIGH FEVER]
+  Blood Pressure: 116/71 mmHg
+  Heart Rate    : 130 bpm  [Tachycardia]
+  SpO₂          : 95%
+
+LABORATORY INVESTIGATIONS:
+  Dengue NS1 Antigen    : POSITIVE (detected)
+  Dengue IgM Antibody   : Positive
+  Platelet Count        : 118,689 /µL  [Normal]
+  WBC Count             : 2.6 × 10³/µL  [Leukopenia]
+  Blood Smear (Malaria) : Negative
+  Hematocrit            : 34%
+
+DIAGNOSIS:
+  Dengue Fever – Non-Severe (WHO 2009 criteria)
+
+TREATMENT PLAN:
+  Prescribed paracetamol 500 mg TDS for fever. Strict bed rest and aggressive oral/IV hydration. Avoid NSAIDs (aspirin, ibuprofen). Platelet monitoring every 24 hrs. Patient counselled on warning signs: bleeding, severe abdominal pain, rapid breathing.
+
+────────────────────────────────────────────────────────
+Reporting Physician : Dr. Senthil Natarajan
+Hospital            : Coimbatore Medical College Hospital
+Census Code         : 632
+========================================================

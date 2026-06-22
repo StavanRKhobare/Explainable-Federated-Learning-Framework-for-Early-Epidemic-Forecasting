@@ -1,0 +1,39 @@
+========================================================
+  NEW DELHI DISTRICT HOSPITAL
+  CLINICAL ELECTRONIC HEALTH RECORD
+========================================================
+Patient ID    : 94-6413
+Patient Name  : Rajesh Verma
+Age / Sex     : 70 / Male
+Address       : New Delhi, Delhi
+Visit Date    : 2024-08-07
+Ward          : Isolation / Dengue Ward
+
+PRESENTING COMPLAINT:
+  Patient reports severe joint pain ("breakbone fever"), retroorbital headaches, and maculopapular rash on trunk.
+
+VITALS ON ADMISSION:
+  Temperature   : 40.0 °C  (104.0 °F)  [HIGH FEVER]
+  Blood Pressure: 114/76 mmHg
+  Heart Rate    : 114 bpm  [Tachycardia]
+  SpO₂          : 96%
+
+LABORATORY INVESTIGATIONS:
+  Dengue NS1 Antigen    : POSITIVE (detected)
+  Dengue IgM Antibody   : Positive
+  Platelet Count        : 126,234 /µL  [Normal]
+  WBC Count             : 3.2 × 10³/µL  [Leukopenia]
+  Blood Smear (Malaria) : Negative
+  Hematocrit            : 37%
+
+DIAGNOSIS:
+  Dengue Fever – Non-Severe (WHO 2009 criteria)
+
+TREATMENT PLAN:
+  Prescribed paracetamol 500 mg TDS for fever. Strict bed rest and aggressive oral/IV hydration. Avoid NSAIDs (aspirin, ibuprofen). Platelet monitoring every 24 hrs. Patient counselled on warning signs: bleeding, severe abdominal pain, rapid breathing.
+
+────────────────────────────────────────────────────────
+Reporting Physician : Dr. Rajesh Joshi
+Hospital            : New Delhi District Hospital
+Census Code         : 94
+========================================================

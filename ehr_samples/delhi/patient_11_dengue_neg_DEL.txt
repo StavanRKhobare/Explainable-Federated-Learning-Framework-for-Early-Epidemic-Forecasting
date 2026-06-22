@@ -1,0 +1,39 @@
+========================================================
+  NEW DELHI DISTRICT HOSPITAL
+  CLINICAL ELECTRONIC HEALTH RECORD
+========================================================
+Patient ID    : 94-6602
+Patient Name  : Nikhil Joshi
+Age / Sex     : 24 / Male
+Address       : New Delhi, Delhi
+Visit Date    : 2024-07-29
+Ward          : OPD / General Medicine
+
+PRESENTING COMPLAINT:
+  Patient reports loose stools x3, nausea, and mild abdominal pain. No fever.
+
+VITALS ON ADMISSION:
+  Temperature   : 37.3 °C  (99.1 °F)  [Normal]
+  Blood Pressure: 111/61 mmHg
+  Heart Rate    : 85 bpm  
+  SpO₂          : 97%
+
+LABORATORY INVESTIGATIONS:
+  Dengue NS1 Antigen    : NEGATIVE
+  Dengue IgM Antibody   : Negative
+  Platelet Count        : 242,267 /µL  [Normal]
+  WBC Count             : 4.7 × 10³/µL  
+  Blood Smear (Malaria) : Negative
+  Hematocrit            : 32%
+
+DIAGNOSIS:
+  Acute Pharyngitis
+
+TREATMENT PLAN:
+  Symptomatic management: antipyretics, ORS for hydration. Advised rest, avoid cold foods. Follow up if fever persists > 3 days. No antibiotic prescribed.
+
+────────────────────────────────────────────────────────
+Reporting Physician : Dr. Rahul Sharma
+Hospital            : New Delhi District Hospital
+Census Code         : 94
+========================================================

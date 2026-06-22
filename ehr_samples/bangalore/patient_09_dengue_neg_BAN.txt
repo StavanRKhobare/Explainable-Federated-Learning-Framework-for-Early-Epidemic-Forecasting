@@ -1,0 +1,39 @@
+========================================================
+  BANGALORE GENERAL HOSPITAL
+  CLINICAL ELECTRONIC HEALTH RECORD
+========================================================
+Patient ID    : 572-9035
+Patient Name  : Rekha Gowda
+Age / Sex     : 34 / Female
+Address       : Bengaluru Urban, Karnataka
+Visit Date    : 2024-12-18
+Ward          : OPD / General Medicine
+
+PRESENTING COMPLAINT:
+  Patient reports productive cough, sore throat, and mild body ache. Likely viral URTI.
+
+VITALS ON ADMISSION:
+  Temperature   : 36.7 °C  (98.1 °F)  [Normal]
+  Blood Pressure: 111/66 mmHg
+  Heart Rate    : 72 bpm  
+  SpO₂          : 97%
+
+LABORATORY INVESTIGATIONS:
+  Dengue NS1 Antigen    : NEGATIVE
+  Dengue IgM Antibody   : Negative
+  Platelet Count        : 198,566 /µL  [Normal]
+  WBC Count             : 10.1 × 10³/µL  
+  Blood Smear (Malaria) : Negative
+  Hematocrit            : 34%
+
+DIAGNOSIS:
+  Viral Gastroenteritis
+
+TREATMENT PLAN:
+  Symptomatic management: antipyretics, ORS for hydration. Advised rest, avoid cold foods. Follow up if fever persists > 3 days. No antibiotic prescribed.
+
+────────────────────────────────────────────────────────
+Reporting Physician : Dr. Kiran Gowda
+Hospital            : Bangalore General Hospital
+Census Code         : 572
+========================================================

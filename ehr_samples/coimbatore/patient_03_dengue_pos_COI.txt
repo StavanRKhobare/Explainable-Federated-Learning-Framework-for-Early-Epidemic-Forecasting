@@ -1,0 +1,39 @@
+========================================================
+  COIMBATORE MEDICAL COLLEGE HOSPITAL
+  CLINICAL ELECTRONIC HEALTH RECORD
+========================================================
+Patient ID    : 632-2825
+Patient Name  : Meena Pandian
+Age / Sex     : 70 / Female
+Address       : Coimbatore, Tamil Nadu
+Visit Date    : 2024-12-15
+Ward          : Isolation / Dengue Ward
+
+PRESENTING COMPLAINT:
+  Patient reports acute febrile illness with petechiae, muscle ache, and fatigue.
+
+VITALS ON ADMISSION:
+  Temperature   : 40.3 °C  (104.5 °F)  [HIGH FEVER]
+  Blood Pressure: 113/74 mmHg
+  Heart Rate    : 95 bpm  
+  SpO₂          : 97%
+
+LABORATORY INVESTIGATIONS:
+  Dengue NS1 Antigen    : POSITIVE (detected)
+  Dengue IgM Antibody   : Positive
+  Platelet Count        : 78,079 /µL  [Low]
+  WBC Count             : 2.7 × 10³/µL  [Leukopenia]
+  Blood Smear (Malaria) : Negative
+  Hematocrit            : 39%
+
+DIAGNOSIS:
+  Dengue Fever – Non-Severe (WHO 2009 criteria)
+
+TREATMENT PLAN:
+  Prescribed paracetamol 500 mg TDS for fever. Strict bed rest and aggressive oral/IV hydration. Avoid NSAIDs (aspirin, ibuprofen). Platelet monitoring every 24 hrs. Patient counselled on warning signs: bleeding, severe abdominal pain, rapid breathing.
+
+────────────────────────────────────────────────────────
+Reporting Physician : Dr. Balaji Natarajan
+Hospital            : Coimbatore Medical College Hospital
+Census Code         : 632
+========================================================

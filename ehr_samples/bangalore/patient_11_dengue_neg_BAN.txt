@@ -1,0 +1,39 @@
+========================================================
+  BANGALORE GENERAL HOSPITAL
+  CLINICAL ELECTRONIC HEALTH RECORD
+========================================================
+Patient ID    : 572-5413
+Patient Name  : Mahesh Gowda
+Age / Sex     : 28 / Male
+Address       : Bengaluru Urban, Karnataka
+Visit Date    : 2024-08-02
+Ward          : OPD / General Medicine
+
+PRESENTING COMPLAINT:
+  Patient reports mild cough, mild rhinorrhoea, and low-grade fever. No rash or joint pain.
+
+VITALS ON ADMISSION:
+  Temperature   : 38.0 °C  (100.4 °F)  [Normal]
+  Blood Pressure: 120/72 mmHg
+  Heart Rate    : 90 bpm  
+  SpO₂          : 100%
+
+LABORATORY INVESTIGATIONS:
+  Dengue NS1 Antigen    : NEGATIVE
+  Dengue IgM Antibody   : Negative
+  Platelet Count        : 278,232 /µL  [Normal]
+  WBC Count             : 6.1 × 10³/µL  
+  Blood Smear (Malaria) : Negative
+  Hematocrit            : 33%
+
+DIAGNOSIS:
+  Allergic Rhinitis with secondary bacterial sinusitis
+
+TREATMENT PLAN:
+  Symptomatic management: antipyretics, ORS for hydration. Advised rest, avoid cold foods. Follow up if fever persists > 3 days. No antibiotic prescribed.
+
+────────────────────────────────────────────────────────
+Reporting Physician : Dr. Rohan Murthy
+Hospital            : Bangalore General Hospital
+Census Code         : 572
+========================================================

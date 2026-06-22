@@ -1,0 +1,39 @@
+========================================================
+  NEW DELHI DISTRICT HOSPITAL
+  CLINICAL ELECTRONIC HEALTH RECORD
+========================================================
+Patient ID    : 94-5022
+Patient Name  : Divya Singh
+Age / Sex     : 17 / Female
+Address       : New Delhi, Delhi
+Visit Date    : 2024-02-10
+Ward          : OPD / General Medicine
+
+PRESENTING COMPLAINT:
+  Patient reports mild cough, mild rhinorrhoea, and low-grade fever. No rash or joint pain.
+
+VITALS ON ADMISSION:
+  Temperature   : 37.6 °C  (99.7 °F)  [Normal]
+  Blood Pressure: 129/80 mmHg
+  Heart Rate    : 81 bpm  
+  SpO₂          : 100%
+
+LABORATORY INVESTIGATIONS:
+  Dengue NS1 Antigen    : NEGATIVE
+  Dengue IgM Antibody   : Negative
+  Platelet Count        : 142,744 /µL  [Normal]
+  WBC Count             : 8.1 × 10³/µL  
+  Blood Smear (Malaria) : Negative
+  Hematocrit            : 46%
+
+DIAGNOSIS:
+  Allergic Rhinitis with secondary bacterial sinusitis
+
+TREATMENT PLAN:
+  Symptomatic management: antipyretics, ORS for hydration. Advised rest, avoid cold foods. Follow up if fever persists > 3 days. No antibiotic prescribed.
+
+────────────────────────────────────────────────────────
+Reporting Physician : Dr. Amit Joshi
+Hospital            : New Delhi District Hospital
+Census Code         : 94
+========================================================

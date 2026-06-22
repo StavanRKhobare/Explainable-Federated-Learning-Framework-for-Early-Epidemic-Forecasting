@@ -1,0 +1,39 @@
+========================================================
+  NEW DELHI DISTRICT HOSPITAL
+  CLINICAL ELECTRONIC HEALTH RECORD
+========================================================
+Patient ID    : 94-2178
+Patient Name  : Amit Gupta
+Age / Sex     : 55 / Male
+Address       : New Delhi, Delhi
+Visit Date    : 2024-08-13
+Ward          : OPD / General Medicine
+
+PRESENTING COMPLAINT:
+  Patient reports productive cough, sore throat, and mild body ache. Likely viral URTI.
+
+VITALS ON ADMISSION:
+  Temperature   : 37.7 °C  (99.9 °F)  [Normal]
+  Blood Pressure: 112/74 mmHg
+  Heart Rate    : 80 bpm  
+  SpO₂          : 97%
+
+LABORATORY INVESTIGATIONS:
+  Dengue NS1 Antigen    : NEGATIVE
+  Dengue IgM Antibody   : Negative
+  Platelet Count        : 152,514 /µL  [Normal]
+  WBC Count             : 10.3 × 10³/µL  
+  Blood Smear (Malaria) : Negative
+  Hematocrit            : 38%
+
+DIAGNOSIS:
+  Allergic Rhinitis with secondary bacterial sinusitis
+
+TREATMENT PLAN:
+  Symptomatic management: antipyretics, ORS for hydration. Advised rest, avoid cold foods. Follow up if fever persists > 3 days. No antibiotic prescribed.
+
+────────────────────────────────────────────────────────
+Reporting Physician : Dr. Nikhil Verma
+Hospital            : New Delhi District Hospital
+Census Code         : 94
+========================================================

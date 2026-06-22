@@ -1,0 +1,39 @@
+========================================================
+  BANGALORE GENERAL HOSPITAL
+  CLINICAL ELECTRONIC HEALTH RECORD
+========================================================
+Patient ID    : 572-2922
+Patient Name  : Rekha Shetty
+Age / Sex     : 27 / Female
+Address       : Bengaluru Urban, Karnataka
+Visit Date    : 2024-11-17
+Ward          : OPD / General Medicine
+
+PRESENTING COMPLAINT:
+  Patient reports fever with headache, no rash. Blood film negative for malaria. Likely viral fever.
+
+VITALS ON ADMISSION:
+  Temperature   : 37.8 °C  (100.0 °F)  [Normal]
+  Blood Pressure: 117/67 mmHg
+  Heart Rate    : 66 bpm  
+  SpO₂          : 97%
+
+LABORATORY INVESTIGATIONS:
+  Dengue NS1 Antigen    : NEGATIVE
+  Dengue IgM Antibody   : Negative
+  Platelet Count        : 248,090 /µL  [Normal]
+  WBC Count             : 6.5 × 10³/µL  
+  Blood Smear (Malaria) : Negative
+  Hematocrit            : 35%
+
+DIAGNOSIS:
+  Acute Pharyngitis
+
+TREATMENT PLAN:
+  Symptomatic management: antipyretics, ORS for hydration. Advised rest, avoid cold foods. Follow up if fever persists > 3 days. No antibiotic prescribed.
+
+────────────────────────────────────────────────────────
+Reporting Physician : Dr. Ravi Patel
+Hospital            : Bangalore General Hospital
+Census Code         : 572
+========================================================
