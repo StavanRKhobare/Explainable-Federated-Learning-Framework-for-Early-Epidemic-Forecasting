@@ -1,12 +1,29 @@
+# ── Core ML / Data ──────────────────────────────────────────────────────────────
 numpy<2
 pandas>=2.0
 torch>=2.0
-torch-geometric>=2.0
+torch-geometric>=2.3
 scikit-learn>=1.2
-fastapi>=0.95
-uvicorn>=0.22
-requests-cache>=0.10
+shap>=0.44
+
+# ── Backend API ──────────────────────────────────────────────────────────────────
+fastapi>=0.110
+uvicorn[standard]>=0.29
+pydantic>=2.0
+python-multipart>=0.0.9
+aiofiles>=23.0
+requests>=2.31
+
+# ── EHR Parsing ──────────────────────────────────────────────────────────────────
+pdfplumber>=0.10
+pypdf>=4.0
+python-docx>=1.0
+spacy>=3.7
+
+# ── Climate / External Data ──────────────────────────────────────────────────────
 openmeteo-requests>=0.2
+requests-cache>=0.10
 retry-requests>=0.2
+
+# ── Utilities ────────────────────────────────────────────────────────────────────
 matplotlib>=3.7
-pydantic>=1.10

@@ -1,0 +1,261 @@
+INFO:     Started server process [56909]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+[BOOT] Loading dataset...
+[BOOT] Loading model checkpoint...
+[BOOT] Model loaded — epoch 116, 94970 params, target_log=True
+[BOOT] Ready — 284 districts, 728 timesteps, 724 windows
+INFO:     127.0.0.1:38952 - "GET /api/epidemic-status/572 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60564 - "GET /api/epidemic-status/632 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34326 - "GET /api/epidemic-status/94 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56078 - "GET /api/epidemic-status/572 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49064 - "GET /api/epidemic-status/632 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45506 - "GET /api/epidemic-status/94 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60392 - "GET /api/graph?t=-1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60404 - "GET /api/graph?t=-1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60410 - "GET /api/epidemic-status/632 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51570 - "GET /api/model-info HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51586 - "GET /api/model-info HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51578 - "GET /api/predict?t=549 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51590 - "GET /api/predict?t=549 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51604 - "GET /api/epidemic-status/94 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51608 - "GET /api/predict?t=550 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33054 - "GET /api/predict?t=551 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33058 - "GET /api/predict?t=552 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33062 - "GET /api/predict?t=553 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33068 - "GET /api/predict?t=554 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33082 - "GET /api/predict?t=555 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33086 - "GET /api/predict?t=556 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36980 - "GET /api/predict?t=557 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36982 - "GET /api/predict?t=558 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36984 - "GET /api/predict?t=559 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36992 - "GET /api/predict?t=560 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36998 - "GET /api/predict?t=561 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37000 - "GET /api/predict?t=562 HTTP/1.1" 200 OK
+Traceback (most recent call last):
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/backend/server.py", line 834, in custom_predict
+    scaled_vals = scaler_dyn.transform([raw_vals])[0]
+                  ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/sklearn/utils/_set_output.py", line 319, in wrapped
+    data_to_wrap = f(self, X, *args, **kwargs)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/sklearn/preprocessing/_data.py", line 1111, in transform
+    X = validate_data(
+        self,
+    ...<6 lines>...
+        ensure_all_finite="allow-nan",
+    )
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/sklearn/utils/validation.py", line 3059, in validate_data
+    _check_n_features(_estimator, X, reset=reset)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/sklearn/utils/validation.py", line 2923, in _check_n_features
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: X has 14 features, but StandardScaler is expecting 9 features as input.
+INFO:     127.0.0.1:56020 - "POST /api/custom-predict HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56022 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56038 - "GET /api/districts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56078 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56094 - "GET /api/districts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56110 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56122 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56128 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56142 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56150 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56054 - "GET /api/embedding-analytics HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56164 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56174 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56186 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56066 - "GET /api/predict?t=-1&use_sim=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56196 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56166 - "GET /api/embedding-analytics HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56188 - "GET /api/predict?t=-1&use_sim=true HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56202 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56208 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56222 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56226 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56240 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56252 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56268 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56282 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56288 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56292 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56294 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56304 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56320 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56332 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56340 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56356 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56364 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56378 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56386 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56390 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56400 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56414 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56416 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56432 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56442 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56456 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56464 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56468 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56478 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56494 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56510 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56512 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56524 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56538 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56540 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56546 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56552 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56566 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56576 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56592 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56596 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56606 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37568 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37582 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37584 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37588 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37596 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37608 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37610 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37624 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37640 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37648 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37656 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37658 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37670 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37674 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37678 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37684 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37688 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37692 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37708 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37712 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37728 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37742 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37752 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37762 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37778 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37788 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37798 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37806 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37818 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37832 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37840 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37852 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37858 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37864 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37872 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37888 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37894 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37906 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37920 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37922 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37928 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37932 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37938 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37940 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37952 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37956 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37972 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37988 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37992 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37996 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38012 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38020 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38026 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38028 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38034 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38040 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38044 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38046 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38058 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38072 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38086 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38100 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38106 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38122 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38130 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38132 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38140 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38148 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38158 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38172 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38174 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38188 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38198 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38212 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38216 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38220 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38236 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38238 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38248 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38256 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38262 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38266 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38276 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38286 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38288 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38300 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38306 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38312 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38324 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38326 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38340 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38354 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38356 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38358 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38372 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38378 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38390 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38396 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38410 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38416 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38418 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38434 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38436 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38450 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38454 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38464 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38476 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38478 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38484 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38492 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38496 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38498 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38500 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47274 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47278 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47290 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47294 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47302 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47312 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47314 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47322 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47326 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47340 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47350 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47364 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47368 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47374 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47384 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47398 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47406 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47408 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47420 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47436 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47450 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47460 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47466 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47474 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47490 - "GET /api/active-clients HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47496 - "GET /api/graph?t=-1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47502 - "GET /api/graph?t=-1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43756 - "GET /api/epidemic-status/632 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43766 - "GET /api/epidemic-status/94 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36716 - "GET /api/epidemic-status/94 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45572 - "GET /api/epidemic-status/632 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57630 - "GET /api/epidemic-status/94 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57638 - "GET /api/epidemic-status/632 HTTP/1.1" 200 OK

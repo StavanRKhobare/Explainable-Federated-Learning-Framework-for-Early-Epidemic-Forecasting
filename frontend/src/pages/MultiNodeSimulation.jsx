@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Plot from '../PlotlyChart'
+import React from 'react'
 
 const PRESET_NODES = [
   { censuscode: 572, district: "Bangalore", hospital: "Bangalore General Hospital", port: 8001 },
@@ -10,6 +11,7 @@ const PRESET_NODES = [
 export default function MultiNodeSimulation() {
   const [activeClients, setActiveClients] = useState([])
   const [data, setData] = useState(null)
+  const [allDistricts, setAllDistricts] = useState([])  // All India districts for map backdrop
   const [useSim, setUseSim] = useState(true)
   const [loading, setLoading] = useState(false)
   const [selectedNode, setSelectedNode] = useState(null)
@@ -19,8 +21,10 @@ export default function MultiNodeSimulation() {
   const [embedAnalytics, setEmbedAnalytics] = useState(null)
   const [simLogs, setSimLogs] = useState([
     { time: new Date().toLocaleTimeString(), type: "info", text: "Multi-System Simulation Dashboard initialized." },
-    { time: new Date().toLocaleTimeString(), type: "info", text: "Awaiting incoming 32-dimensional edge embeddings..." }
+    { time: new Date().toLocaleTimeString(), type: "info", text: "Awaiting incoming 64-dimensional edge embeddings..." }
   ])
+  const [shapSummary, setShapSummary] = useState(null) // shap-summary for selected node
+
 
   // Fetch active clients
   const getClients = async () => {
@@ -50,9 +54,18 @@ export default function MultiNodeSimulation() {
 
   useEffect(() => {
     getClients()
-    const timer = setInterval(getClients, 2000)
+    // Poll every 60s — dependency MUST be [] to prevent interval stacking
+    const timer = setInterval(getClients, 60000)
     return () => clearInterval(timer)
-  }, [activeClients])
+  }, [])  // ← empty array: run once on mount only
+
+  // Load all India districts once for map backdrop
+  useEffect(() => {
+    fetch('/api/districts')
+      .then(r => r.json())
+      .then(setAllDistricts)
+      .catch(e => console.error('district load error', e))
+  }, [])
 
   const fetchAnalytics = async () => {
     try {
@@ -64,7 +77,7 @@ export default function MultiNodeSimulation() {
 
   useEffect(() => {
     fetchAnalytics()
-    const timer = setInterval(fetchAnalytics, 5000)
+    const timer = setInterval(fetchAnalytics, 60000)
     return () => clearInterval(timer)
   }, [])
 
@@ -121,6 +134,12 @@ export default function MultiNodeSimulation() {
       const json = await res.json()
       setNodeDetail(json)
       
+      // Fetch SHAP summary (heatmap)
+      fetch(`/api/shap-summary/${pred.code}?t=-1`)
+        .then(r => r.json())
+        .then(setShapSummary)
+        .catch(err => console.error(err))
+
       // Fetch XAI attributions
       fetch(`/api/xai/temporal?censuscode=${pred.code}&t=-1`)
         .then(r => r.json())
@@ -134,8 +153,10 @@ export default function MultiNodeSimulation() {
   }
 
   const CLIENT_CODES_SET = new Set([572, 632, 94])
-  // For the edge simulation map: show ONLY the 3 client districts
-  const mapData = (data?.predictions || []).filter(p => p.lat && p.lon && CLIENT_CODES_SET.has(p.code))
+  // For the edge simulation map: show ALL districts with client cities highlighted
+  const mapData = (data?.predictions || []).filter(p => CLIENT_CODES_SET.has(p.code) && p.lat && p.lon)
+  // Background districts (non-client, from allDistricts fetch)
+  const bgDistricts = allDistricts.filter(d => !CLIENT_CODES_SET.has(d.censuscode) && d.lat && d.lon)
 
   return (
     <div className="page">
@@ -240,6 +261,16 @@ export default function MultiNodeSimulation() {
               </div>
               <Plot
                 data={[
+                  // Background: all India districts (dim grey)
+                  {
+                    type: 'scattergeo',
+                    lon: bgDistricts.map(d => d.lon),
+                    lat: bgDistricts.map(d => d.lat),
+                    mode: 'markers',
+                    marker: { size: 4, color: 'rgba(148,163,184,0.25)', symbol: 'circle' },
+                    hoverinfo: 'skip',
+                    showlegend: false,
+                  },
                   // Connections between the 3 client nodes
                   ...(() => {
                     const traces = []
@@ -250,7 +281,7 @@ export default function MultiNodeSimulation() {
                           lon: [mapData[i].lon, mapData[j].lon],
                           lat: [mapData[i].lat, mapData[j].lat],
                           mode: 'lines',
-                          line: { width: 2, color: 'rgba(99,102,241,0.4)', dash: 'dot' },
+                          line: { width: 1.5, color: 'rgba(99,102,241,0.3)', dash: 'dot' },
                           hoverinfo: 'skip',
                           showlegend: false,
                         })
@@ -258,6 +289,7 @@ export default function MultiNodeSimulation() {
                     }
                     return traces
                   })(),
+                  // Highlighted client cities
                   {
                     type: 'scattergeo',
                     lon: mapData.map(p => p.lon),
@@ -267,7 +299,7 @@ export default function MultiNodeSimulation() {
                     textposition: 'top center',
                     textfont: { size: 12, color: '#1e293b', family: 'DM Sans', weight: 700 },
                     marker: {
-                      size: mapData.map(p => 22 + p.prob * 28),
+                      size: mapData.map(p => 16 + p.prob * 20),
                       color: mapData.map(p => p.prob),
                       colorscale: [[0, '#10b981'], [0.2, '#34d399'], [0.4, '#fbbf24'], [0.6, '#f97316'], [1, '#ef4444']],
                       cmin: 0, cmax: Math.max(data.max_prob, 0.5),
@@ -279,9 +311,6 @@ export default function MultiNodeSimulation() {
                         bgcolor: 'rgba(255,255,255,0.9)', borderwidth: 0, outlinewidth: 0,
                       },
                     },
-                    customdata: mapData.map(p => ({
-                      isActive: activeClients.some(ac => ac.censuscode === p.code)
-                    })),
                     hovertext: mapData.map(p => {
                       const isActive = activeClients.some(ac => ac.censuscode === p.code)
                       return `<b>${p.name}</b> ${isActive ? '🟢 Active' : '⚫ Offline'}<br>` +
@@ -297,17 +326,18 @@ export default function MultiNodeSimulation() {
                 layout={{
                   geo: {
                     scope: 'asia', projection: { type: 'mercator' },
-                    center: { lat: 20, lon: 77 },
-                    lonaxis: { range: [75, 79] }, lataxis: { range: [10, 30] },
+                    center: { lat: 23, lon: 80 },
+                    lonaxis: { range: [66, 98] }, lataxis: { range: [6, 38.5] },
                     bgcolor: '#f8fafc', landcolor: '#f1f5f9',
                     subunitcolor: '#e2e8f0',
                     countrycolor: '#cbd5e1', coastlinecolor: '#94a3b8',
                     showland: true, showocean: true, oceancolor: '#eff6ff',
                     showsubunits: true,
                     showlakes: false, framecolor: '#e2e8f0', framewidth: 1,
+                    resolution: 50,
                   },
                   paper_bgcolor: '#ffffff', plot_bgcolor: '#ffffff',
-                  margin: { l: 0, r: 0, t: 10, b: 10 }, height: 560,
+                  margin: { l: 0, r: 0, t: 10, b: 10 }, height: 580,
                   font: { family: 'DM Sans', color: '#334155' },
                 }}
                 config={{ responsive: true, displayModeBar: false }}
@@ -445,42 +475,42 @@ export default function MultiNodeSimulation() {
 
                     {/* SHAP Explainability Heatmap */}
                     <div style={{ marginTop: '1rem', borderTop: '1px solid var(--slate-100)', paddingTop: '1rem' }}>
-                      <div className="card-title" style={{ fontSize: '0.75rem', color: 'var(--slate-500)', marginBottom: '0.8rem' }}>SHAP Temporal Heatmap</div>
-                      {temporalXAI ? (
-                        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(80px, 1fr) repeat(4, 1fr)', gap: 2 }}>
-                          <div />
-                          {[0, 1, 2, 3].map(w => <div key={w} style={{ fontSize: '0.65rem', color: 'var(--slate-400)', textAlign: 'center' }}>t-{3-w}</div>)}
-                          {Object.keys(temporalXAI[0]?.contributions || {})
-                            .sort((a, b) => {
-                              const sumA = temporalXAI.reduce((sum, w) => sum + Math.abs(w.contributions[a] || 0), 0)
-                              const sumB = temporalXAI.reduce((sum, w) => sum + Math.abs(w.contributions[b] || 0), 0)
-                              return sumB - sumA
-                            })
-                            .slice(0, 7)
-                            .map(feat => (
-                              <React.Fragment key={feat}>
-                                <div style={{ fontSize: '0.65rem', color: 'var(--slate-600)', alignSelf: 'center', textTransform: 'capitalize' }}>
-                                  {feat.replace('_', ' ').substring(0, 12)}
-                                </div>
-                                {temporalXAI.map(week => {
-                                  const val = week.contributions[feat] || 0
-                                  const intensity = Math.min(Math.abs(val) * 3, 1)
-                                  const bg = val > 0 ? `rgba(239, 68, 68, ${0.1 + intensity * 0.9})` : `rgba(37, 99, 235, ${0.1 + intensity * 0.9})`
-                                  const textCol = intensity > 0.6 ? '#fff' : 'var(--slate-700)'
-                                  return (
-                                    <div key={week.week_idx} style={{ 
-                                      background: bg, color: textCol, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                      fontSize: '0.6rem', borderRadius: 2
-                                    }} title={`${feat} at t-${3-week.week_idx}: ${val.toFixed(4)}`}>
-                                      {val.toFixed(2)}
-                                    </div>
-                                  )
-                                })}
-                              </React.Fragment>
-                            ))}
-                        </div>
-                      ) : (
-                        <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)' }}>Calculating temporal SHAP...</div>
+                      <div className="card-title" style={{ fontSize: '0.75rem', color: 'var(--slate-500)', marginBottom: '0.5rem' }}>
+                        SHAP Temporal Feature Importance
+                        <span style={{ fontSize: '0.6rem', fontWeight: 400, marginLeft: 6, color: 'var(--slate-400)' }}>
+                          🟢 green = increases risk &nbsp; 🔴 red = reduces risk
+                        </span>
+                      </div>
+                      {shapSummary?.matrix ? (() => {
+                        const topFeats = shapSummary.feature_importance.slice(0, 7)
+                        const featNames = topFeats.map(f => f.feature.replace(/_/g,' ').toUpperCase())
+                        const featIndices = topFeats.map(f => shapSummary.features.indexOf(f.feature))
+                        const z = featIndices.map(fi => shapSummary.matrix.map(row => row[fi]))
+                        return (
+                          <Plot
+                            data={[{
+                              type: 'heatmap',
+                              z,
+                              x: shapSummary.week_labels,
+                              y: featNames,
+                              colorscale: [[0,'#ef4444'],[0.5,'#f9fafb'],[1,'#22c55e']],
+                              zmid: 0,
+                              showscale: true,
+                              colorbar: { thickness: 8, len: 0.9, tickfont: { size: 7, color:'#94a3b8' } }
+                            }]}
+                            layout={{
+                              margin: { t:5, b:30, l:115, r:20 },
+                              paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+                              height: 180,
+                              xaxis: { tickfont: { size:9, family:'DM Sans', color:'#64748b' } },
+                              yaxis: { tickfont: { size:8, family:'DM Sans', color:'#475569' }, automargin: true }
+                            }}
+                            config={{ displayModeBar: false, responsive: true }}
+                            style={{ width: '100%' }}
+                          />
+                        )
+                      })() : (
+                        <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)' }}>Loading SHAP heatmap...</div>
                       )}
                     </div>
 

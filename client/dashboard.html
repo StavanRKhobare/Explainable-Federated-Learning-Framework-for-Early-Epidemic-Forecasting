@@ -251,11 +251,17 @@
                     </div>
                     <div style="display: flex; gap: 1.5rem; align-items: stretch;">
                         <div style="flex: 1; display: flex; flex-direction: column;">
-                            <div style="flex: 1; border: 2px dashed var(--slate-300); border-radius: var(--radius-sm); padding: 2rem 1.5rem; text-align: center; cursor: pointer; background: var(--slate-50); transition: all 0.2s; display: flex; flex-direction: column; justify-content: center; align-items: center;" onclick="document.getElementById('file-input').click()" onmouseover="this.style.borderColor='var(--blue-400)'; this.style.background='var(--blue-50)'" onmouseout="this.style.borderColor='var(--slate-300)'; this.style.background='var(--slate-50)'">
-                                <div style="font-size: 2rem; margin-bottom: 12px;">📄</div>
-                                <p style="font-size: 0.9rem; font-weight: 600; color: var(--slate-700); margin: 0;" id="file-label">Upload EHR Files (.pdf, .txt)</p>
-                                <p style="font-size: 0.75rem; color: var(--slate-500); margin-top: 8px; max-width: 200px;">Data parsed locally via clinical NLP</p>
-                                <input type="file" id="file-input" style="display: none;" onchange="handleFileUpload(event)">
+                            <div style="flex: 1; border: 2px dashed var(--slate-300); border-radius: var(--radius-sm); padding: 1.2rem 1.5rem; text-align: center; cursor: pointer; background: var(--slate-50); transition: all 0.2s; display: flex; flex-direction: column; justify-content: center; align-items: center;" onclick="document.getElementById('file-input').click()" onmouseover="this.style.borderColor='var(--blue-400)'; this.style.background='var(--blue-50)'" onmouseout="this.style.borderColor='var(--slate-300)'; this.style.background='var(--slate-50)'">
+                                <div style="font-size: 2rem; margin-bottom: 8px;">📄</div>
+                                <p style="font-size: 0.85rem; font-weight: 600; color: var(--slate-700); margin: 0;" id="file-label">Upload EHR (.pdf / .txt / .docx)</p>
+                                <p style="font-size: 0.72rem; color: var(--slate-500); margin-top: 6px;">Parsed locally via clinical NLP</p>
+                                <input type="file" id="file-input" style="display: none;" accept=".pdf,.txt,.docx" onchange="handleFileUpload(event)">
+                            </div>
+                            <!-- CSV bulk upload -->
+                            <div style="margin-top: 10px; border: 2px dashed var(--slate-300); border-radius: var(--radius-sm); padding: 0.9rem 1rem; text-align: center; cursor: pointer; background: var(--slate-50); transition: all 0.2s;" onclick="document.getElementById('csv-input').click()" onmouseover="this.style.borderColor='var(--purple-400)'; this.style.background='#faf5ff'" onmouseout="this.style.borderColor='var(--slate-300)'; this.style.background='var(--slate-50)'">
+                                <p style="font-size: 0.82rem; font-weight: 600; color: var(--slate-700); margin: 0;">📊 Bulk Upload Patient CSV</p>
+                                <p style="font-size: 0.7rem; color: var(--slate-500); margin-top: 4px;">Columns: <code>temperature,dengue_status</code> (0/1)</p>
+                                <input type="file" id="csv-input" style="display: none;" accept=".csv" onchange="handleCsvUpload(event)">
                             </div>
                         </div>
                         <div style="flex: 1.8; border: 1px solid var(--slate-200); border-radius: var(--radius-sm); overflow: hidden;">
@@ -272,7 +278,7 @@
                 <div class="card" style="margin-bottom: 0;">
                     <div class="card-title">
                         <span>Outgoing Local Embedding</span>
-                        <span style="font-size: 0.7rem; font-weight: normal; background: var(--emerald-50); color: var(--emerald-600); padding: 4px 8px; border-radius: 12px;">32-Dim Secure Vector</span>
+                        <span style="font-size: 0.7rem; font-weight: normal; background: var(--emerald-50); color: var(--emerald-600); padding: 4px 8px; border-radius: 12px;">64-Dim Secure Vector</span>
                     </div>
                     <div class="embedding-grid" id="embedding-grid">
                         <div style="grid-column: span 8; text-align: center; color: var(--slate-400); padding: 2rem; font-size: 0.85rem; background: var(--slate-50); border-radius: var(--radius-xs);">
@@ -324,6 +330,9 @@
                             <input type="number" id="week-precip" step="0.1" value="12.4">
                         </div>
                     </div>
+                    <button class="btn" onclick="fetchLiveWeather()" style="margin-top:6px; width:100%; background:var(--slate-100); color:var(--slate-700); border:1px solid var(--slate-300); font-size:0.82rem; padding: 8px; border-radius:8px; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='var(--slate-200)'" onmouseout="this.style.background='var(--slate-100)'">
+                        🌤️ Fetch Live Weather (Auto-fill)
+                    </button>
                     <button class="btn btn-emerald" onclick="sendEmbedding()" style="margin-top: 8px;">
                         🚀 Transmit Vector & Sync
                     </button>
@@ -360,9 +369,10 @@
             document.getElementById('nav-hospital').innerText = CONFIG.name;
             document.getElementById('nav-census').innerText = CONFIG.censuscode;
             
-            log('Connected to local endpoint. Awaiting central sync.');
+            log('Edge node initialized. Central sync active (60s interval).');
             loadTimeline();
             loadEHRTable();
+            loadInitialShap();
             startPolling();
         }
 
@@ -377,9 +387,11 @@
 
         // --- Polling Epidemic Status ---
         let pollInterval = null;
+        let lastProbValue = null;
         function startPolling() {
             if(pollInterval) clearInterval(pollInterval);
-            pollInterval = setInterval(fetchEpidemicStatus, 5000);
+            // Poll every 60s — logs only appear on real state change or manual action
+            pollInterval = setInterval(fetchEpidemicStatus, 60000);
             fetchEpidemicStatus();
         }
 
@@ -429,14 +441,12 @@
                 banner.style.display = 'none';
             }
 
-            // Update SHAP if available
-            if(data.shap && data.shap.feature_importance) {
-                drawShapChart(data.shap.feature_importance.slice(0, 5));
-            }
-            
-            // Update embedding grid if available
-            if(data.embedding) {
-                drawEmbeddingGrid(data.embedding);
+            // Only log when risk changes significantly (>2% shift)
+            const newProb = st.outbreak_prob;
+            if(lastProbValue === null || Math.abs(newProb - lastProbValue) > 0.02) {
+                const direction = lastProbValue !== null ? (newProb > lastProbValue ? '↑' : '↓') : '';
+                log(`Risk updated: ${(newProb*100).toFixed(1)}% ${direction} [${st.alert_level}] — ${st.district}`);
+                lastProbValue = newProb;
             }
         }
 
@@ -448,8 +458,8 @@
                 y: records.map(r => r.cases),
                 type: 'scatter', mode: 'lines+markers',
                 line: { color: '#3b82f6', width: 3, shape: 'spline' },
-                marker: { size: 8, color: '#2563eb', symbol: 'circle' },
-                fill: 'tozeroy', fillcolor: 'rgba(59, 130, 246, 0.1)'
+                marker: { size: 7, color: '#2563eb', symbol: 'circle', opacity: 0.8 },
+                fill: 'tozeroy', fillcolor: 'rgba(59, 130, 246, 0.08)'
             };
             Plotly.newPlot('timeline-chart', [trace], {
                 margin: {t:20, b:30, l:40, r:20},
@@ -459,23 +469,41 @@
             }, {displayModeBar: false, responsive: true});
         }
 
-        function drawShapChart(features) {
-            if (!features || features.length === 0) return;
-            const trace = {
-                x: features.map(f => f.importance).reverse(),
-                y: features.map(f => f.feature.replace('_', ' ').toUpperCase()).reverse(),
-                type: 'bar', orientation: 'h',
-                marker: { 
-                    color: features.map(f => f.importance).reverse(),
-                    colorscale: [[0, '#d8b4fe'], [1, '#7e22ce']]
-                }
-            };
-            Plotly.newPlot('shap-chart', [trace], {
-                margin: {t:20, b:30, l:90, r:20},
-                paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
-                xaxis: { showgrid: true, gridcolor: '#e2e8f0', tickfont: { family: 'DM Sans', color: '#64748b' } }, 
-                yaxis: { showgrid: false, tickfont: { family: 'DM Sans', size: 10, color: '#475569', weight: 600 } }
-            }, {displayModeBar: false, responsive: true});
+        // SHAP Temporal Heatmap — green = increases risk, red = decreases risk
+        async function loadShapHeatmap(censuscode) {
+            try {
+                const res = await fetch(`/api/shap-summary/${censuscode}`);
+                const data = await res.json();
+                if (!data.matrix || !data.features) return;
+
+                // Take top 7 features by mean abs importance
+                const topFeats = [...data.feature_importance].slice(0, 7);
+                const featNames = topFeats.map(f => f.feature.replace(/_/g,' ').toUpperCase());
+                const weekLabels = data.week_labels || ['t-4','t-3','t-2','t-1'];
+
+                // Build z matrix: rows = features, cols = weeks
+                // data.matrix is [4 weeks x N features]; we need [N features x 4 weeks]
+                const featIndices = topFeats.map(f => data.features.indexOf(f.feature));
+                const z = featIndices.map(fi => data.matrix.map(weekRow => weekRow[fi]));
+
+                const trace = {
+                    type: 'heatmap',
+                    z: z,
+                    x: weekLabels,
+                    y: featNames,
+                    colorscale: [[0,'#ef4444'],[0.5,'#f9fafb'],[1,'#22c55e']],
+                    zmid: 0,
+                    showscale: true,
+                    hoverongaps: false,
+                    colorbar: { thickness: 10, len: 0.8, tickfont: { size: 8, color:'#94a3b8' } }
+                };
+                Plotly.newPlot('shap-chart', [trace], {
+                    margin: {t:10, b:30, l:110, r:30},
+                    paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+                    xaxis: { tickfont: { family:'DM Sans', size:10, color:'#64748b' } },
+                    yaxis: { tickfont: { family:'DM Sans', size:9, color:'#475569' }, automargin: true }
+                }, {displayModeBar: false, responsive: true});
+            } catch(e) { console.error('SHAP heatmap error', e); }
         }
 
         function drawEmbeddingGrid(emb) {
@@ -511,6 +539,11 @@
                 const data = await res.json();
                 drawTimelineChart(data);
             } catch(e) { console.error(e); }
+        }
+
+        async function loadInitialShap() {
+            // Load SHAP heatmap once on startup
+            loadShapHeatmap(CONFIG.censuscode);
         }
 
         async function loadEHRTable() {
@@ -571,7 +604,7 @@
             const precip = document.getElementById('week-precip').value;
             
             document.getElementById('flow-anim').classList.add('transmitting');
-            log('Computing 32-dim local T-GAT embedding vector...');
+            log('Computing 64-dim local T-GAT embedding vector...');
             
             try {
                 const res = await fetch('/api/transmit', {
@@ -579,15 +612,25 @@
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({cases: parseInt(cases), temp_k: parseFloat(temp), preci_mm: parseFloat(precip)})
                 });
-                const data = await res.json();
-                
+                const text = await res.text();
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch(e) {
+                    log('Transmit error: Server returned non-JSON. Check server log.');
+                    console.error('Raw server response:', text.substring(0, 200));
+                    return;
+                }
+                if (data.error) {
+                    log('Transmit error: ' + data.error);
+                    return;
+                }
                 if (data.embedding) {
                     drawEmbeddingGrid(data.embedding);
+                    log(`64-dim embedding transmitted (dim=${data.embedding_dim || data.embedding.length}). Server: ${data.server_status}`);
+                } else {
+                    log(`Sync complete. Server: ${data.server_status}`);
                 }
-                
-                log(`Secure embedding transmitted. Central Server: ${data.server_status}`);
-                
-                // Immediately fetch updated epidemic status
                 setTimeout(fetchEpidemicStatus, 500);
                 
             } catch(e) { log("Transmit error: " + e); }
@@ -601,6 +644,45 @@
 
         // Boot
         window.onload = initApp;
+
+        // Also reload SHAP when embedding is transmitted (new data)
+        const _origSend = sendEmbedding;
+        sendEmbedding = async function() {
+            await _origSend();
+            setTimeout(() => loadShapHeatmap(CONFIG.censuscode), 1000);
+        };
+        // CSV bulk patient upload
+        async function handleCsvUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const fd = new FormData();
+            fd.append('file', file);
+            log(`Uploading bulk CSV: ${file.name}...`);
+            try {
+                const res = await fetch('/api/upload-csv', {method: 'POST', body: fd});
+                const text = await res.text();
+                let d;
+                try { d = JSON.parse(text); } catch(ex) { log('CSV upload failed: bad response'); e.target.value=''; return; }
+                log(`CSV processed: ${d.total} patients, ${d.positive} positive, ${d.negative} negative.`);
+                loadEHRTable();
+            } catch(ex) { log('CSV upload error: ' + ex); }
+            e.target.value = '';
+        }
+
+        // Live weather fetch (Open-Meteo, no API key needed)
+        async function fetchLiveWeather() {
+            log('Fetching live weather from Open-Meteo...');
+            try {
+                const res = await fetch('/api/live-weather');
+                const text = await res.text();
+                let d;
+                try { d = JSON.parse(text); } catch(ex) { log('Weather fetch failed'); return; }
+                if (d.error) { log('Weather error: ' + d.error); return; }
+                document.getElementById('week-temp').value = d.temp_k.toFixed(1);
+                document.getElementById('week-precip').value = d.preci_mm.toFixed(1);
+                log(`Live weather loaded: ${d.temp_c.toFixed(1)}°C → ${d.temp_k.toFixed(1)}K, Precip: ${d.preci_mm.toFixed(1)}mm`);
+            } catch(ex) { log('Weather fetch error: ' + ex); }
+        }
     </script>
 </body>
 </html>

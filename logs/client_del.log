@@ -1,0 +1,480 @@
+INFO:     Started server process [52653]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8003 (Press CTRL+C to quit)
+[*] Initialized edge client for New Delhi Hospital (Census: 94)
+INFO:     127.0.0.1:55180 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47424 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47430 - "GET /api/ehrs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47434 - "GET /api/shap-summary/94 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:47424 - "GET /api/local-timeline HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47434 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:47436 - "GET /api/epidemic-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49506 - "GET /api/epidemic-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36262 - "GET /api/epidemic-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36262 - "POST /api/upload-ehr HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36262 - "GET /api/ehrs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36262 - "POST /api/upload-ehr HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36262 - "GET /api/ehrs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41528 - "POST /api/upload-ehr HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41528 - "GET /api/ehrs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35238 - "POST /api/transmit HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/uvicorn/protocols/http/httptools_impl.py", line 421, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/uvicorn/middleware/proxy_headers.py", line 62, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/fastapi/applications.py", line 1163, in __call__
+    await super().__call__(scope, receive, send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/applications.py", line 90, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/fastapi/routing.py", line 2531, in app
+    await route.handle(scope, receive, send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/fastapi/routing.py", line 1241, in handle
+    await super().handle(scope, receive, send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/fastapi/routing.py", line 150, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/fastapi/routing.py", line 136, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/fastapi/routing.py", line 690, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/fastapi/routing.py", line 346, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/concurrency.py", line 34, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/anyio/to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/anyio/_backends/_asyncio.py", line 2592, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/anyio/_backends/_asyncio.py", line 1029, in run
+    result = context.run(func, *args)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/client/client_app.py", line 209, in transmit_embedding
+    scaled_history = scaler_dyn.transform(raw_history) # (4, 9)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/sklearn/utils/_set_output.py", line 319, in wrapped
+    data_to_wrap = f(self, X, *args, **kwargs)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/sklearn/preprocessing/_data.py", line 1111, in transform
+    X = validate_data(
+        self,
+    ...<6 lines>...
+        ensure_all_finite="allow-nan",
+    )
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/sklearn/utils/validation.py", line 3038, in validate_data
+    out = check_array(X, input_name="X", **check_params)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/sklearn/utils/validation.py", line 1035, in check_array
+    array = _asarray_with_order(array, order=order, dtype=dtype, xp=xp)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/sklearn/utils/_array_api.py", line 976, in _asarray_with_order
+    array = numpy.asarray(array, order=order, dtype=dtype)
+ValueError: setting an array element with a sequence. The requested array has an inhomogeneous shape after 1 dimensions. The detected shape was (4,) + inhomogeneous part.
+INFO:     127.0.0.1:35244 - "GET /api/shap-summary/94 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:35244 - "GET /api/epidemic-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35244 - "POST /api/transmit HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/uvicorn/protocols/http/httptools_impl.py", line 421, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/uvicorn/middleware/proxy_headers.py", line 62, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/fastapi/applications.py", line 1163, in __call__
+    await super().__call__(scope, receive, send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/applications.py", line 90, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/fastapi/routing.py", line 2531, in app
+    await route.handle(scope, receive, send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/fastapi/routing.py", line 1241, in handle
+    await super().handle(scope, receive, send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/fastapi/routing.py", line 150, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/fastapi/routing.py", line 136, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/fastapi/routing.py", line 690, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/fastapi/routing.py", line 346, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/concurrency.py", line 34, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/anyio/to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/anyio/_backends/_asyncio.py", line 2592, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/anyio/_backends/_asyncio.py", line 1029, in run
+    result = context.run(func, *args)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/client/client_app.py", line 209, in transmit_embedding
+    scaled_history = scaler_dyn.transform(raw_history) # (4, 9)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/sklearn/utils/_set_output.py", line 319, in wrapped
+    data_to_wrap = f(self, X, *args, **kwargs)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/sklearn/preprocessing/_data.py", line 1111, in transform
+    X = validate_data(
+        self,
+    ...<6 lines>...
+        ensure_all_finite="allow-nan",
+    )
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/sklearn/utils/validation.py", line 3038, in validate_data
+    out = check_array(X, input_name="X", **check_params)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/sklearn/utils/validation.py", line 1035, in check_array
+    array = _asarray_with_order(array, order=order, dtype=dtype, xp=xp)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/sklearn/utils/_array_api.py", line 976, in _asarray_with_order
+    array = numpy.asarray(array, order=order, dtype=dtype)
+ValueError: setting an array element with a sequence. The requested array has an inhomogeneous shape after 1 dimensions. The detected shape was (4,) + inhomogeneous part.
+INFO:     127.0.0.1:35260 - "GET /api/shap-summary/94 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:38080 - "GET /api/epidemic-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:47646 - "GET /api/epidemic-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43714 - "GET /api/epidemic-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52372 - "GET /api/epidemic-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35934 - "GET /api/epidemic-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58598 - "GET /api/epidemic-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53982 - "GET /api/epidemic-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48594 - "GET /api/epidemic-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43416 - "GET /api/epidemic-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34194 - "GET /api/epidemic-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34194 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41970 - "GET /api/shap-summary/94 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:41966 - "GET /api/ehrs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34194 - "GET /api/local-timeline HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41974 - "GET /api/epidemic-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:41974 - "POST /api/transmit HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/uvicorn/protocols/http/httptools_impl.py", line 421, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/uvicorn/middleware/proxy_headers.py", line 62, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/fastapi/applications.py", line 1163, in __call__
+    await super().__call__(scope, receive, send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/applications.py", line 90, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/fastapi/routing.py", line 2531, in app
+    await route.handle(scope, receive, send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/fastapi/routing.py", line 1241, in handle
+    await super().handle(scope, receive, send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/fastapi/routing.py", line 150, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/fastapi/routing.py", line 136, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/fastapi/routing.py", line 690, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/fastapi/routing.py", line 346, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/concurrency.py", line 34, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/anyio/to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/anyio/_backends/_asyncio.py", line 2592, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/anyio/_backends/_asyncio.py", line 1029, in run
+    result = context.run(func, *args)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/client/client_app.py", line 209, in transmit_embedding
+    float(len(uploaded_cases)),                           # ner_total_notes
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/sklearn/utils/_set_output.py", line 319, in wrapped
+    data_to_wrap = f(self, X, *args, **kwargs)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/sklearn/preprocessing/_data.py", line 1111, in transform
+    X = validate_data(
+        self,
+    ...<6 lines>...
+        ensure_all_finite="allow-nan",
+    )
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/sklearn/utils/validation.py", line 3038, in validate_data
+    out = check_array(X, input_name="X", **check_params)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/sklearn/utils/validation.py", line 1035, in check_array
+    array = _asarray_with_order(array, order=order, dtype=dtype, xp=xp)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/sklearn/utils/_array_api.py", line 976, in _asarray_with_order
+    array = numpy.asarray(array, order=order, dtype=dtype)
+ValueError: setting an array element with a sequence. The requested array has an inhomogeneous shape after 1 dimensions. The detected shape was (4,) + inhomogeneous part.
+INFO:     127.0.0.1:34194 - "GET /api/shap-summary/94 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:34194 - "POST /api/transmit HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/uvicorn/protocols/http/httptools_impl.py", line 421, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/uvicorn/middleware/proxy_headers.py", line 62, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/fastapi/applications.py", line 1163, in __call__
+    await super().__call__(scope, receive, send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/applications.py", line 90, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/fastapi/routing.py", line 2531, in app
+    await route.handle(scope, receive, send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/fastapi/routing.py", line 1241, in handle
+    await super().handle(scope, receive, send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/fastapi/routing.py", line 150, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/fastapi/routing.py", line 136, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/fastapi/routing.py", line 690, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/fastapi/routing.py", line 346, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/concurrency.py", line 34, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/anyio/to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/anyio/_backends/_asyncio.py", line 2592, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/anyio/_backends/_asyncio.py", line 1029, in run
+    result = context.run(func, *args)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/client/client_app.py", line 209, in transmit_embedding
+    float(len(uploaded_cases)),                           # ner_total_notes
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/sklearn/utils/_set_output.py", line 319, in wrapped
+    data_to_wrap = f(self, X, *args, **kwargs)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/sklearn/preprocessing/_data.py", line 1111, in transform
+    X = validate_data(
+        self,
+    ...<6 lines>...
+        ensure_all_finite="allow-nan",
+    )
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/sklearn/utils/validation.py", line 3038, in validate_data
+    out = check_array(X, input_name="X", **check_params)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/sklearn/utils/validation.py", line 1035, in check_array
+    array = _asarray_with_order(array, order=order, dtype=dtype, xp=xp)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/sklearn/utils/_array_api.py", line 976, in _asarray_with_order
+    array = numpy.asarray(array, order=order, dtype=dtype)
+ValueError: setting an array element with a sequence. The requested array has an inhomogeneous shape after 1 dimensions. The detected shape was (4,) + inhomogeneous part.
+INFO:     127.0.0.1:41988 - "GET /api/shap-summary/94 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:41988 - "POST /api/transmit HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/uvicorn/protocols/http/httptools_impl.py", line 421, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/uvicorn/middleware/proxy_headers.py", line 62, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/fastapi/applications.py", line 1163, in __call__
+    await super().__call__(scope, receive, send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/applications.py", line 90, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/fastapi/routing.py", line 2531, in app
+    await route.handle(scope, receive, send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/fastapi/routing.py", line 1241, in handle
+    await super().handle(scope, receive, send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/fastapi/routing.py", line 150, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/fastapi/routing.py", line 136, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/fastapi/routing.py", line 690, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/fastapi/routing.py", line 346, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/starlette/concurrency.py", line 34, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/anyio/to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/anyio/_backends/_asyncio.py", line 2592, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/anyio/_backends/_asyncio.py", line 1029, in run
+    result = context.run(func, *args)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/client/client_app.py", line 209, in transmit_embedding
+    float(len(uploaded_cases)),                           # ner_total_notes
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/sklearn/utils/_set_output.py", line 319, in wrapped
+    data_to_wrap = f(self, X, *args, **kwargs)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/sklearn/preprocessing/_data.py", line 1111, in transform
+    X = validate_data(
+        self,
+    ...<6 lines>...
+        ensure_all_finite="allow-nan",
+    )
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/sklearn/utils/validation.py", line 3038, in validate_data
+    out = check_array(X, input_name="X", **check_params)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/sklearn/utils/validation.py", line 1035, in check_array
+    array = _asarray_with_order(array, order=order, dtype=dtype, xp=xp)
+  File "/home/stavan-khobare/Desktop/4th sem 3rd phase/We Ball Antigravity/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting/venv/lib/python3.14/site-packages/sklearn/utils/_array_api.py", line 976, in _asarray_with_order
+    array = numpy.asarray(array, order=order, dtype=dtype)
+ValueError: setting an array element with a sequence. The requested array has an inhomogeneous shape after 1 dimensions. The detected shape was (4,) + inhomogeneous part.
+INFO:     127.0.0.1:42002 - "GET /api/shap-summary/94 HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58694 - "GET /api/epidemic-status HTTP/1.1" 200 OK

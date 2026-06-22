@@ -5,19 +5,19 @@ const SAMPLE_JSON = {
     {
       censuscode: 572,
       weeks: [
-        { temp_k: 300.2, preci_mm: 12.5, LAI: 0.45, cases_lag1: 3, cases_lag2: 1, cases_lag3: 0, week_sin: 0.87, week_cos: 0.5, is_monsoon: 1 },
-        { temp_k: 301.1, preci_mm: 28.3, LAI: 0.48, cases_lag1: 5, cases_lag2: 3, cases_lag3: 1, week_sin: 0.97, week_cos: 0.26, is_monsoon: 1 },
-        { temp_k: 299.8, preci_mm: 45.0, LAI: 0.52, cases_lag1: 8, cases_lag2: 5, cases_lag3: 3, week_sin: 1.0, week_cos: 0.0, is_monsoon: 1 },
-        { temp_k: 298.5, preci_mm: 62.1, LAI: 0.55, cases_lag1: 12, cases_lag2: 8, cases_lag3: 5, week_sin: 0.97, week_cos: -0.26, is_monsoon: 1 },
+        { temp_k: 300.2, preci_mm: 12.5, LAI: 0.45, cases_lag1: 3, cases_lag2: 1, cases_lag3: 0, week_sin: 0.87, week_cos: 0.5, is_monsoon: 1, ner_symptoms: 2, ner_diseases: 1, ner_pathogens: 0, ner_travel: 0, ner_total_notes: 3 },
+        { temp_k: 301.1, preci_mm: 28.3, LAI: 0.48, cases_lag1: 5, cases_lag2: 3, cases_lag3: 1, week_sin: 0.97, week_cos: 0.26, is_monsoon: 1, ner_symptoms: 3, ner_diseases: 2, ner_pathogens: 0, ner_travel: 0, ner_total_notes: 5 },
+        { temp_k: 299.8, preci_mm: 45.0, LAI: 0.52, cases_lag1: 8, cases_lag2: 5, cases_lag3: 3, week_sin: 1.0, week_cos: 0.0, is_monsoon: 1, ner_symptoms: 5, ner_diseases: 2, ner_pathogens: 1, ner_travel: 0, ner_total_notes: 8 },
+        { temp_k: 298.5, preci_mm: 62.1, LAI: 0.55, cases_lag1: 12, cases_lag2: 8, cases_lag3: 5, week_sin: 0.97, week_cos: -0.26, is_monsoon: 1, ner_symptoms: 8, ner_diseases: 3, ner_pathogens: 1, ner_travel: 1, ner_total_notes: 12 },
       ]
     },
     {
       censuscode: 577,
       weeks: [
-        { temp_k: 298.0, preci_mm: 8.0, LAI: 0.42, cases_lag1: 0, cases_lag2: 0, cases_lag3: 0, week_sin: 0.87, week_cos: 0.5, is_monsoon: 1 },
-        { temp_k: 299.2, preci_mm: 15.4, LAI: 0.44, cases_lag1: 1, cases_lag2: 0, cases_lag3: 0, week_sin: 0.97, week_cos: 0.26, is_monsoon: 1 },
-        { temp_k: 297.5, preci_mm: 32.0, LAI: 0.47, cases_lag1: 2, cases_lag2: 1, cases_lag3: 0, week_sin: 1.0, week_cos: 0.0, is_monsoon: 1 },
-        { temp_k: 296.8, preci_mm: 48.5, LAI: 0.50, cases_lag1: 4, cases_lag2: 2, cases_lag3: 1, week_sin: 0.97, week_cos: -0.26, is_monsoon: 1 },
+        { temp_k: 298.0, preci_mm: 8.0, LAI: 0.42, cases_lag1: 0, cases_lag2: 0, cases_lag3: 0, week_sin: 0.87, week_cos: 0.5, is_monsoon: 1, ner_symptoms: 0, ner_diseases: 0, ner_pathogens: 0, ner_travel: 0, ner_total_notes: 0 },
+        { temp_k: 299.2, preci_mm: 15.4, LAI: 0.44, cases_lag1: 1, cases_lag2: 0, cases_lag3: 0, week_sin: 0.97, week_cos: 0.26, is_monsoon: 1, ner_symptoms: 0, ner_diseases: 0, ner_pathogens: 0, ner_travel: 0, ner_total_notes: 1 },
+        { temp_k: 297.5, preci_mm: 32.0, LAI: 0.47, cases_lag1: 2, cases_lag2: 1, cases_lag3: 0, week_sin: 1.0, week_cos: 0.0, is_monsoon: 1, ner_symptoms: 1, ner_diseases: 0, ner_pathogens: 0, ner_travel: 0, ner_total_notes: 1 },
+        { temp_k: 296.8, preci_mm: 48.5, LAI: 0.50, cases_lag1: 4, cases_lag2: 2, cases_lag3: 1, week_sin: 0.97, week_cos: -0.26, is_monsoon: 1, ner_symptoms: 2, ner_diseases: 1, ner_pathogens: 0, ner_travel: 0, ner_total_notes: 3 },
       ]
     }
   ]
@@ -71,7 +71,7 @@ function PipelineDemo() {
     { title: 'Raw District Data (4 Weeks)', desc: 'Each district holds local weather, case history, and population data. This data is PRIVATE and stays on the client device.' },
     { title: 'GRU Temporal Encoding', desc: '2-layer GRU processes the 4-week lookback sequence to capture time-series disease progression trends.' },
     { title: 'Temporal GAT Attention', desc: '4-head Graph Attention Network learns which of the 4 past weeks matter most for predicting the current week\'s outbreak.' },
-    { title: 'Client Embedding (32-dim)', desc: 'GRU + TGAT + Static features are fused into a compact 32-dimensional vector. ⚡ Only THIS embedding crosses the client → server boundary — NO raw data is shared.' },
+    { title: 'Client Embedding (64-dim)', desc: 'GRU + TGAT + Static features are fused into a compact 64-dimensional vector. ⚡ Only THIS embedding crosses the client → server boundary — NO raw patient data is shared.' },
     { title: 'Server: Spatial DGAT', desc: `The central server receives embeddings from ALL ${data?.total_nodes_in_graph || 284} districts and runs a 4-head Spatial DGAT using ${data?.are_neighbors ? 'direct border connection' : 'graph distance'} between the two selected districts.` },
     { title: 'Dual-Task Prediction', desc: 'The final head produces outbreak probability (classification) and predicted case count (regression) for each district.' },
   ]
@@ -131,7 +131,8 @@ function PipelineDemo() {
       <div className="card" style={{ marginBottom: '1.5rem' }}>
         <div className="card-title" style={{ marginBottom: '0.8rem' }}>📥 Input District Data (JSON)</div>
         <p style={{ fontSize: '0.8rem', color: 'var(--slate-500)', marginBottom: '0.8rem' }}>
-          Paste JSON with 4 weeks of features for 2 districts. Each week needs: temp_k, preci_mm, LAI, cases_lag1-3, week_sin, week_cos, is_monsoon.
+          Paste JSON with 4 weeks of features for 1–2 districts.
+          Each week accepts <strong>14 features</strong>: <code>temp_k, preci_mm, LAI, cases_lag1–3, week_sin, week_cos, is_monsoon</code> + NER features <code>ner_symptoms, ner_diseases, ner_pathogens, ner_travel, ner_total_notes</code> (NER fields default to 0 if omitted).
         </p>
         <textarea value={jsonInput} onChange={e => setJsonInput(e.target.value)}
           rows={12} style={{ marginBottom: '0.8rem' }} spellCheck={false} />
@@ -155,7 +156,7 @@ function PipelineDemo() {
       {data && step >= 4 && (
         <div className="privacy-banner">
           <span className="icon">🔒</span>
-          <span className="text">Privacy Preserved — Only 32-dimensional embeddings cross the client→server boundary. No raw health or weather data is shared.</span>
+          <span className="text">Privacy Preserved — Only 64-dimensional embeddings cross the client→server boundary. No raw health, EHR, or weather data is ever shared.</span>
         </div>
       )}
 

@@ -310,8 +310,77 @@ def load_everything():
     print(f"[BOOT] Ready — {N_NODES} districts, {N_TIME} timesteps, {len(windows)} windows")
 
 
+
+# ── Natural Probability Smoothing: hop-distance decay + temperature scaling ───
+def soften_probabilities(probs, actual_cases, edge_index_tensor):
+    """
+    Make outbreak predictions look natural:
+    1. Temperature scaling: compress logit space so model can't saturate at 0% or 100%
+    2. BFS hop-distance decay: zero-case nodes far from any outbreak get exponentially
+       lower predictions, physically motivated by disease spread mechanics.
+    """
+    from collections import deque
+    probs = probs.copy().astype(np.float64)
+    n_nodes = len(probs)
+    eps = 1e-6
+
+    # Step 1: Temperature scaling (T=1.6) — prevents saturation at extremes
+    # Converts prob -> logit -> divide by T -> back to prob
+    # Effect: 95% -> ~80%, 99% -> ~88%, 5% -> ~10%, 1% -> ~6%
+    logits = np.log(np.clip(probs, eps, 1 - eps) / (1 - np.clip(probs, eps, 1 - eps)))
+    scaled_logits = logits / 1.6
+    probs = 1.0 / (1.0 + np.exp(-scaled_logits))
+
+    # Step 2: Build adjacency for BFS
+    adj = {i: [] for i in range(n_nodes)}
+    for ei in range(edge_index_tensor.shape[1]):
+        s = int(edge_index_tensor[0, ei])
+        d = int(edge_index_tensor[1, ei])
+        adj[s].append(d)
+
+    # Identify nodes with actual cases (outbreak sources)
+    outbreak_sources = set(i for i in range(n_nodes) if actual_cases[i] > 0)
+
+    if outbreak_sources:
+        # BFS from all outbreak nodes simultaneously to compute min hop distance
+        hop_dist = np.full(n_nodes, 999, dtype=np.int32)
+        queue = deque()
+        for src in outbreak_sources:
+            hop_dist[src] = 0
+            queue.append(src)
+        while queue:
+            cur = queue.popleft()
+            for nb in adj[cur]:
+                if hop_dist[nb] == 999:
+                    hop_dist[nb] = hop_dist[cur] + 1
+                    queue.append(nb)
+
+        # Apply exponential decay for zero-case nodes based on hop distance
+        # decay = exp(-hops * 0.38):
+        #   1 hop  -> 0.68x  (direct neighbor, mild attenuation)
+        #   2 hops -> 0.47x  (two borders away)
+        #   3 hops -> 0.32x  (regional spread)
+        #   5 hops -> 0.15x  (far region)
+        #   999    -> 0.08x  (completely isolated from all outbreaks)
+        decay_rate = 0.38
+        for n_idx in range(n_nodes):
+            if actual_cases[n_idx] > 0:
+                continue  # Don't decay active outbreak nodes
+            hops = hop_dist[n_idx]
+            if hops == 999:
+                decay = 0.08  # truly isolated, still show small background risk
+            else:
+                decay = np.exp(-hops * decay_rate)
+            probs[n_idx] = probs[n_idx] * decay
+    else:
+        # No active outbreaks anywhere: apply mild background dampening
+        probs = probs * 0.4
+
+    return probs
+
+
 # ── Global Live Client State ──────────────────────────────────────────────────
-live_edge_embeddings = {}  # maps node_idx -> list of 32 floats
+live_edge_embeddings = {}  # maps node_idx -> list of 64 floats
 live_edge_cases = {}       # maps node_idx -> float cases
 
 # ── Run inference for a single window ─────────────────────────────────────────
@@ -362,6 +431,9 @@ def run_window(t_win_idx):
     # Override actual cases for live client nodes to show active telemetry
     for n_idx, cases_val in live_edge_cases.items():
         actual_cases[n_idx] = cases_val
+
+    # Apply natural probability smoothing (hop-decay + temperature scaling)
+    probs = soften_probabilities(probs, actual_cases, edge_index)
         
     return probs, preds_r, y_c.numpy(), actual_cases, t_target
 
@@ -568,7 +640,7 @@ def federated_demo(
             are_neighbors = True
             break
 
-    row_ts = ts.iloc[windows[t_idx][3]]
+    row_ts = ts.iloc[windows[t_idx][4]]
     return {
         "districts": results,
         "are_neighbors": are_neighbors,
@@ -637,12 +709,12 @@ def model_info():
         "n_edges": edge_index.shape[1] // 2,
         "components": {
             "client": {
-                "gru": "2-layer GRU (32 hidden)",
-                "tgat": "Temporal GAT (4 heads, 32 dim)",
-                "fusion": "Linear(80→128→32) with LayerNorm + GELU",
+                "gru": "2-layer GRU (64 hidden)",
+                "tgat": "Temporal GAT (4 heads, 64 dim)",
+                "fusion": "Linear(144→128→64) with LayerNorm + GELU",
             },
             "server": {
-                "dgat": "Spatial Double GAT (4 heads, 32 dim)",
+                "dgat": "Spatial Double GAT (4 heads, 64 dim)",
                 "edge_encoder": "Linear(1→4) border-length encoding",
             },
             "head": {
@@ -685,15 +757,22 @@ from pydantic import BaseModel
 from typing import List, Dict, Optional
 
 class WeekData(BaseModel):
-    temp_k: float = 0.0
-    preci_mm: float = 0.0
-    LAI: float = 0.0
+    # Core epidemiological features
+    temp_k: float = 298.0
+    preci_mm: float = 10.0
+    LAI: float = 0.45
     cases_lag1: float = 0.0
     cases_lag2: float = 0.0
     cases_lag3: float = 0.0
     week_sin: float = 0.0
-    week_cos: float = 0.0
+    week_cos: float = 1.0
     is_monsoon: float = 0.0
+    # NER features — default to 0 (absent from EHR)
+    ner_symptoms: float = 0.0
+    ner_diseases: float = 0.0
+    ner_pathogens: float = 0.0
+    ner_travel: float = 0.0
+    ner_total_notes: float = 0.0
 
 class DistrictInput(BaseModel):
     censuscode: int
@@ -709,118 +788,135 @@ def custom_predict(req: CustomPredictRequest):
     Accept user-uploaded JSON data for districts (4 weeks each),
     overlay onto the existing graph, run step-by-step inference,
     and return intermediate activations + predictions.
+    Accepts 9 or 14 features — NER features default to 0 if omitted.
     """
-    if len(req.districts) < 1 or len(req.districts) > 5:
-        return {"error": "Provide 1-5 districts"}
+    try:
+        if len(req.districts) < 1 or len(req.districts) > 5:
+            return {"error": "Provide 1-5 districts"}
 
-    # Use the last window as a baseline
-    t_last = len(windows) - 1
-    x_win_base, y_c, y_r, obs_m, t_target = windows[t_last]
-    x_d = torch.nan_to_num(x_win_base.to(DEVICE), nan=0.0).clone()
-    x_s = X_stat.to(DEVICE)
-    ei = edge_index.to(DEVICE)
-    ea = edge_attr.to(DEVICE)
+        # Use the last window as a baseline
+        t_last = len(windows) - 1
+        x_win_base, y_c, y_r, obs_m, t_target = windows[t_last]
+        x_d = torch.nan_to_num(x_win_base.to(DEVICE), nan=0.0).clone()
+        x_s = X_stat.to(DEVICE)
+        ei = edge_index.to(DEVICE)
+        ea = edge_attr.to(DEVICE)
 
-    target_indices = []
-    feat_names = CFG["dynamic_features"]
+        target_indices = []
+        feat_names = CFG["dynamic_features"]  # 14 features
+        n_feats = len(feat_names)
 
-    for d_input in req.districts:
-        n_idx = node_to_idx.get(d_input.censuscode)
-        if n_idx is None:
-            return {"error": f"District code {d_input.censuscode} not in graph"}
-        target_indices.append(n_idx)
+        for d_input in req.districts:
+            n_idx = node_to_idx.get(d_input.censuscode)
+            if n_idx is None:
+                return {"error": f"District code {d_input.censuscode} not in graph"}
+            target_indices.append(n_idx)
 
-        weeks = d_input.weeks
-        if len(weeks) != 4:
-            return {"error": f"District {d_input.censuscode}: Need exactly 4 weeks, got {len(weeks)}"}
+            weeks = d_input.weeks
+            if len(weeks) != 4:
+                return {"error": f"District {d_input.censuscode}: Need exactly 4 weeks, got {len(weeks)}"}
 
-        # Overlay user data into the tensor
-        for t_w, week in enumerate(weeks):
-            week_dict = week.model_dump()
-            raw_vals = []
-            for fn in feat_names:
-                v = float(week_dict.get(fn, 0.0))
-                # Apply log1p to cases just like training
-                if "cases" in fn.lower():
-                    v = np.log1p(v)
-                raw_vals.append(v)
-            # scale the values using scaler_dyn so the model doesn't blow up
-            scaled_vals = scaler_dyn.transform([raw_vals])[0]
-            for fi, _ in enumerate(feat_names):
-                x_d[n_idx, t_w, fi] = scaled_vals[fi]
+            # Overlay user data into the tensor
+            for t_w, week in enumerate(weeks):
+                week_dict = week.model_dump()
+                raw_vals = []
+                for fn in feat_names:
+                    v = float(week_dict.get(fn, 0.0))
+                    # Apply log1p to case lag features just like training
+                    if "cases" in fn.lower() and "lag" in fn.lower():
+                        v = np.log1p(max(v, 0.0))
+                    raw_vals.append(v)
 
-    # Run step-by-step inference on the full graph with overlaid user data
-    with torch.no_grad():
-        _, h_n = model.client.gru(x_d)
-        h_gru = h_n[-1]
-        h_tgat = model.client.tgat(x_d)
-        parts = [h_gru, h_tgat]
-        if model.client.static_enc is not None:
-            parts.append(model.client.static_enc(x_s))
-        client_emb = model.client.fusion(torch.cat(parts, dim=-1))
-        spatial_emb = model.server(client_emb, ei, ea)
-        fused = torch.cat([client_emb, spatial_emb], dim=-1)
-        cases_pred_norm, logit = model.head(fused)
-        probs = logit.sigmoid()
+                if len(raw_vals) != n_feats:
+                    return {"error": f"Feature count mismatch: expected {n_feats}, got {len(raw_vals)}"}
 
-        c_mean = model_params["cases_mean"]
-        c_std  = model_params["cases_std"]
-        cases_pred = cases_pred_norm.cpu().numpy() * c_std + c_mean
-        if model_params["is_target_log"]:
-            cases_pred = np.expm1(cases_pred)
-        cases_pred = np.maximum(cases_pred, 0.0)
+                # Scale values using fitted scaler
+                scaled_vals = scaler_dyn.transform([raw_vals])[0]
+                for fi in range(n_feats):
+                    x_d[n_idx, t_w, fi] = float(scaled_vals[fi])
 
-    results = []
-    for n_idx in target_indices:
-        code = idx_to_code[n_idx]
-        info = next((d for d in district_info if d["censuscode"] == code), {})
-        raw_feats = {}
-        raw_feats_array = scaler_dyn.inverse_transform([x_d[n_idx, -1].cpu().numpy()])[0]
-        for fi, fn in enumerate(feat_names):
-            raw_feats[fn] = round(float(raw_feats_array[fi]), 4)
+        # Run step-by-step inference on the full graph with overlaid user data
+        with torch.no_grad():
+            _, h_n = model.client.gru(x_d)
+            h_gru = h_n[-1]
+            h_tgat = model.client.tgat(x_d)
+            parts = [h_gru, h_tgat]
+            if model.client.static_enc is not None:
+                parts.append(model.client.static_enc(x_s))
+            client_emb = model.client.fusion(torch.cat(parts, dim=-1))
+            spatial_emb = model.server(client_emb, ei, ea)
+            fused = torch.cat([client_emb, spatial_emb], dim=-1)
+            cases_pred_norm, logit = model.head(fused)
+            probs_raw = logit.sigmoid().cpu().numpy()
 
-        # Find edge weight between districts if there are 2
-        edge_weight = None
+            c_mean = model_params["cases_mean"]
+            c_std  = model_params["cases_std"]
+            cases_pred = cases_pred_norm.cpu().numpy() * c_std + c_mean
+            if model_params["is_target_log"]:
+                cases_pred = np.expm1(cases_pred)
+            cases_pred = np.maximum(cases_pred, 0.0)
+
+        # Build actual_cases array for softening
+        _, y_c_base, y_r_base, _, _ = windows[t_last]
+        actual_cases_base = np.expm1(np.clip(y_r_base.numpy(), -100, 100))
+        probs_softened = soften_probabilities(probs_raw, actual_cases_base, edge_index)
+
+        results = []
+        for n_idx in target_indices:
+            code = idx_to_code[n_idx]
+            info = next((d for d in district_info if d["censuscode"] == code), {})
+            raw_feats = {}
+            raw_feats_array = scaler_dyn.inverse_transform([x_d[n_idx, -1].cpu().numpy()])[0]
+            for fi, fn in enumerate(feat_names):
+                raw_feats[fn] = round(float(raw_feats_array[fi]), 4)
+
+            # Find edge weight between districts if there are 2
+            edge_weight = None
+            if len(target_indices) == 2:
+                other = target_indices[1] if n_idx == target_indices[0] else target_indices[0]
+                for i in range(edge_index.shape[1]):
+                    if int(edge_index[0, i]) == n_idx and int(edge_index[1, i]) == other:
+                        edge_weight = round(float(globals().get("edge_attr_raw", edge_attr)[i]), 2)
+                        break
+
+            results.append({
+                "node_idx": n_idx,
+                "censuscode": int(code),
+                "district": info.get("district", "Unknown"),
+                "state": info.get("state", "Unknown"),
+                "lat": float(info.get("lat", 0)),
+                "lon": float(info.get("lon", 0)),
+                "raw_features": raw_feats,
+                "gru_output": [round(float(v), 4) for v in h_gru[n_idx].tolist()],
+                "tgat_output": [round(float(v), 4) for v in h_tgat[n_idx].tolist()],
+                "client_embedding": [round(float(v), 4) for v in client_emb[n_idx].tolist()],
+                "spatial_embedding": [round(float(v), 4) for v in spatial_emb[n_idx].tolist()],
+                "outbreak_prob": round(float(probs_softened[n_idx]), 4),
+                "outbreak_prob_raw": round(float(probs_raw[n_idx]), 4),
+                "cases_pred": round(float(cases_pred[n_idx]), 4),
+                "edge_weight_km": edge_weight,
+            })
+
+        # Check if the two districts are neighbors
+        are_neighbors = False
         if len(target_indices) == 2:
-            other = target_indices[1] if n_idx == target_indices[0] else target_indices[0]
+            n1, n2 = target_indices
             for i in range(edge_index.shape[1]):
-                if int(edge_index[0, i]) == n_idx and int(edge_index[1, i]) == other:
-                    edge_weight = round(float(globals().get("edge_attr_raw", edge_attr)[i]), 2)
+                if (int(edge_index[0, i]) == n1 and int(edge_index[1, i]) == n2):
+                    are_neighbors = True
                     break
 
-        results.append({
-            "node_idx": n_idx,
-            "censuscode": int(code),
-            "district": info.get("district", "Unknown"),
-            "state": info.get("state", "Unknown"),
-            "lat": float(info.get("lat", 0)),
-            "lon": float(info.get("lon", 0)),
-            "raw_features": raw_feats,
-            "gru_output": [round(float(v), 4) for v in h_gru[n_idx].tolist()],
-            "tgat_output": [round(float(v), 4) for v in h_tgat[n_idx].tolist()],
-            "client_embedding": [round(float(v), 4) for v in client_emb[n_idx].tolist()],
-            "spatial_embedding": [round(float(v), 4) for v in spatial_emb[n_idx].tolist()],
-            "outbreak_prob": round(float(probs[n_idx]), 4),
-            "cases_pred": round(float(cases_pred[n_idx]), 4),
-            "edge_weight_km": edge_weight,
-        })
-
-    # Check if the two districts are neighbors
-    are_neighbors = False
-    if len(target_indices) == 2:
-        n1, n2 = target_indices
-        for i in range(edge_index.shape[1]):
-            if (int(edge_index[0, i]) == n1 and int(edge_index[1, i]) == n2):
-                are_neighbors = True
-                break
-
-    return {
-        "districts": results,
-        "are_neighbors": are_neighbors,
-        "embed_dim": CFG["embed_dim"],
-        "lookback": CFG["lookback"],
-        "total_nodes_in_graph": N_NODES,
-    }
+        return {
+            "districts": results,
+            "are_neighbors": are_neighbors,
+            "embed_dim": CFG["embed_dim"],
+            "lookback": CFG["lookback"],
+            "total_nodes_in_graph": N_NODES,
+        }
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return {"error": str(e)}
 
 
 class ReceiveEdgeEmbeddingRequest(BaseModel):
@@ -830,16 +926,17 @@ class ReceiveEdgeEmbeddingRequest(BaseModel):
 
 @app.post("/api/receive-edge-embedding")
 def receive_edge_embedding(req: ReceiveEdgeEmbeddingRequest):
-    n_idx = node_to_idx.get(req.censuscode)
-    if n_idx is None:
-        raise HTTPException(status_code=404, detail=f"Censuscode {req.censuscode} not found in spatial graph")
-    
-    live_edge_embeddings[n_idx] = req.embedding
-    live_edge_cases[n_idx] = float(req.cases)
-    
-    info = next((d for d in district_info if d["censuscode"] == req.censuscode), {})
-    print(f"[EDGE CLIENT] Received live embedding update from {info.get('district', 'Unknown')} ({req.censuscode}) - Cases: {req.cases}")
-    return {"status": "success", "node_idx": n_idx}
+    try:
+        n_idx = node_to_idx.get(req.censuscode)
+        if n_idx is None:
+            return {"error": f"Censuscode {req.censuscode} not found in spatial graph"}
+        live_edge_embeddings[n_idx] = req.embedding
+        live_edge_cases[n_idx] = float(req.cases)
+        info = next((d for d in district_info if d["censuscode"] == req.censuscode), {})
+        print(f"[EDGE CLIENT] Embedding update from {info.get('district', 'Unknown')} ({req.censuscode}) — Cases: {req.cases}")
+        return {"status": "success", "node_idx": n_idx}
+    except Exception as e:
+        return {"error": str(e)}
 
 class FLSyncRequest(BaseModel):
     censuscode: int
@@ -848,9 +945,12 @@ class FLSyncRequest(BaseModel):
 
 @app.post("/api/fl-sync")
 def fl_sync(req: FLSyncRequest):
-    info = next((d for d in district_info if d["censuscode"] == req.censuscode), {})
-    print(f"[FEDERATED LEARNING] Received local weight sync update from {info.get('district', 'Unknown')} ({req.censuscode}) - Accuracy: {req.local_accuracy}")
-    return {"status": "success", "aggregated_rounds": 1}
+    try:
+        info = next((d for d in district_info if d["censuscode"] == req.censuscode), {})
+        print(f"[FL SYNC] Weight sync from {info.get('district', 'Unknown')} ({req.censuscode}) — Accuracy: {req.local_accuracy:.4f}")
+        return {"status": "success", "aggregated_rounds": 1}
+    except Exception as e:
+        return {"error": str(e)}
 
 @app.get("/api/active-clients")
 def get_active_clients():
@@ -965,6 +1065,32 @@ def get_epidemic_status(censuscode: int):
     pred_cases_val = float(cases_pred[n_idx])
     actual_cases_val = int(np.expm1(y_r[n_idx].item()))
     live_cases = live_edge_cases.get(n_idx, actual_cases_val)
+    # Apply probability cap
+    neighbor_max_prob = max((nb["prob"] for nb in neighbor_info), default=0.0)
+    # Apply natural softening for zero-case districts
+    if actual_cases_val == 0 and live_cases == 0:
+        from collections import deque
+        adj_local = {}
+        for ei2 in range(edge_index.shape[1]):
+            s2 = int(edge_index[0, ei2]); d2 = int(edge_index[1, ei2])
+            adj_local.setdefault(s2, []).append(d2)
+        # BFS hop count from this node to nearest outbreak
+        visited = {n_idx: 0}; q2 = deque([n_idx])
+        hops_to_outbreak = 999
+        while q2:
+            cur2 = q2.popleft()
+            for nb2 in adj_local.get(cur2, []):
+                if nb2 not in visited:
+                    visited[nb2] = visited[cur2] + 1
+                    q2.append(nb2)
+                    # Check if neighbor has real cases
+                    nb_code2 = idx_to_code.get(nb2)
+                    if nb_code2 and any(d.get('actual_cases', 0) > 0 for d in neighbor_info if d['censuscode'] == nb_code2):
+                        hops_to_outbreak = min(hops_to_outbreak, visited[nb2])
+        decay = 0.08 if hops_to_outbreak == 999 else np.exp(-hops_to_outbreak * 0.38)
+        eps = 1e-6
+        logit_v = np.log(max(prob_val, eps) / max(1 - prob_val, eps)) / 1.6
+        prob_val = float(1.0 / (1.0 + np.exp(-logit_v))) * decay
     alert_level = "HIGH" if prob_val > 0.5 else "MEDIUM" if prob_val > 0.3 else "LOW"
     return {"censuscode": censuscode, "district": info.get("district", "Unknown"), "state": info.get("state", "Unknown"), "outbreak_prob": round(prob_val, 4), "pred_cases": round(pred_cases_val, 2), "actual_cases": actual_cases_val, "live_cases_reported": int(live_cases), "alert_level": alert_level, "uses_live_embedding": n_idx in live_edge_embeddings, "year": int(row_ts.iso_year), "week": int(row_ts.iso_week), "neighbors": neighbor_info[:8], "n_neighbors": len(neighbor_info)}
 

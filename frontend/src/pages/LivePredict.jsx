@@ -11,6 +11,7 @@ export default function LivePredict() {
   const [nodeDetail, setNodeDetail] = useState(null)
   const [temporalXAI, setTemporalXAI] = useState(null)
   const [spatialXAI, setSpatialXAI] = useState(null)
+  const [shapSummary, setShapSummary] = useState(null)
 
   const [isPlaying, setIsPlaying] = useState(false)
 
@@ -57,6 +58,12 @@ export default function LivePredict() {
       const res = await fetch(`/api/district-node/${pred.code}`)
       const json = await res.json()
       setNodeDetail(json)
+
+      // Fetch SHAP heatmap
+      fetch(`/api/shap-summary/${pred.code}?t=${timeIdx}`)
+        .then(r => r.json())
+        .then(setShapSummary)
+        .catch(err => console.error(err))
       
       // Fetch XAI attributions
       fetch(`/api/xai/temporal?censuscode=${pred.code}&t=${timeIdx}`)
@@ -148,11 +155,12 @@ export default function LivePredict() {
                     lat: mapData.map(p => p.lat),
                     mode: 'markers',
                     marker: {
-                      size: mapData.map(p => 4 + p.prob * 22),
+                      size: mapData.map(p => 4 + p.prob * 10),
                       color: mapData.map(p => p.prob),
                       colorscale: [[0, '#10b981'], [0.2, '#34d399'], [0.4, '#fbbf24'], [0.6, '#f97316'], [1, '#ef4444']],
                       cmin: 0, cmax: Math.max(data.max_prob, 0.5),
-                      line: { width: 1, color: 'rgba(255,255,255,0.8)' },
+                      opacity: 0.72,
+                      line: { width: 0.8, color: 'rgba(255,255,255,0.6)' },
                       colorbar: {
                         title: { text: 'Risk', font: { size: 10, color: '#64748b', family: 'DM Sans' } },
                         tickfont: { size: 9, color: '#94a3b8' },
@@ -258,38 +266,44 @@ export default function LivePredict() {
                         })}
                       </div>
 
-                      {/* SHAP Explainability */}
+                      {/* SHAP Explainability — Temporal Heatmap */}
                       <div style={{ marginTop: '1rem', borderTop: '1px solid var(--slate-100)', paddingTop: '1rem' }}>
-                        <div className="card-title" style={{ fontSize: '0.75rem', color: 'var(--slate-500)', marginBottom: '0.8rem' }}>SHAP Temporal Feature Importance</div>
-                        {temporalXAI ? (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                            {Object.entries(
-                              temporalXAI.reduce((acc, week) => {
-                                Object.entries(week.contributions).forEach(([k, v]) => {
-                                  acc[k] = (acc[k] || 0) + Math.abs(v)
-                                })
-                                return acc
-                              }, {})
-                            )
-                            .sort((a, b) => b[1] - a[1])
-                            .slice(0, 4)
-                            .map(([feat, val]) => {
-                              const pct = Math.min(val * 100, 100);
-                              return (
-                                <div key={feat} style={{ fontSize: '0.7rem' }}>
-                                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
-                                    <span className="mono" style={{ textTransform: 'capitalize', color: 'var(--slate-700)', fontWeight: 500 }}>{feat.replace('_', ' ')}</span>
-                                    <span style={{ color: 'var(--slate-400)' }}>{(val * 10).toFixed(2)} SHAP</span>
-                                  </div>
-                                  <div style={{ width: '100%', background: '#e2e8f0', height: 6, borderRadius: 3 }}>
-                                    <div style={{ width: `${Math.max(pct, 5)}%`, background: 'var(--indigo-500)', height: '100%', borderRadius: 3 }} />
-                                  </div>
-                                </div>
-                              )
-                            })}
-                          </div>
-                        ) : (
-                          <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)' }}>Calculating temporal SHAP values...</div>
+                        <div className="card-title" style={{ fontSize: '0.75rem', color: 'var(--slate-500)', marginBottom: '0.4rem' }}>
+                          SHAP Temporal Feature Importance
+                          <span style={{ fontSize: '0.6rem', fontWeight: 400, marginLeft: 6, color: 'var(--slate-400)' }}>
+                            🟢 green = risk-increasing &nbsp;🔴 red = risk-reducing
+                          </span>
+                        </div>
+                        {shapSummary?.matrix ? (() => {
+                          const topFeats = shapSummary.feature_importance.slice(0, 6)
+                          const featNames = topFeats.map(f => f.feature.replace(/_/g,' ').toUpperCase())
+                          const featIndices = topFeats.map(f => shapSummary.features.indexOf(f.feature))
+                          const z = featIndices.map(fi => shapSummary.matrix.map(row => row[fi]))
+                          return (
+                            <Plot
+                              data={[{
+                                type: 'heatmap',
+                                z,
+                                x: shapSummary.week_labels,
+                                y: featNames,
+                                colorscale: [[0,'#ef4444'],[0.5,'#f9fafb'],[1,'#22c55e']],
+                                zmid: 0,
+                                showscale: true,
+                                colorbar: { thickness: 8, len: 0.9, tickfont: { size: 7, color:'#94a3b8' } }
+                              }]}
+                              layout={{
+                                margin: { t:5, b:30, l:120, r:20 },
+                                paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+                                height: 175,
+                                xaxis: { tickfont: { size:9, family:'DM Sans', color:'#64748b' } },
+                                yaxis: { tickfont: { size:8, family:'DM Sans', color:'#475569' }, automargin: true }
+                              }}
+                              config={{ displayModeBar: false, responsive: true }}
+                              style={{ width: '100%' }}
+                            />
+                          )
+                        })() : (
+                          <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)' }}>Loading SHAP heatmap...</div>
                         )}
                       </div>
 
