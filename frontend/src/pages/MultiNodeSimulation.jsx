@@ -9,6 +9,51 @@ const PRESET_NODES = [
   { censuscode: 577, district: "Mysore", hospital: "Mysore District Hospital", port: 8004 }
 ]
 
+const getEmbeddingExplanation = (node) => {
+  const prob = node.outbreak_prob;
+  const isLive = node.is_live;
+  const l2 = node.l2_norm;
+  const mean = node.mean;
+  const std = node.std;
+
+  if (node.name === "Bangalore") {
+    if (prob > 0.4) {
+      return `High urban transit volume & L2 shift (${l2.toFixed(2)}) signal rapid regional outbreak propagation.`;
+    } else if (prob > 0.2) {
+      return `Moderate urban connectivity fluctuations detected; seasonal variables showing steady increase.`;
+    } else {
+      return `Stable city transit baseline; regional latent embedding remains within expected normal bounds.`;
+    }
+  } else if (node.name === "Coimbatore") {
+    if (prob > 0.4) {
+      return `Severe environmental anomalies & high precipitation influence vector weights (Std: ${std.toFixed(2)}).`;
+    } else if (prob > 0.2) {
+      return `Monsoon precipitation and agricultural moisture indices are driving moderate vector activity.`;
+    } else {
+      return `Climate and vegetative features in equilibrium; local node reflects standard stable behavior.`;
+    }
+  } else if (node.name === "New Delhi") {
+    if (prob > 0.4) {
+      return `High metropolitan density & strong coupling signals (L2: ${l2.toFixed(2)}) alert immediate outbreak onset.`;
+    } else if (prob > 0.2) {
+      return `Early seasonal variations and air/travel quality factors showing low-level upward risk signals.`;
+    } else {
+      return `Capital region demographic trends are stable; neural state projects a low epidemic threat level.`;
+    }
+  } else if (node.name === "Mysore") {
+    if (prob > 0.4) {
+      return `Sharp tourism volume changes and epidemiological spikes generate anomalous vector weights.`;
+    } else if (prob > 0.2) {
+      return `Mild transit/tourist trends combined with seasonal weather indicators show marginal shifts.`;
+    } else {
+      return `Low tourist traffic and steady local indices keep embedding patterns well within normal range.`;
+    }
+  }
+
+  // Fallback default dynamic explanation
+  return `${isLive ? 'Active edge client' : 'Simulated client'} state is stable (L2: ${l2.toFixed(2)}, Mean: ${mean.toFixed(2)}).`;
+}
+
 const casesData = [
   {
     name: "Rohith S. Panchamukhi",
@@ -627,6 +672,22 @@ export default function MultiNodeSimulation() {
                       <span>Mean: <strong>{node.mean.toFixed(2)}</strong></span>
                       <span>Std: <strong>{node.std.toFixed(2)}</strong></span>
                     </div>
+                    
+                    {/* Dynamic Explanation */}
+                    <div style={{ 
+                      fontSize: '0.72rem', 
+                      color: 'var(--slate-500)', 
+                      background: '#f8fafc', 
+                      padding: '6px 10px', 
+                      borderRadius: '6px', 
+                      borderLeft: `3px solid ${node.outbreak_prob > 0.5 ? '#ef4444' : node.outbreak_prob > 0.3 ? '#f59e0b' : '#10b981'}`,
+                      marginBottom: '0.8rem',
+                      lineHeight: '1.25',
+                      fontStyle: 'italic'
+                    }}>
+                      {getEmbeddingExplanation(node)}
+                    </div>
+
                     <div className="embedding-grid">
                       {node.embedding.slice(0, 32).map((v, i) => {
                         const intensity = Math.min(Math.abs(v) * 2.5, 1)
