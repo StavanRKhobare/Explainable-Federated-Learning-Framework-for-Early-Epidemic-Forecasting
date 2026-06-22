@@ -173,6 +173,19 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--slate-300); border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--slate-400); }
+
+        /* Tabs Navigation */
+        .tab-btn {
+            background: transparent; color: var(--slate-500); border: none; font-family: inherit; font-size: 0.85rem; font-weight: 600; padding: 10px 16px; border-radius: 8px; cursor: pointer; transition: all 0.2s;
+        }
+        .tab-btn:hover {
+            color: var(--slate-800); background: var(--slate-100);
+        }
+        .tab-btn.active {
+            background: linear-gradient(135deg, var(--blue-500), var(--blue-600)) !important;
+            color: var(--white) !important;
+            box-shadow: 0 4px 6px rgba(37,99,235,0.15);
+        }
     </style>
 </head>
 <body>
@@ -221,7 +234,19 @@
             </div>
         </div>
 
-        <div class="grid-main">
+        <!-- Navigation Tabs -->
+        <div style="display: flex; gap: 12px; margin-bottom: 1.5rem; background: var(--white); padding: 6px; border-radius: var(--radius-sm); border: 1px solid var(--slate-200); box-shadow: 0 2px 4px rgba(0,0,0,0.01);">
+            <button class="tab-btn active" onclick="switchTab('ops')" style="flex: 1;">
+                ⚡ Edge Operations
+            </button>
+            <button class="tab-btn" onclick="switchTab('analytics')" style="flex: 1;">
+                📊 Clinical Analytics & AI Reports
+            </button>
+        </div>
+
+        <!-- View: Edge Operations -->
+        <div id="view-ops">
+            <div class="grid-main">
             <!-- Left Column -->
             <div class="left-col">
                 <div class="card">
@@ -356,7 +381,73 @@
                 </button>
             </div>
         </div>
-    </div>
+        </div> <!-- Close #view-ops -->
+
+        <!-- View: Advanced Clinical Analytics -->
+        <div id="view-analytics" style="display: none;">
+            <div class="grid-main">
+                <!-- Left Column: Graphs Grid -->
+                <div class="left-col">
+                    <div class="card" style="margin-bottom: 1.5rem;">
+                        <div class="card-title">Advanced Patient Demographics & Diagnostics</div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                            <div>
+                                <div style="font-size: 0.75rem; font-weight: 700; color: var(--slate-500); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+                                    <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--red-500);"></div>
+                                    DENGUE CLASSIFICATION DISTRIBUTION
+                                </div>
+                                <div id="chart-cases" style="height: 240px; background: var(--slate-50); border-radius: var(--radius-xs); border: 1px solid var(--slate-100);"></div>
+                            </div>
+                            
+                            <div>
+                                <div style="font-size: 0.75rem; font-weight: 700; color: var(--slate-500); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+                                    <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--amber-500);"></div>
+                                    FEBRILE TEMPERATURE CLUSTERS
+                                </div>
+                                <div id="chart-temps" style="height: 240px; background: var(--slate-50); border-radius: var(--radius-xs); border: 1px solid var(--slate-100);"></div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div style="font-size: 0.75rem; font-weight: 700; color: var(--slate-500); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+                                <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--blue-500);"></div>
+                                NLP EXTRACTED SYMPTOM PREVALENCE
+                              </div>
+                            <div id="chart-symptoms" style="height: 240px; background: var(--slate-50); border-radius: var(--radius-xs); border: 1px solid var(--slate-100);"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right Column: AI Insights -->
+                <div class="right-col">
+                    <div class="card">
+                        <div class="card-title">Groq AI Summarizer</div>
+                        <p style="font-size: 0.72rem; color: var(--slate-500); line-height: 1.4; margin-bottom: 12px;">
+                            Analyze patient symptoms, fevers, and classification rates to produce clinical epidemiologic summaries.
+                        </p>
+                        <div class="form-group">
+                            <label>Groq API Key (saved locally)</label>
+                            <input type="text" id="groq-key" placeholder="gsk_..." style="font-size: 0.8rem; padding: 10px;">
+                        </div>
+                        <button class="btn btn-primary" onclick="generateAiSummary()" id="btn-summary">
+                            ✨ Generate AI Summary Report
+                        </button>
+                    </div>
+                    
+                    <div class="card" style="padding: 1.2rem; border-color: var(--blue-200); background: #fdfdfd;">
+                        <div class="card-title" style="margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+                            <div style="width: 6px; height: 6px; border-radius: 50%; background: var(--blue-500);"></div>
+                            Clinical AI Analysis
+                        </div>
+                        <div id="ai-report-box" style="font-size: 0.82rem; line-height: 1.6; color: var(--slate-700); min-height: 200px; max-height: 380px; overflow-y: auto; padding-right: 4px;">
+                            <span style="color: var(--slate-400);">Click the button above to run local clinical LLM summarization.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> <!-- Close .page -->
 
     <!-- Inject JS state from server here -->
     <script id="init-data" type="application/json">
@@ -819,6 +910,189 @@
                 log(`Live weather loaded: ${d.temp_c.toFixed(1)}°C -> ${d.temp_k.toFixed(1)}K, Precip: ${d.preci_mm.toFixed(1)}mm`);
             } catch(ex) { log('Weather fetch error: ' + ex); }
         }
+
+        // --- Tab Switcher & Clinical Analytics ---
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            if(tab === 'ops') {
+                document.querySelector('.tab-btn[onclick="switchTab(\'ops\')"]').classList.add('active');
+                document.getElementById('view-ops').style.display = 'block';
+                document.getElementById('view-analytics').style.display = 'none';
+            } else {
+                document.querySelector('.tab-btn[onclick="switchTab(\'analytics\')"]').classList.add('active');
+                document.getElementById('view-ops').style.display = 'none';
+                document.getElementById('view-analytics').style.display = 'block';
+                loadAnalytics();
+            }
+        }
+
+        async function loadAnalytics() {
+            try {
+                const res = await fetch('/api/analytics-stats');
+                const data = await res.json();
+                drawCaseChart(data.status_counts);
+                drawSymptomChart(data.symptom_counts);
+                drawTempChart(data.temp_counts);
+            } catch(e) { console.error("Error loading analytics data", e); }
+        }
+
+        function drawCaseChart(counts) {
+            const data = [{
+                values: [counts.positive, counts.negative, counts.unknown],
+                labels: ['Positive', 'Negative', 'Suspected/Unknown'],
+                type: 'pie',
+                hole: 0.5,
+                marker: {
+                    colors: ['#ef4444', '#10b981', '#fbbf24']
+                },
+                textinfo: 'percent',
+                hoverinfo: 'label+value',
+                textfont: { family: 'DM Sans', size: 10 }
+            }];
+            const layout = {
+                margin: { t: 15, b: 15, l: 15, r: 15 },
+                paper_bgcolor: 'transparent',
+                showlegend: true,
+                legend: {
+                    orientation: 'h',
+                    y: -0.1,
+                    font: { size: 9, family: 'DM Sans' }
+                },
+                height: 220
+            };
+            Plotly.newPlot('chart-cases', data, layout, {displayModeBar: false, responsive: true});
+        }
+
+        function drawSymptomChart(counts) {
+            const sorted = Object.entries(counts).sort((a, b) => a[1] - b[1]);
+            const labels = sorted.map(x => x[0].toUpperCase());
+            const values = sorted.map(x => x[1]);
+            
+            const data = [{
+                x: values,
+                y: labels,
+                type: 'bar',
+                orientation: 'h',
+                marker: {
+                    color: 'rgba(59, 130, 246, 0.75)',
+                    line: { color: '#2563eb', width: 1.5 }
+                }
+            }];
+            const layout = {
+                margin: { t: 10, b: 30, l: 120, r: 20 },
+                paper_bgcolor: 'transparent',
+                plot_bgcolor: 'transparent',
+                xaxis: { showgrid: true, gridcolor: '#e2e8f0', tickfont: { size: 8, family: 'DM Sans' } },
+                yaxis: { tickfont: { size: 8, family: 'DM Sans' } },
+                height: 220
+            };
+            Plotly.newPlot('chart-symptoms', data, layout, {displayModeBar: false, responsive: true});
+        }
+
+        function drawTempChart(counts) {
+            const data = [{
+                x: ['AFEBRILE (<37.5°C)', 'FEBRILE (≥37.5°C)'],
+                y: [counts.afebrile, counts.febrile],
+                type: 'bar',
+                marker: {
+                    color: ['#3b82f6', '#f97316'],
+                    line: { color: ['#2563eb', '#ea580c'], width: 1.5 }
+                }
+            }];
+            const layout = {
+                margin: { t: 10, b: 30, l: 35, r: 20 },
+                paper_bgcolor: 'transparent',
+                plot_bgcolor: 'transparent',
+                xaxis: { tickfont: { size: 9, family: 'DM Sans' } },
+                yaxis: { showgrid: true, gridcolor: '#e2e8f0', tickfont: { size: 9, family: 'DM Sans' } },
+                height: 220
+            };
+            Plotly.newPlot('chart-temps', data, layout, {displayModeBar: false, responsive: true});
+        }
+
+        async function generateAiSummary() {
+            const key = document.getElementById('groq-key').value.trim();
+            if (key) {
+                localStorage.setItem('groq_api_key', key);
+            } else {
+                localStorage.removeItem('groq_api_key');
+            }
+            
+            const btn = document.getElementById('btn-summary');
+            const reportBox = document.getElementById('ai-report-box');
+            
+            btn.disabled = true;
+            btn.innerText = "⏳ Generating AI Report...";
+            reportBox.innerHTML = '<div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:180px;"><div class="pulse-dot" style="width:16px; height:16px; margin:0 0 10px 0;"></div><span style="font-weight:600; color:var(--slate-500);">Analyzing patient metrics...</span></div>';
+            
+            try {
+                const res = await fetch('/api/ai-summary', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({api_key: key})
+                });
+                const data = await res.json();
+                reportBox.innerHTML = formatMarkdown(data.summary);
+            } catch(e) {
+                reportBox.innerHTML = `<span style="color:var(--red-600); font-weight:bold;">Error generating AI report: ${e}</span>`;
+            }
+            btn.disabled = false;
+            btn.innerText = "✨ Generate AI Summary Report";
+        }
+
+        function formatMarkdown(text) {
+            if (!text) return "";
+            let html = text;
+            // Headers
+            html = html.replace(/^### (.*$)/gim, '<h3 style="font-size: 0.95rem; font-weight: 700; color: var(--slate-900); margin: 12px 0 6px 0;">$1</h3>');
+            html = html.replace(/^#### (.*$)/gim, '<h4 style="font-size: 0.85rem; font-weight: 600; color: var(--slate-800); margin: 10px 0 4px 0;">$1</h4>');
+            html = html.replace(/^## (.*$)/gim, '<h2 style="font-size: 1.1rem; font-weight: 700; color: var(--slate-900); margin: 14px 0 8px 0;">$1</h2>');
+            
+            // Formatting
+            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            html = html.replace(/`(.*?)`/g, '<code class="mono" style="background:var(--slate-100); padding:2px 6px; border-radius:4px; font-size:0.75rem; color:var(--blue-700);">$1</code>');
+            
+            // Lists & list items
+            html = html.replace(/^\-\s+\*\*(.*?)\*\*:\s+(.*$)/gim, '<li style="margin-bottom: 6px; list-style-type:square; font-size:0.8rem; color:var(--slate-600);"><strong style="color:var(--slate-800);">$1</strong>: $2</li>');
+            html = html.replace(/^\-\s+(.*$)/gim, '<li style="margin-bottom: 4px; list-style-type:square; font-size:0.8rem; color:var(--slate-600);">$1</li>');
+            html = html.replace(/^\d+\.\s+\*\*(.*?)\*\*:\s+(.*$)/gim, '<div style="margin-bottom: 6px; padding-left:14px; text-indent:-14px; font-size:0.8rem; color:var(--slate-600);"><strong style="color:var(--slate-800);">$1</strong>: $2</div>');
+            html = html.replace(/^\d+\.\s+(.*$)/gim, '<div style="margin-bottom: 6px; padding-left:14px; text-indent:-14px; font-size:0.8rem; color:var(--slate-600);">$1</div>');
+            
+            // Paragraphs
+            html = html.split('\n\n').map(p => {
+                if (p.trim().startsWith('<h') || p.trim().startsWith('<li') || p.trim().startsWith('<div')) return p;
+                return `<p style="margin: 0 0 10px 0; color: var(--slate-600); font-size:0.8rem;">${p}</p>`;
+            }).join('');
+            
+            return html;
+        }
+
+        // Load stored API key and auto-reload analytics if active
+        const _origInitApp = initApp;
+        initApp = function() {
+            _origInitApp();
+            
+            const savedKey = localStorage.getItem('groq_api_key');
+            if (savedKey) {
+                document.getElementById('groq-key').value = savedKey;
+            }
+        };
+
+        const _origDelete = deleteEhr;
+        deleteEhr = async function(idx) {
+            await _origDelete(idx);
+            if (document.getElementById('view-analytics').style.display === 'block') {
+                loadAnalytics();
+            }
+        };
+
+        const _origCsv = handleCsvUpload;
+        handleCsvUpload = async function(e) {
+            await _origCsv(e);
+            if (document.getElementById('view-analytics').style.display === 'block') {
+                loadAnalytics();
+            }
+        };
     </script>
 </body>
 </html>
