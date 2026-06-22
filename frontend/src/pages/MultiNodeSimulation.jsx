@@ -1090,25 +1090,26 @@ export default function MultiNodeSimulation() {
       {showFirewall && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          background: 'rgba(15, 23, 42, 0.85)', backdropFilter: 'blur(8px)',
+          background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(8px)',
           display: 'flex', justifyContent: 'center', alignItems: 'center',
           zIndex: 1000, padding: '2rem'
         }}>
           <div className="card" style={{
-            width: '100%', maxWidth: '950px', background: '#0f172a', color: '#f8fafc',
-            border: '1px solid #334155', borderRadius: '16px', padding: '2rem',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+            width: '100%', maxWidth: '950px', background: 'var(--white)', color: 'var(--slate-800)',
+            border: '1px solid var(--slate-200)', borderRadius: 'var(--radius)', padding: '2.2rem',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+            display: 'flex', flexDirection: 'column', gap: '1.2rem'
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid #334155', paddingBottom: '1rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--slate-200)', paddingBottom: '1rem' }}>
               <div>
-                <h2 style={{ margin: 0, fontSize: '1.5rem', color: '#38bdf8' }}>Edge Node Security Auditor Console</h2>
-                <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', color: '#94a3b8' }}>
+                <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 700, color: 'var(--slate-900)' }}>Edge Node Security Auditor Console</h2>
+                <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', color: 'var(--slate-500)' }}>
                   Simulate local HIPAA de-identification and the Split-Federated privacy firewall.
                 </p>
               </div>
               <button 
                 className="btn btn-outline" 
-                style={{ color: '#94a3b8', borderColor: '#475569', padding: '4px 12px' }}
+                style={{ padding: '6px 14px', fontSize: '0.8rem' }}
                 onClick={() => {
                   setShowFirewall(false);
                   setFwStatus('idle');
@@ -1119,38 +1120,48 @@ export default function MultiNodeSimulation() {
               </button>
             </div>
 
-            {/* Select EHR Record Dropdown */}
-            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '1.2rem', background: '#1e293b', padding: '10px', borderRadius: '8px' }}>
-              <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#e2e8f0' }}>Select Patient EHR:</span>
-              <select 
-                value={fwCase} 
-                onChange={(e) => {
-                  setFwCase(parseInt(e.target.value));
-                  setFwStatus('idle');
-                  setFwLogs([]);
-                }}
-                style={{ background: '#0f172a', color: '#f8fafc', border: '1px solid #475569', borderRadius: '4px', padding: '4px 8px', fontSize: '0.8rem' }}
-              >
-                <option value={0}>Case A: Rohith S. Panchamukhi (Fever & Joint Pain)</option>
-                <option value={1}>Case B: Aditi Sharma (Suspected Dengue Infection)</option>
-              </select>
-              <div style={{ display: 'flex', gap: '0.8rem', marginLeft: 'auto' }}>
+            {/* Select EHR Record Dropdown / Control Panel */}
+            <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', background: 'var(--slate-50)', border: '1px solid var(--slate-200)', padding: '12px 16px', borderRadius: 'var(--radius-sm)', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--slate-700)' }}>Select Patient EHR:</span>
+                <select 
+                  value={fwCase} 
+                  onChange={(e) => {
+                    setFwCase(parseInt(e.target.value));
+                    setFwStatus('idle');
+                    setFwLogs([]);
+                  }}
+                  className="select"
+                  style={{ padding: '6px 36px 6px 12px', fontSize: '0.8rem' }}
+                >
+                  <option value={0}>Case A: Rohith S. Panchamukhi (Fever & Joint Pain)</option>
+                  <option value={1}>Case B: Aditi Sharma (Suspected Dengue Infection)</option>
+                </select>
+              </div>
+              
+              <div style={{ display: 'flex', gap: '0.6rem', marginLeft: 'auto' }}>
                 <button 
                   onClick={() => { setFwMode('raw'); setFwStatus('idle'); setFwLogs([]); }} 
+                  className="btn"
                   style={{
-                    padding: '4px 12px', fontSize: '0.75rem', borderRadius: '4px', cursor: 'pointer',
-                    background: fwMode === 'raw' ? '#ef4444' : '#334155',
-                    color: '#fff', border: 'none', fontWeight: 'bold'
+                    padding: '8px 16px', fontSize: '0.78rem',
+                    background: fwMode === 'raw' ? 'var(--red-500)' : 'var(--white)',
+                    color: fwMode === 'raw' ? '#fff' : 'var(--red-500)',
+                    border: fwMode === 'raw' ? 'none' : '1px solid var(--red-200)',
+                    boxShadow: fwMode === 'raw' ? '0 2px 8px rgba(239, 68, 68, 0.2)' : 'none'
                   }}
                 >
                   Direct Raw Transmit (Unsafe)
                 </button>
                 <button 
                   onClick={() => { setFwMode('federated'); setFwStatus('idle'); setFwLogs([]); }} 
+                  className="btn"
                   style={{
-                    padding: '4px 12px', fontSize: '0.75rem', borderRadius: '4px', cursor: 'pointer',
-                    background: fwMode === 'federated' ? '#10b981' : '#334155',
-                    color: '#fff', border: 'none', fontWeight: 'bold'
+                    padding: '8px 16px', fontSize: '0.78rem',
+                    background: fwMode === 'federated' ? 'var(--emerald-500)' : 'var(--white)',
+                    color: fwMode === 'federated' ? '#fff' : 'var(--emerald-500)',
+                    border: fwMode === 'federated' ? 'none' : '1px solid var(--emerald-200)',
+                    boxShadow: fwMode === 'federated' ? '0 2px 8px rgba(16, 185, 129, 0.2)' : 'none'
                   }}
                 >
                   Federated Transmit (Secure)
@@ -1160,17 +1171,17 @@ export default function MultiNodeSimulation() {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', alignItems: 'stretch' }}>
               {/* Left Side: Edge Local Environment */}
-              <div style={{ border: '1px solid #334155', borderRadius: '12px', padding: '1.2rem', background: '#1e293b', display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+              <div style={{ border: '1px solid var(--slate-200)', borderRadius: 'var(--radius-sm)', padding: '1.2rem', background: '#ffffff', display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#38bdf8' }}>🏥 EDGE NODE (LOCAL HOSPITAL CLINIC)</span>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.05em', color: 'var(--blue-600)' }}>🏥 EDGE NODE (LOCAL HOSPITAL CLINIC)</span>
                 </div>
                 
                 <div>
-                  <label style={{ fontSize: '0.75rem', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>Incoming EHR Intake Note:</label>
+                  <label style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--slate-500)', display: 'block', marginBottom: '4px' }}>Incoming EHR Intake Note:</label>
                   <div style={{
-                    fontFamily: 'monospace', fontSize: '0.72rem', background: '#0f172a',
-                    padding: '10px', borderRadius: '6px', border: '1px solid #334155',
-                    color: '#f8fafc', minHeight: '80px', lineHeight: '1.4'
+                    fontFamily: 'monospace', fontSize: '0.72rem', background: 'var(--slate-50)',
+                    padding: '10px', borderRadius: 'var(--radius-xs)', border: '1px solid var(--slate-200)',
+                    color: 'var(--slate-800)', minHeight: '80px', lineHeight: '1.4'
                   }}>
                     {casesData[fwCase].text}
                   </div>
@@ -1178,32 +1189,32 @@ export default function MultiNodeSimulation() {
 
                 {fwMode === 'federated' && (
                   <div>
-                    <label style={{ fontSize: '0.75rem', color: '#10b981', display: 'block', marginBottom: '4px' }}>🛡️ Local De-identification Output:</label>
+                    <label style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--emerald-600)', display: 'block', marginBottom: '4px' }}>🛡️ Local De-identification Output (PII Redacted):</label>
                     <div style={{
-                      fontFamily: 'monospace', fontSize: '0.72rem', background: '#0f172a',
-                      padding: '10px', borderRadius: '6px', border: '1px solid #10b981',
-                      color: '#a7f3d0', minHeight: '80px', lineHeight: '1.4'
+                      fontFamily: 'monospace', fontSize: '0.72rem', background: '#f0fdf4',
+                      padding: '10px', borderRadius: 'var(--radius-xs)', border: '1px solid var(--emerald-200)',
+                      color: '#047857', minHeight: '80px', lineHeight: '1.4'
                     }}>
                       {casesData[fwCase].cleanText}
                     </div>
                   </div>
                 )}
 
-                <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
-                  <label style={{ display: 'block', marginBottom: '4px' }}>Fitted Local Numerical Features:</label>
-                  <table style={{ width: '100%', fontSize: '0.7rem', background: '#0f172a', borderRadius: '6px', padding: '6px' }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--slate-600)' }}>
+                  <label style={{ display: 'block', fontWeight: 600, color: 'var(--slate-500)', marginBottom: '4px' }}>Fitted Local Numerical Features:</label>
+                  <table style={{ width: '100%', fontSize: '0.72rem', background: 'var(--slate-50)', borderRadius: 'var(--radius-xs)', border: '1px solid var(--slate-200)', padding: '6px', borderCollapse: 'collapse' }}>
                     <tbody>
-                      <tr>
-                        <td style={{ color: '#38bdf8', padding: '2px 4px' }}>ner_symptoms</td>
-                        <td align="right" style={{ padding: '2px 4px' }}>{casesData[fwCase].features.symptoms} occurrences</td>
+                      <tr style={{ borderBottom: '1px solid var(--slate-200)' }}>
+                        <td style={{ color: 'var(--blue-600)', fontWeight: 600, padding: '6px 8px' }}>ner_symptoms</td>
+                        <td align="right" style={{ padding: '6px 8px', color: 'var(--slate-700)', fontWeight: 500 }}>{casesData[fwCase].features.symptoms} occurrences</td>
+                      </tr>
+                      <tr style={{ borderBottom: '1px solid var(--slate-200)' }}>
+                        <td style={{ color: 'var(--blue-600)', fontWeight: 600, padding: '6px 8px' }}>temp_k</td>
+                        <td align="right" style={{ padding: '6px 8px', color: 'var(--slate-700)', fontWeight: 500 }}>{casesData[fwCase].features.temp}</td>
                       </tr>
                       <tr>
-                        <td style={{ color: '#38bdf8', padding: '2px 4px' }}>temp_k</td>
-                        <td align="right" style={{ padding: '2px 4px' }}>{casesData[fwCase].features.temp}</td>
-                      </tr>
-                      <tr>
-                        <td style={{ color: '#38bdf8', padding: '2px 4px' }}>preci_mm</td>
-                        <td align="right" style={{ padding: '2px 4px' }}>{casesData[fwCase].features.preci}</td>
+                        <td style={{ color: 'var(--blue-600)', fontWeight: 600, padding: '6px 8px' }}>preci_mm</td>
+                        <td align="right" style={{ padding: '6px 8px', color: 'var(--slate-700)', fontWeight: 500 }}>{casesData[fwCase].features.preci}</td>
                       </tr>
                     </tbody>
                   </table>
@@ -1212,11 +1223,11 @@ export default function MultiNodeSimulation() {
                 {/* Secure local embedding preview */}
                 {fwMode === 'federated' && (
                   <div>
-                    <div style={{ fontSize: '0.72rem', color: '#38bdf8', marginBottom: '4px' }}>Generated Local 64-Dimensional Secure Embedding:</div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(16, 1fr)', gap: '2px', height: '24px', background: '#0f172a', padding: '4px', borderRadius: '4px' }}>
+                    <div style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--blue-600)', marginBottom: '4px' }}>Generated Local 64-Dimensional Secure Embedding:</div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(16, 1fr)', gap: '2px', height: '24px', background: 'var(--slate-50)', border: '1px solid var(--slate-200)', padding: '4px', borderRadius: 'var(--radius-xs)' }}>
                       {Array.from({ length: 64 }).map((_, i) => {
                         const val = Math.sin(i * 0.15 + fwCase) * 0.8;
-                        const bg = val >= 0 ? `rgba(56, 189, 248, ${0.3 + val})` : `rgba(239, 68, 68, ${0.3 + Math.abs(val)})`;
+                        const bg = val >= 0 ? `rgba(37, 99, 235, ${0.2 + val * 0.8})` : `rgba(239, 68, 68, ${0.2 + Math.abs(val) * 0.8})`;
                         return <div key={i} style={{ background: bg, borderRadius: '1px' }} title={`dim ${i}: ${val.toFixed(3)}`} />
                       })}
                     </div>
@@ -1225,24 +1236,22 @@ export default function MultiNodeSimulation() {
               </div>
 
               {/* Right Side: Security Audit Console */}
-              <div style={{ border: '1px solid #334155', borderRadius: '12px', padding: '1.2rem', background: '#090d16', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+              <div style={{ border: '1px solid var(--slate-200)', borderRadius: 'var(--radius-sm)', padding: '1.2rem', background: 'var(--slate-50)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.8rem' }}>
-                    <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#e2e8f0', fontFamily: 'monospace' }}>🖥️ SECURITY FIREWALL TERMINAL</span>
-                    <span style={{
-                      fontSize: '0.7rem', borderRadius: 4, padding: '2px 8px', fontWeight: 'bold',
-                      background: fwStatus === 'blocked' ? 'rgba(239, 68, 68, 0.2)' : fwStatus === 'passed' ? 'rgba(16, 185, 129, 0.2)' : '#1e293b',
-                      color: fwStatus === 'blocked' ? '#ef4444' : fwStatus === 'passed' ? '#10b981' : '#94a3b8'
-                    }}>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--slate-700)', fontFamily: 'monospace' }}>🖥️ SECURITY FIREWALL TERMINAL</span>
+                    <span className={`badge ${
+                      fwStatus === 'blocked' ? 'badge-red' : fwStatus === 'passed' ? 'badge-green' : 'badge-blue'
+                    }`} style={{ fontSize: '0.7rem', padding: '4px 10px', border: '1px solid transparent', borderColor: fwStatus === 'blocked' ? '#fca5a5' : fwStatus === 'passed' ? '#86efac' : 'var(--blue-200)' }}>
                       STATUS: {fwStatus.toUpperCase()}
                     </span>
                   </div>
 
                   {/* Terminal log window */}
                   <div style={{
-                    flex: 1, background: '#020617', border: '1px solid #1e293b', borderRadius: '6px',
+                    flex: 1, background: '#0f172a', border: '1px solid #1e293b', borderRadius: 'var(--radius-xs)',
                     padding: '12px', fontFamily: 'monospace', fontSize: '0.7rem', overflowY: 'auto',
-                    minHeight: '200px', maxHeight: '250px', color: '#38bdf8', display: 'flex', flexDirection: 'column', gap: '4px'
+                    minHeight: '220px', maxHeight: '250px', color: '#38bdf8', display: 'flex', flexDirection: 'column', gap: '4px'
                   }}>
                     {fwLogs.length === 0 ? (
                       <div style={{ color: '#64748b', fontStyle: 'italic', textAlign: 'center', marginTop: '4rem' }}>
@@ -1251,7 +1260,7 @@ export default function MultiNodeSimulation() {
                     ) : (
                       fwLogs.map((log, idx) => (
                         <div key={idx} style={{
-                          color: log.includes('ERROR') || log.includes('WARNING') || log.includes('CRITICAL') ? '#ef4444' : log.includes('PASS') || log.includes('cleared') ? '#10b981' : '#38bdf8'
+                          color: log.includes('ERROR') || log.includes('WARNING') || log.includes('CRITICAL') ? '#f87171' : log.includes('PASS') || log.includes('cleared') ? '#34d399' : '#38bdf8'
                         }}>
                           {log}
                         </div>
@@ -1262,7 +1271,7 @@ export default function MultiNodeSimulation() {
                   <div style={{ marginTop: '1rem', display: 'flex', gap: '0.8rem' }}>
                     <button 
                       className="btn btn-primary"
-                      style={{ flex: 1, padding: '10px', fontSize: '0.8rem', background: '#38bdf8', color: '#0f172a', fontWeight: 'bold' }}
+                      style={{ flex: 1, padding: '10px', fontSize: '0.8rem', fontWeight: 'bold' }}
                       onClick={runSecurityAudit}
                       disabled={fwStatus === 'scanning'}
                     >
@@ -1270,7 +1279,7 @@ export default function MultiNodeSimulation() {
                     </button>
                     <button 
                       className="btn btn-outline"
-                      style={{ padding: '10px 16px', fontSize: '0.8rem', color: '#94a3b8', borderColor: '#334155' }}
+                      style={{ padding: '10px 16px', fontSize: '0.8rem', color: 'var(--slate-500)' }}
                       onClick={() => { setFwStatus('idle'); setFwLogs([]); }}
                     >
                       Clear Logs
@@ -1281,7 +1290,7 @@ export default function MultiNodeSimulation() {
             </div>
 
             {/* Banner/Helper Info */}
-            <div style={{ marginTop: '1.2rem', background: '#1e293b', padding: '12px', borderRadius: '8px', fontSize: '0.75rem', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ background: 'var(--blue-50)', border: '1px solid var(--blue-100)', padding: '12px', borderRadius: 'var(--radius-sm)', fontSize: '0.75rem', color: 'var(--blue-900)', display: 'flex', alignItems: 'center', gap: '10px', lineHeight: '1.4' }}>
               <span style={{ fontSize: '1.5rem' }}>💡</span>
               <div>
                 <strong>How the Federated Firewall protects patient records:</strong> The local hospital node uses NLP to extract features locally. In <strong>Federated Mode</strong>, only anonymous 64-dimensional float embeddings are transmitted. If you switch to <strong>Direct Mode</strong>, the firewall intercepts the raw data block immediately and triggers a HIPAA security alarm.
