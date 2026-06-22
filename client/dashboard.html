@@ -425,11 +425,7 @@
                         <p style="font-size: 0.72rem; color: var(--slate-500); line-height: 1.4; margin-bottom: 12px;">
                             Analyze patient symptoms, fevers, and classification rates to produce clinical epidemiologic summaries.
                         </p>
-                        <div class="form-group">
-                            <label>Groq API Key (saved locally)</label>
-                            <input type="text" id="groq-key" placeholder="gsk_..." style="font-size: 0.8rem; padding: 10px;">
-                        </div>
-                        <button class="btn btn-primary" onclick="generateAiSummary()" id="btn-summary">
+                        <button class="btn btn-primary" onclick="generateAiSummary()" id="btn-summary" style="width: 100%;">
                             Generate AI Summary Report
                         </button>
                     </div>
@@ -1046,13 +1042,6 @@
         }
 
         async function generateAiSummary() {
-            const key = document.getElementById('groq-key').value.trim();
-            if (key) {
-                localStorage.setItem('groq_api_key', key);
-            } else {
-                localStorage.removeItem('groq_api_key');
-            }
-            
             const btn = document.getElementById('btn-summary');
             const reportBox = document.getElementById('ai-report-box');
             
@@ -1064,7 +1053,7 @@
                 const res = await fetch('/api/ai-summary', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({api_key: key})
+                    body: JSON.stringify({})
                 });
                 const data = await res.json();
                 reportBox.innerHTML = formatMarkdown(data.summary);
@@ -1102,15 +1091,10 @@
             return html;
         }
 
-        // Load stored API key and auto-reload analytics if active
+        // Auto-reload analytics if active
         const _origInitApp = initApp;
         initApp = function() {
             _origInitApp();
-            
-            const savedKey = localStorage.getItem('groq_api_key');
-            if (savedKey) {
-                document.getElementById('groq-key').value = savedKey;
-            }
         };
 
         const _origDelete = deleteEhr;

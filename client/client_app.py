@@ -19,6 +19,16 @@ from pydantic import BaseModel
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(PROJECT_ROOT)
 
+# Load environment variables from .env if it exists
+env_path = os.path.join(PROJECT_ROOT, ".env")
+if os.path.exists(env_path):
+    with open(env_path, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith("#") and "=" in line:
+                key, val = line.split("=", 1)
+                os.environ[key.strip()] = val.strip()
+
 from backend.server import FedXGNN, ClientTemporalModel, CFG
 
 # Import EHR parser
@@ -591,16 +601,17 @@ def get_ai_summary(req: AISummaryRequest):
             f"1. **Active Local Ingestion**: Increase surveillance frequency for incoming febrile patients presenting with retro-orbital pain or rashes.\n"
             f"2. **Mitigation Trigger**: Mobilize municipal vector-control teams for larvicidal spraying in adjacent clusters of District {district_code}.\n"
             f"3. **Federated Synchronization**: Transmit the encrypted 64-dim edge embedding vector to the central server immediately to update the spatial spillover predictions for neighboring districts.\n\n"
-            f"*(Note: Enter a valid Groq API Key in the panel to generate a live customized report using Llama-3).* "
+            f"*(Note: Set the GROQ_API_KEY environment variable in your .env file to generate a live customized report using Llama-3).* "
         )
 
-    if not req.api_key or not req.api_key.strip():
+    api_key = os.environ.get("GROQ_API_KEY") or (req.api_key.strip() if req.api_key else None)
+    if not api_key:
         return {"summary": generate_mock_report()}
         
     try:
         url = "https://api.groq.com/openai/v1/chat/completions"
         headers = {
-            "Authorization": f"Bearer {req.api_key.strip()}",
+            "Authorization": f"Bearer {api_key.strip()}",
             "Content-Type": "application/json"
         }
         payload = {
