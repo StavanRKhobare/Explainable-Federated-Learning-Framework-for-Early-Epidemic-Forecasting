@@ -762,7 +762,7 @@
                 if (d.error) { log('Weather error: ' + d.error); return; }
                 document.getElementById('week-temp').value = d.temp_k.toFixed(1);
                 document.getElementById('week-precip').value = d.preci_mm.toFixed(1);
-                log(`Live weather loaded: ${d.temp_c.toFixed(1)}°C → ${d.temp_k.toFixed(1)}K, Precip: ${d.preci_mm.toFixed(1)}mm`);
+                log(`Live weather loaded: ${d.temp_c.toFixed(1)}°C -> ${d.temp_k.toFixed(1)}K, Precip: ${d.preci_mm.toFixed(1)}mm`);
             } catch(ex) { log('Weather fetch error: ' + ex); }
         }
     </script>
