@@ -1,5 +1,5 @@
 """
-AeroSmart / EpiGraph AI — Epidemic Risk Intelligence Report
+EpiGraph AI — Epidemic Risk Intelligence Report
 Professional light-mode PDF generator using ReportLab platypus + pdfgen.canvas
 """
 
@@ -88,7 +88,7 @@ class PageCanvas(canvas.Canvas):
         self.setFillColor(WHITE)
         self.setFont("Helvetica-Bold", 9)
         self.drawString(LEFT_M, PAGE_H - TOP_CHROME + 9,
-                        "EpiGraph AI  \u00b7  AeroSmart Surveillance Platform")
+                        "EpiGraph AI  \u00b7  Epidemic Intelligence")
         self.setFillColor(BLUE_500)
         self.setFont("Helvetica", 8)
         self.drawRightString(PAGE_W - RIGHT_M, PAGE_H - TOP_CHROME + 9,
