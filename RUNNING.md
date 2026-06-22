@@ -122,3 +122,56 @@ tail -n 50 logs/client_blr.log    # Bangalore client output
 tail -n 50 logs/client_cbe.log    # Coimbatore client output
 tail -n 50 logs/client_del.log    # Delhi client output
 ```
+
+---
+
+## 📡 Multi-Laptop LAN Presentation Setup
+
+To run a collaborative live demonstration using two laptops connected to the same Local Area Network (LAN):
+
+### Laptop A (Main Server & Orchestration Node)
+Laptop A runs the central database server, the React visualization interface, and two local edge clients (Bangalore, Coimbatore).
+
+1. **Find Laptop A's LAN IP Address**:
+   - Open a command prompt/terminal on Laptop A and run:
+     - Windows: `ipconfig` (look for the IPv4 Address under your active Wi-Fi or Ethernet adapter, e.g., `192.168.1.10`)
+     - Mac/Linux: `ifconfig` or `ip a`
+   - Let's call this `<LaptopA_IP>`.
+
+2. **Start the GNN Server**:
+   ```bash
+   venv\Scripts\python backend/server.py
+   ```
+   *Note: Automatically binds to `0.0.0.0:8000`, accepting incoming traffic from the LAN.*
+
+3. **Start the React Frontend**:
+   ```bash
+   cd frontend
+   npm run dev
+   ```
+   *Note: Automatically runs on `0.0.0.0:3000` (or `3001` if port 3000 is occupied) and is fully accessible across the LAN.*
+
+4. **Start Laptop A's Local Client Nodes**:
+   ```bash
+   venv\Scripts\python client/client_app.py --port 8001 --censuscode 572 --name "Bangalore Hospital" --server http://localhost:8000
+   venv\Scripts\python client/client_app.py --port 8002 --censuscode 632 --name "Coimbatore Hospital" --server http://localhost:8000
+   ```
+
+---
+
+### Laptop B (Distributed Edge Node)
+Laptop B runs the remaining edge client nodes (Delhi, Mysore) and connects remotely to Laptop A's server.
+
+1. **Start the Edge Client Nodes**:
+   Run the edge client applications, pointing the `--server` parameter to Laptop A's LAN IP address:
+   ```bash
+   venv\Scripts\python client/client_app.py --port 8003 --censuscode 94 --name "Delhi Hospital" --server http://<LaptopA_IP>:8000
+   venv\Scripts\python client/client_app.py --port 8004 --censuscode 577 --name "Mysore Hospital" --server http://<LaptopA_IP>:8000
+   ```
+
+2. **Access the Central Interface from Laptop B**:
+   Open a browser on Laptop B and navigate to `http://<LaptopA_IP>:3000` (or the corresponding Vite port, e.g., `3001`) to view the live dashboard.
+
+3. **Inbound Port Access & Firewalls**:
+   - Ensure both laptops are connected to the same network profile, and set the connection profile to **Private** (Windows blocks incoming local traffic on Public network profiles).
+   - If Laptop B gets a connection timeout connecting to `http://<LaptopA_IP>:8000`, open **Windows Defender Firewall** on Laptop A and add an **Inbound Rule** to allow TCP traffic on ports `8000` and `3000`.
