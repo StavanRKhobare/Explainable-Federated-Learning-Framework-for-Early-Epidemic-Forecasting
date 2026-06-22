@@ -447,9 +447,8 @@ export default function MultiNodeSimulation() {
                         </span>
                       </div>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: 'var(--slate-500)', marginBottom: '0.5rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'flex-start', fontSize: '0.7rem', color: 'var(--slate-500)', marginBottom: '0.5rem' }}>
                       <span>Predicted Cases: <strong style={{ color: 'var(--slate-700)' }}>{node.pred_cases.toFixed(0)}</strong></span>
-                      <span>Actual Cases: <strong style={{ color: 'var(--slate-700)' }}>{node.actual_cases}</strong></span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: 'var(--slate-400)', marginBottom: '0.8rem', borderTop: '1px dashed var(--slate-100)', paddingTop: '0.4rem' }}>
                       <span>L2 Norm: <strong>{node.l2_norm.toFixed(2)}</strong></span>
@@ -470,44 +469,7 @@ export default function MultiNodeSimulation() {
                   </div>
                 ))}
 
-                {/* Similarity Matrix */}
-                {embedAnalytics.cosine_similarity && (
-                  <div style={{ border: '1px solid var(--slate-100)', borderRadius: 8, padding: '1rem', display: 'flex', flexDirection: 'column' }}>
-                    <div style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.5rem', color: 'var(--purple-600)' }}>
-                      Inter-Node Cosine Similarity
-                    </div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--slate-500)', marginBottom: '0.8rem' }}>
-                      Measuring alignment of disease progression features between hospitals.
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1, justifyContent: 'center' }}>
-                      {embedAnalytics.node_names.map((n1, i) => (
-                        <div key={n1} style={{ display: 'flex', gap: 4 }}>
-                          {embedAnalytics.node_names.map((n2, j) => {
-                            const sim = embedAnalytics.cosine_similarity[i][j]
-                            return (
-                              <div key={n2} style={{ 
-                                flex: 1, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                background: `rgba(16, 185, 129, ${Math.max(0, (sim - 0.9) * 10)})`,
-                                border: '1px solid var(--slate-200)', borderRadius: 4,
-                                fontSize: '0.75rem', color: sim > 0.95 ? '#064e3b' : 'var(--slate-600)',
-                                fontWeight: sim > 0.98 ? 700 : 400
-                              }} title={`${n1} vs ${n2}`}>
-                                {sim.toFixed(3)}
-                              </div>
-                            )
-                          })}
-                        </div>
-                      ))}
-                      <div style={{ display: 'flex', gap: 4, marginTop: 4 }}>
-                        {embedAnalytics.node_names.map(n => (
-                          <div key={n} style={{ flex: 1, textAlign: 'center', fontSize: '0.65rem', color: 'var(--slate-400)' }}>
-                            {n.substring(0, 3).toUpperCase()}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
+
               </div>
             </div>
           )}
