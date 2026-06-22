@@ -36,6 +36,7 @@ echo "  Central Server   → http://localhost:8000"
 echo "  Bangalore Client → http://localhost:8001"
 echo "  Coimbatore Client→ http://localhost:8002"
 echo "  New Delhi Client → http://localhost:8003"
+echo "  Mysore Client    → http://localhost:8004"
 echo "  Frontend (Vite)  → http://localhost:3000"
 echo "════════════════════════════════════════════════════════"
 echo ""
@@ -69,6 +70,11 @@ sleep 2
 
 $PYTHON -m client.client_app --port 8003 --censuscode 94 --name "New Delhi Hospital" > logs/client_del.log 2>&1 &
 echo "[*] Delhi client started (PID $!)"
+
+sleep 2
+
+$PYTHON -m client.client_app --port 8004 --censuscode 577 --name "Mysore District Hospital" > logs/client_mys.log 2>&1 &
+echo "[*] Mysore client started (PID $!)"
 
 # 5. Start frontend
 cd "$SCRIPT_DIR/frontend"

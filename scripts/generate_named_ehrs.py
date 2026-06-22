@@ -30,11 +30,18 @@ PATIENTS = {
         ("vivek_dengue_pos_40C",    "Vivek Singh",        45, "Male",   True,  40.1),
         ("sunita_dengue_neg_37C",   "Sunita Gupta",       60, "Female", False, 37.4),
     ],
+    "mysore": [
+        ("kiran_dengue_pos_39C",    "Kiran Gowda",        34, "Male",   True,  39.5),
+        ("lakshmi_dengue_neg_37C",  "Lakshmi Narayan",    29, "Female", False, 37.2),
+        ("prashanth_dengue_pos_40C","Prashanth Shetty",   41, "Male",   True,  40.0),
+        ("kavitha_dengue_neg_37C",  "Kavitha Rao",        52, "Female", False, 37.5),
+    ],
 }
 
 HOSPITALS = {
     "coimbatore": "COIMBATORE MEDICAL COLLEGE HOSPITAL",
     "delhi":      "NEW DELHI DISTRICT HOSPITAL",
+    "mysore":     "MYSORE DISTRICT HOSPITAL",
 }
 
 DENGUE_POS_SYMPTOMS = [
@@ -112,6 +119,7 @@ DATES = ["2024-06-10", "2024-07-22", "2024-08-05", "2024-09-14"]
 
 for city, patients in PATIENTS.items():
     city_dir = BASE / city
+    city_dir.mkdir(parents=True, exist_ok=True)
     for i, (tag, name, age, sex, is_dengue, temp_c) in enumerate(patients):
         visit_date = DATES[i % len(DATES)]
         content = build_named_ehr(HOSPITALS[city], name, age, sex, is_dengue, temp_c, visit_date)
@@ -132,4 +140,4 @@ for city, patients in PATIENTS.items():
     print(f"[OK] {simple_csv_path.name}  (70 rows)")
     print()
 
-print("Done — named patient EHRs and simple CSVs added for Coimbatore and Delhi.")
+print("Done — named patient EHRs and simple CSVs added for Coimbatore, Delhi, and Mysore.")

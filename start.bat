@@ -32,6 +32,7 @@ echo   Central Server   ^> http://localhost:8000
 echo   Bangalore Client ^> http://localhost:8001
 echo   Coimbatore Client^> http://localhost:8002
 echo   New Delhi Client ^> http://localhost:8003
+echo   Mysore Client    ^> http://localhost:8004
 echo   Frontend (Vite)  ^> http://localhost:5173
 echo ════════════════════════════════════════════════════════
 echo.
@@ -43,6 +44,7 @@ timeout /t 4 /nobreak >NUL
 start "Bangalore Client" cmd /k "call venv\Scripts\activate.bat && python client/client_app.py --port 8001 --censuscode 572 --name Bangalore"
 start "Coimbatore Client" cmd /k "call venv\Scripts\activate.bat && python client/client_app.py --port 8002 --censuscode 632 --name Coimbatore"
 start "Delhi Client" cmd /k "call venv\Scripts\activate.bat && python client/client_app.py --port 8003 --censuscode 94 --name Delhi"
+start "Mysore Client" cmd /k "call venv\Scripts\activate.bat && python client/client_app.py --port 8004 --censuscode 577 --name Mysore"
 
 REM 5. Frontend
 cd frontend

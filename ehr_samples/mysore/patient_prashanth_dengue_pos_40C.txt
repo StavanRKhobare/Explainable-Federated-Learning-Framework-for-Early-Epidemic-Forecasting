@@ -1,0 +1,30 @@
+====================================================
+  MYSORE DISTRICT HOSPITAL
+  CLINICAL ELECTRONIC HEALTH RECORD
+====================================================
+Patient Name  : Prashanth Shetty
+Age / Sex     : 41 / Male
+Date          : 2024-08-05
+Ward          : Isolation / Dengue Ward
+
+SYMPTOMS & VITALS:
+  Subject reports high-grade fever with chills, myalgia, vomiting, and diffuse skin rash since 3 days.
+  Recorded Vitals:
+    - Blood Pressure : 96/65 mmHg
+    - Pulse          : 98 bpm
+    - Temperature    : 40.0 °C  (104.0 °F)  [High Fever]
+    - SpO₂           : 97%
+
+DIAGNOSIS & LAB RESULTS:
+  Dengue NS1 Antigen Test : POSITIVE (detected)
+  IgM Antibody            : Positive
+  Platelet Count          : 118,135 /µL  [Normal]
+  WBC Count               : 2.7 × 10³/µL  [Leukopenia]
+  Blood Smear (Malaria)   : Negative
+
+  DIAGNOSIS: Dengue Fever – Non-Severe (WHO 2009 criteria)
+
+RECOMMENDATION:
+  Paracetamol 500 mg TDS for fever. Strict bed rest, aggressive oral/IV hydration. Avoid NSAIDs. Platelet monitoring every 24 hrs. Patient counselled on warning signs.
+
+====================================================

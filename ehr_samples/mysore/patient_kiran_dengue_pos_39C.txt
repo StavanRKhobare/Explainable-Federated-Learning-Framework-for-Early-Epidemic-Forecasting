@@ -1,0 +1,30 @@
+====================================================
+  MYSORE DISTRICT HOSPITAL
+  CLINICAL ELECTRONIC HEALTH RECORD
+====================================================
+Patient Name  : Kiran Gowda
+Age / Sex     : 34 / Male
+Date          : 2024-06-10
+Ward          : Isolation / Dengue Ward
+
+SYMPTOMS & VITALS:
+  Subject reports high-grade fever with chills, myalgia, vomiting, and diffuse skin rash since 3 days.
+  Recorded Vitals:
+    - Blood Pressure : 104/61 mmHg
+    - Pulse          : 102 bpm  [Tachycardia]
+    - Temperature    : 39.5 °C  (103.1 °F)  [High Fever]
+    - SpO₂           : 98%
+
+DIAGNOSIS & LAB RESULTS:
+  Dengue NS1 Antigen Test : POSITIVE (detected)
+  IgM Antibody            : Positive
+  Platelet Count          : 68,581 /µL  [Low]
+  WBC Count               : 3.0 × 10³/µL  [Leukopenia]
+  Blood Smear (Malaria)   : Negative
+
+  DIAGNOSIS: Dengue Fever – Non-Severe (WHO 2009 criteria)
+
+RECOMMENDATION:
+  Paracetamol 500 mg TDS for fever. Strict bed rest, aggressive oral/IV hydration. Avoid NSAIDs. Platelet monitoring every 24 hrs. Patient counselled on warning signs.
+
+====================================================
