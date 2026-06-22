@@ -422,11 +422,35 @@ export default function MultiNodeSimulation() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
                 {/* Embeddings grid */}
                 {embedAnalytics.nodes?.map(node => (
-                  <div key={node.censuscode} style={{ border: '1px solid var(--slate-100)', borderRadius: 8, padding: '1rem' }}>
-                    <div style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.5rem', color: 'var(--blue-600)' }}>
-                      {node.name} Client
+                  <div key={node.censuscode} style={{ border: '1px solid var(--slate-100)', borderRadius: 8, padding: '1rem', background: '#ffffff' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                      <div style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--blue-600)' }}>
+                        {node.name} Client
+                      </div>
+                      <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                        {node.is_live ? (
+                          <span style={{ background: '#ecfdf5', color: '#059669', fontSize: '0.65rem', fontWeight: 600, padding: '2px 6px', borderRadius: 4, border: '1px solid #d1fae5' }}>Active</span>
+                        ) : (
+                          <span style={{ background: '#fef2f2', color: '#dc2626', fontSize: '0.65rem', fontWeight: 600, padding: '2px 6px', borderRadius: 4, border: '1px solid #fee2e2' }}>Offline</span>
+                        )}
+                        <span style={{ 
+                          fontSize: '0.75rem', 
+                          fontWeight: 700, 
+                          padding: '2px 6px', 
+                          borderRadius: 4, 
+                          background: node.outbreak_prob > 0.5 ? '#fef2f2' : node.outbreak_prob > 0.3 ? '#fffbeb' : '#f0fdf4',
+                          color: node.outbreak_prob > 0.5 ? '#dc2626' : node.outbreak_prob > 0.3 ? '#d97706' : '#16a34a',
+                          border: `1px solid ${node.outbreak_prob > 0.5 ? '#fee2e2' : node.outbreak_prob > 0.3 ? '#fef3c7' : '#dcfce7'}`
+                        }}>
+                          Risk: {(node.outbreak_prob * 100).toFixed(1)}%
+                        </span>
+                      </div>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--slate-500)', marginBottom: '0.8rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: 'var(--slate-500)', marginBottom: '0.5rem' }}>
+                      <span>Predicted Cases: <strong style={{ color: 'var(--slate-700)' }}>{node.pred_cases.toFixed(0)}</strong></span>
+                      <span>Actual Cases: <strong style={{ color: 'var(--slate-700)' }}>{node.actual_cases}</strong></span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: 'var(--slate-400)', marginBottom: '0.8rem', borderTop: '1px dashed var(--slate-100)', paddingTop: '0.4rem' }}>
                       <span>L2 Norm: <strong>{node.l2_norm.toFixed(2)}</strong></span>
                       <span>Mean: <strong>{node.mean.toFixed(2)}</strong></span>
                       <span>Std: <strong>{node.std.toFixed(2)}</strong></span>

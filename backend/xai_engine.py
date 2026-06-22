@@ -8,11 +8,13 @@ class XAIEngine:
         self.model = model
         self.device = device
 
-    def explain_local_temporal(self, x_dyn_node, x_stat_node):
+    def explain_local_temporal(self, x_dyn_node, x_stat_node, n_idx, windows):
         """
         Compute SHAP values for the ClientTemporalModel of a single district.
         x_dyn_node: (1, 4, N_DYN) tensor of scaled dynamic features.
         x_stat_node: (1, N_STAT) tensor of static features.
+        n_idx: index of the target node in the spatial graph.
+        windows: global list of windows for background dataset construction.
         
         Returns signed SHAP values (shape: num_weeks x num_features).
         Positive values = feature INCREASES outbreak risk (green).
@@ -41,9 +43,15 @@ class XAIEngine:
         # Reshape input to flat array for SHAP
         flat_input = x_dyn_node.reshape(1, -1).cpu().numpy()
         
-        # Background: 10 zero-baseline samples (slightly varied for stability)
-        background = np.zeros((10, flat_size))
-        background += np.random.normal(0, 0.01, background.shape)  # tiny noise
+        # Build background dataset from actual historical windows of the target node
+        num_bg_samples = min(15, len(windows))
+        bg_indices = np.linspace(0, len(windows) - 1, num_bg_samples, dtype=int)
+        background_list = []
+        for idx in bg_indices:
+            x_w, _, _, _, _ = windows[idx]
+            bg_x = x_w[n_idx].cpu().numpy().reshape(-1)
+            background_list.append(bg_x)
+        background = np.array(background_list)
 
         explainer = shap.KernelExplainer(wrapper, background)
         shap_values = explainer.shap_values(flat_input, nsamples=50, silent=True)

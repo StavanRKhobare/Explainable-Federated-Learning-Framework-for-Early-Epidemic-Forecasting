@@ -194,6 +194,15 @@
     </div>
 
     <div class="page">
+        <!-- Hospital Header Banner -->
+        <div style="background: var(--white); border-radius: var(--radius); padding: 1.5rem; border: 1px solid var(--slate-200); margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);">
+            <div>
+                <h1 id="hospital-title-main" style="margin: 0; font-size: 1.8rem; font-weight: 700; color: var(--slate-900); letter-spacing: -0.025em;">Hospital Edge Node</h1>
+                <p id="hospital-subtitle" style="margin: 6px 0 0 0; font-size: 0.85rem; color: var(--slate-500); font-weight: 500;">Connected to Central Orchestration Hub</p>
+            </div>
+            <div id="hospital-badge" style="background: var(--blue-50); color: var(--blue-700); border: 1px solid var(--blue-100); font-weight: 700; padding: 6px 16px; border-radius: 9999px; font-size: 0.8rem; letter-spacing: 0.025em; font-family: 'JetBrains Mono', monospace;">Port: ----</div>
+        </div>
+
         <!-- Top Metrics -->
         <div class="metrics-grid">
             <div class="metric-box">
@@ -372,6 +381,11 @@
             
             document.getElementById('nav-hospital').innerText = CONFIG.name;
             document.getElementById('nav-census').innerText = CONFIG.censuscode;
+            
+            // Set prominent page header labels
+            document.getElementById('hospital-title-main').innerText = CONFIG.name;
+            document.getElementById('hospital-subtitle').innerText = `Census ID: ${CONFIG.censuscode} | Federated Client Node`;
+            document.getElementById('hospital-badge').innerText = `Port: ${CONFIG.port || 'N/A'}`;
             
             log('Edge node initialized. Central sync active (60s interval).');
             loadTimeline();

@@ -1037,7 +1037,7 @@ def get_temporal_xai(censuscode: int, t: int = Query(default=-1)):
     x_stat_node = X_stat[n_idx].unsqueeze(0) # (1, 2)
     
     # Run SHAP
-    shap_vals = xai_engine.explain_local_temporal(x_dyn_node, x_stat_node)
+    shap_vals = xai_engine.explain_local_temporal(x_dyn_node, x_stat_node, n_idx, windows)
     
     # Structure output
     feature_names = CFG["dynamic_features"]
@@ -1088,21 +1088,17 @@ def get_epidemic_status(censuscode: int):
     if n_idx is None:
         raise HTTPException(status_code=404, detail=f"Censuscode {censuscode} not found")
     t_idx = CURRENT_SIM_WINDOW
-    x_win, y_c, y_r, obs_m, t_target = windows[t_idx]
+    result = run_window(t_idx)
+    if result is None:
+        raise HTTPException(status_code=500, detail="Invalid time window")
+    probs, preds_r, _, truths_r, t_target = result
     row_ts = ts.iloc[t_target]
-    with torch.no_grad():
-        x_d = torch.nan_to_num(x_win.to(DEVICE), nan=0.0)
-        local_emb = model.client(x_d, X_stat.to(DEVICE))
-        for nid, emb_list in live_edge_embeddings.items():
-            local_emb[nid] = torch.tensor(emb_list, dtype=torch.float32, device=DEVICE)
-        spatial_emb = model.server(local_emb, edge_index.to(DEVICE), edge_attr.to(DEVICE))
-        fused = torch.cat([local_emb, spatial_emb], dim=-1)
-        cases_pred_norm, logit = model.head(fused)
-        probs = logit.sigmoid().cpu().numpy()
-        c_mean = model_params["cases_mean"]; c_std = model_params["cases_std"]
-        cases_pred = cases_pred_norm.cpu().numpy() * c_std + c_mean
-        if model_params["is_target_log"]: cases_pred = np.expm1(cases_pred)
-        cases_pred = np.maximum(cases_pred, 0.0)
+    
+    prob_val = float(probs[n_idx])
+    pred_cases_val = float(preds_r[n_idx])
+    actual_cases_val = int(truths_r[n_idx])
+    live_cases = live_edge_cases.get(n_idx, actual_cases_val)
+
     info = next((d for d in district_info if d["censuscode"] == censuscode), {})
     neighbor_info = []
     for i in range(edge_index.shape[1]):
@@ -1110,40 +1106,31 @@ def get_epidemic_status(censuscode: int):
         if s == n_idx:
             nb_code = idx_to_code[d_n]
             nb_info = next((di for di in district_info if di["censuscode"] == nb_code), {})
-            neighbor_info.append({"censuscode": int(nb_code), "name": nb_info.get("district", ""), "state": nb_info.get("state", ""), "prob": round(float(probs[d_n]), 4), "pred_cases": round(float(cases_pred[d_n]), 2), "actual_cases": int(np.expm1(y_r[d_n].item()))})
+            neighbor_info.append({
+                "censuscode": int(nb_code),
+                "name": nb_info.get("district", ""),
+                "state": nb_info.get("state", ""),
+                "prob": round(float(probs[d_n]), 4),
+                "pred_cases": round(float(preds_r[d_n]), 2),
+                "actual_cases": int(truths_r[d_n])
+            })
     neighbor_info.sort(key=lambda x: -x["prob"])
-    prob_val = float(probs[n_idx])
-    pred_cases_val = float(cases_pred[n_idx])
-    actual_cases_val = int(np.expm1(y_r[n_idx].item()))
-    live_cases = live_edge_cases.get(n_idx, actual_cases_val)
-    # Apply probability cap
-    neighbor_max_prob = max((nb["prob"] for nb in neighbor_info), default=0.0)
-    # Apply natural softening for zero-case districts
-    if actual_cases_val == 0 and live_cases == 0:
-        from collections import deque
-        adj_local = {}
-        for ei2 in range(edge_index.shape[1]):
-            s2 = int(edge_index[0, ei2]); d2 = int(edge_index[1, ei2])
-            adj_local.setdefault(s2, []).append(d2)
-        # BFS hop count from this node to nearest outbreak
-        visited = {n_idx: 0}; q2 = deque([n_idx])
-        hops_to_outbreak = 999
-        while q2:
-            cur2 = q2.popleft()
-            for nb2 in adj_local.get(cur2, []):
-                if nb2 not in visited:
-                    visited[nb2] = visited[cur2] + 1
-                    q2.append(nb2)
-                    # Check if neighbor has real cases
-                    nb_code2 = idx_to_code.get(nb2)
-                    if nb_code2 and any(d.get('actual_cases', 0) > 0 for d in neighbor_info if d['censuscode'] == nb_code2):
-                        hops_to_outbreak = min(hops_to_outbreak, visited[nb2])
-        decay = 0.08 if hops_to_outbreak == 999 else np.exp(-hops_to_outbreak * 0.38)
-        eps = 1e-6
-        logit_v = np.log(max(prob_val, eps) / max(1 - prob_val, eps)) / 1.6
-        prob_val = float(1.0 / (1.0 + np.exp(-logit_v))) * decay
     alert_level = "HIGH" if prob_val > 0.5 else "MEDIUM" if prob_val > 0.3 else "LOW"
-    return {"censuscode": censuscode, "district": info.get("district", "Unknown"), "state": info.get("state", "Unknown"), "outbreak_prob": round(prob_val, 4), "pred_cases": round(pred_cases_val, 2), "actual_cases": actual_cases_val, "live_cases_reported": int(live_cases), "alert_level": alert_level, "uses_live_embedding": n_idx in live_edge_embeddings, "year": int(row_ts.iso_year), "week": int(row_ts.iso_week), "neighbors": neighbor_info[:8], "n_neighbors": len(neighbor_info)}
+    return {
+        "censuscode": censuscode,
+        "district": info.get("district", "Unknown"),
+        "state": info.get("state", "Unknown"),
+        "outbreak_prob": round(prob_val, 4),
+        "pred_cases": round(pred_cases_val, 2),
+        "actual_cases": actual_cases_val,
+        "live_cases_reported": int(live_cases),
+        "alert_level": alert_level,
+        "uses_live_embedding": n_idx in live_edge_embeddings,
+        "year": int(row_ts.iso_year),
+        "week": int(row_ts.iso_week),
+        "neighbors": neighbor_info[:8],
+        "n_neighbors": len(neighbor_info)
+    }
 
 @app.get("/api/embedding-analytics")
 def get_embedding_analytics():
@@ -1151,21 +1138,20 @@ def get_embedding_analytics():
     CLIENT_CODES = [572, 632, 94]
     CLIENT_NAMES = {572: "Bangalore", 632: "Coimbatore", 94: "New Delhi"}
     t_idx = CURRENT_SIM_WINDOW
-    x_win, y_c, y_r, _, t_target = windows[t_idx]
+    result = run_window(t_idx)
+    if result is None:
+        return {"error": "Invalid time window"}
+    probs_all, cases_arr, _, truths_r, t_target = result
+    
+    # We still need local_emb for embeddings_matrix
+    x_win, _, _, _, _ = windows[t_idx]
     row_ts = ts.iloc[t_target]
     with torch.no_grad():
         x_d = torch.nan_to_num(x_win.to(DEVICE), nan=0.0)
         local_emb = model.client(x_d, X_stat.to(DEVICE))
         for nid, emb_list in live_edge_embeddings.items():
             local_emb[nid] = torch.tensor(emb_list, dtype=torch.float32, device=DEVICE)
-        spatial_emb = model.server(local_emb, edge_index.to(DEVICE), edge_attr.to(DEVICE))
-        fused_all = torch.cat([local_emb, spatial_emb], -1)
-        cases_all, logit_all = model.head(fused_all)
-        probs_all = logit_all.sigmoid().cpu().numpy()
-        c_mean = model_params["cases_mean"]; c_std = model_params["cases_std"]
-        cases_arr = cases_all.cpu().numpy() * c_std + c_mean
-        if model_params["is_target_log"]: cases_arr = np.expm1(np.maximum(cases_arr, 0))
-        else: cases_arr = np.maximum(cases_arr, 0)
+            
     nodes_data = []
     embeddings_matrix = []
     for code in CLIENT_CODES:
@@ -1173,8 +1159,19 @@ def get_embedding_analytics():
         if n_idx2 is None: continue
         emb = local_emb[n_idx2].cpu().numpy()
         embeddings_matrix.append(emb)
-        actual_cases = int(np.expm1(y_r[n_idx2].item()))
-        nodes_data.append({"censuscode": code, "name": CLIENT_NAMES.get(code, str(code)), "embedding": [round(float(v), 4) for v in emb], "l2_norm": round(float(np.linalg.norm(emb)), 4), "mean": round(float(np.mean(emb)), 4), "std": round(float(np.std(emb)), 4), "outbreak_prob": round(float(probs_all[n_idx2]), 4), "pred_cases": round(float(cases_arr[n_idx2]), 2), "actual_cases": actual_cases, "is_live": n_idx2 in live_edge_embeddings})
+        actual_cases = int(truths_r[n_idx2])
+        nodes_data.append({
+            "censuscode": code,
+            "name": CLIENT_NAMES.get(code, str(code)),
+            "embedding": [round(float(v), 4) for v in emb],
+            "l2_norm": round(float(np.linalg.norm(emb)), 4),
+            "mean": round(float(np.mean(emb)), 4),
+            "std": round(float(np.std(emb)), 4),
+            "outbreak_prob": round(float(probs_all[n_idx2]), 4),
+            "pred_cases": round(float(cases_arr[n_idx2]), 2),
+            "actual_cases": actual_cases,
+            "is_live": n_idx2 in live_edge_embeddings
+        })
     cosine_matrix = []
     for e1 in embeddings_matrix:
         row = [round(float(np.dot(e1, e2) / (np.linalg.norm(e1) * np.linalg.norm(e2) + 1e-8)), 4) for e2 in embeddings_matrix]
@@ -1192,7 +1189,7 @@ def get_shap_summary(censuscode: int, t: int = Query(default=-1)):
     row_ts = ts.iloc[t_target]
     x_dyn_node = x_win[n_idx].unsqueeze(0)
     x_stat_node = X_stat[n_idx].unsqueeze(0)
-    shap_vals = xai_engine.explain_local_temporal(x_dyn_node, x_stat_node)
+    shap_vals = xai_engine.explain_local_temporal(x_dyn_node, x_stat_node, n_idx, windows)
     feature_names = CFG["dynamic_features"]
     matrix = [[round(float(shap_vals[wi, fi]), 6) for fi in range(len(feature_names))] for wi in range(4)]
     feature_importance = []
