@@ -18,9 +18,13 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch_geometric.nn import GATConv
 from sklearn.preprocessing import StandardScaler
-from fastapi import FastAPI, Query, HTTPException
+from sklearn.decomposition import PCA
+from fastapi import FastAPI, Query, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from backend.xai_engine import XAIEngine
+from backend import database
+
+database.init_db()
 
 warnings.filterwarnings("ignore")
 torch.manual_seed(42)
@@ -422,6 +426,7 @@ def soften_probabilities(probs, actual_cases, edge_index_tensor, validate_realis
 # ── Global Live Client State ──────────────────────────────────────────────────
 live_edge_embeddings = {}  # maps node_idx -> list of 64 floats
 live_edge_cases = {}       # maps node_idx -> float cases
+live_edge_ips = {}         # maps node_idx -> client remote IP address string
 
 # ── Unified inference function (used by all endpoints) ─────────────────────────
 def run_unified_inference(x_d, y_c, y_r, override_embeddings=None, override_cases=None, validate_realism=True):
@@ -749,6 +754,20 @@ def predict(t: int = Query(default=-1, description="Window index")):
             "truth": int(truths_c[n_idx]),
         })
 
+    for p in all_preds:
+        database.log_prediction(
+            year=int(row_ts.iso_year),
+            week=int(row_ts.iso_week),
+            censuscode=p["code"],
+            district_name=p["name"],
+            state=p["state"],
+            prob=p["prob"],
+            pred_cases=p["pred_cases"],
+            actual_cases=p["actual_cases"],
+            truth=p["truth"],
+            is_simulated=0
+        )
+
     all_preds.sort(key=lambda x: -x["prob"])
 
     return {
@@ -1042,7 +1061,7 @@ class ReceiveEdgeEmbeddingRequest(BaseModel):
     week: Optional[int] = None
 
 @app.post("/api/receive-edge-embedding")
-def receive_edge_embedding(req: ReceiveEdgeEmbeddingRequest):
+def receive_edge_embedding(req: ReceiveEdgeEmbeddingRequest, request: Request):
     try:
         if req.year is not None and req.week is not None:
             x_win, y_c, y_r, obs_m, t_target = windows[CURRENT_SIM_WINDOW]
@@ -1058,8 +1077,11 @@ def receive_edge_embedding(req: ReceiveEdgeEmbeddingRequest):
             return {"error": f"Censuscode {req.censuscode} not found in spatial graph"}
         live_edge_embeddings[n_idx] = req.embedding
         live_edge_cases[n_idx] = float(req.cases)
+        # Capture the remote client's LAN IP address
+        client_ip = request.client.host if request.client else "localhost"
+        live_edge_ips[n_idx] = client_ip
         info = next((d for d in district_info if d["censuscode"] == req.censuscode), {})
-        print(f"[EDGE CLIENT] Embedding update from {info.get('district', 'Unknown')} ({req.censuscode}) — Cases: {req.cases}")
+        print(f"[EDGE CLIENT] Embedding update from {info.get('district', 'Unknown')} ({req.censuscode}) — Cases: {req.cases} from IP: {client_ip}")
         return {"status": "success", "node_idx": n_idx}
     except Exception as e:
         return {"error": str(e)}
@@ -1088,7 +1110,8 @@ def get_active_clients():
             "node_idx": n_idx,
             "censuscode": int(code),
             "district": info.get("district", "Unknown"),
-            "state": info.get("state", "Unknown")
+            "state": info.get("state", "Unknown"),
+            "ip": live_edge_ips.get(n_idx, "localhost")
         })
     return active
 
@@ -1096,7 +1119,8 @@ def get_active_clients():
 def clear_active_clients():
     live_edge_embeddings.clear()
     live_edge_cases.clear()
-    print("[EDGE CLIENT] Cleared all active client embeddings")
+    live_edge_ips.clear()
+    print("[EDGE CLIENT] Cleared all active client embeddings and IPs")
     return {"status": "success"}
 
 @app.get("/api/sim-clock")
@@ -1347,6 +1371,146 @@ def get_report_data(censuscode: int):
             local_c[n_idx] = torch.tensor(live_edge_embeddings[n_idx], dtype=torch.float32, device=DEVICE)
         emb_full = [round(float(v), 4) for v in local_c[n_idx].cpu().tolist()]
     return {"district": info.get("district", "Unknown"), "state": info.get("state", "Unknown"), "censuscode": censuscode, "status": status, "shap": shap_data, "spatial_xai": spatial_data[:10], "timeline": timeline_data, "embedding": emb_full, "model_info": {"name": "FedXGNN (Split-Federated Graph Neural Network)", "params": sum(p.numel() for p in model.parameters()), "embed_dim": CFG["embed_dim"], "lookback": CFG["lookback"]}, "generated_at": str(pd.Timestamp.now().isoformat())}
+
+
+@app.get("/api/embedding-space-pca")
+def get_embedding_space_pca():
+    """Project all 284 district embeddings into 2D space using PCA for cluster visualization."""
+    t_idx = CURRENT_SIM_WINDOW
+    result = run_window(t_idx)
+    if result is None:
+        return {"error": "Invalid time window"}
+    probs, preds_r, _, _, t_target = result
+
+    # Retrieve all local embeddings
+    x_win, _, _, _, _ = windows[t_idx]
+    with torch.no_grad():
+        x_d = torch.nan_to_num(x_win.to(DEVICE), nan=0.0)
+        local_emb = model.client(x_d, X_stat.to(DEVICE))
+        for nid, emb_list in live_edge_embeddings.items():
+            local_emb[nid] = torch.tensor(emb_list, dtype=torch.float32, device=DEVICE)
+            
+    # Perform PCA down to 2 dimensions
+    emb_np = local_emb.cpu().numpy() # shape (284, 64)
+    pca = PCA(n_components=2, random_state=42)
+    coords = pca.fit_transform(emb_np) # shape (284, 2)
+    
+    nodes_pca = []
+    for n_idx in range(N_NODES):
+        code = idx_to_code[n_idx]
+        info = next((d for d in district_info if d["censuscode"] == code), {})
+        nodes_pca.append({
+            "code": int(code),
+            "name": info.get("district", f"District {code}"),
+            "x": float(coords[n_idx, 0]),
+            "y": float(coords[n_idx, 1]),
+            "prob": float(probs[n_idx]),
+            "cases": float(preds_r[n_idx]),
+            "is_client": int(code) in [572, 632, 94, 577]
+        })
+        
+    return {"nodes": nodes_pca}
+
+
+@app.get("/api/simulate_what_if")
+def simulate_what_if(
+    censuscode: int,
+    temp_shift: float = Query(default=0.0),
+    preci_shift: float = Query(default=0.0),
+    cases_shift: float = Query(default=0.0),
+    symptoms_shift: float = Query(default=0.0)
+):
+    """Run server-side what-if inference by temporarily pertubing inputs for a given client node."""
+    t_idx = CURRENT_SIM_WINDOW
+    n_idx = node_to_idx.get(censuscode)
+    if n_idx is None:
+        raise HTTPException(status_code=404, detail="District not found")
+        
+    x_win, y_c, y_r, _, t_target = windows[t_idx]
+    x_win_cloned = x_win.clone()
+    
+    # Unscale last week features for the target node
+    scaled_feats = x_win_cloned[n_idx, 3].cpu().numpy().copy()
+    
+    # Inverse transform all 14 features to raw space
+    raw_feats = scaler_dyn.inverse_transform([scaled_feats])[0]
+    
+    # Apply shifts to the raw unscaled features
+    temp_idx = CFG["dynamic_features"].index("temp_k")
+    raw_feats[temp_idx] = raw_feats[temp_idx] + temp_shift
+    
+    preci_idx = CFG["dynamic_features"].index("preci_mm")
+    raw_feats[preci_idx] = max(0.0, raw_feats[preci_idx] + preci_shift)
+    
+    cases_idx = CFG["dynamic_features"].index("cases_lag1")
+    actual_cases = np.expm1(raw_feats[cases_idx])
+    new_cases = max(0.0, actual_cases + cases_shift)
+    raw_feats[cases_idx] = np.log1p(new_cases)
+    
+    symptoms_idx = CFG["dynamic_features"].index("ner_symptoms")
+    raw_feats[symptoms_idx] = max(0.0, raw_feats[symptoms_idx] + symptoms_shift)
+    
+    # Transform all 14 features back to scaled space
+    scaled_feats_new = scaler_dyn.transform([raw_feats])[0]
+    
+    x_win_cloned[n_idx, 3] = torch.tensor(scaled_feats_new, dtype=torch.float32, device=DEVICE)
+    
+    # Exclude simulated node from live embeddings override so its features can be propagated
+    sim_override_embeddings = {}
+    if live_edge_embeddings:
+        for k, v in live_edge_embeddings.items():
+            if k != n_idx:
+                sim_override_embeddings[k] = v
+
+    # Build override cases incorporating the case shift for the target node
+    sim_override_cases = {}
+    if live_edge_cases:
+        for k, v in live_edge_cases.items():
+            if k != n_idx:
+                sim_override_cases[k] = v
+    
+    target_base_cases = float(np.expm1(np.clip(y_r[n_idx].item(), -100, 100)))
+    target_sim_cases = max(0.0, target_base_cases + cases_shift)
+    sim_override_cases[n_idx] = target_sim_cases
+
+    # Run unified inference with modified tensors and overrides
+    x_d = torch.nan_to_num(x_win_cloned.to(DEVICE), nan=0.0)
+    
+    probs, preds_r, _, truths_r = run_unified_inference(
+        x_d, y_c, y_r,
+        override_embeddings=sim_override_embeddings if sim_override_embeddings else None,
+        override_cases=sim_override_cases,
+        validate_realism=False # disable to allow extreme simulation parameters
+    )
+    
+    # Prepare response mapping district codes to simulation results
+    sim_results = []
+    for i in range(N_NODES):
+        code = idx_to_code[i]
+        sim_results.append({
+            "code": int(code),
+            "prob": float(probs[i]),
+            "pred_cases": float(preds_r[i])
+        })
+        
+    # Log the What-If simulation run for the target district
+    try:
+        target_pred = next(p for p in sim_results if p["code"] == censuscode)
+        target_info = next((d for d in district_info if d["censuscode"] == censuscode), {})
+        database.log_what_if(
+            censuscode=censuscode,
+            district_name=target_info.get("district", "Unknown"),
+            temp_shift=temp_shift,
+            preci_shift=preci_shift,
+            cases_shift=cases_shift,
+            symptoms_shift=symptoms_shift,
+            simulated_prob=target_pred["prob"],
+            simulated_cases=target_pred["pred_cases"]
+        )
+    except Exception as db_err:
+        print(f"[DATABASE] Error logging what-if run: {db_err}")
+
+    return {"predictions": sim_results}
 
 
 if __name__ == "__main__":

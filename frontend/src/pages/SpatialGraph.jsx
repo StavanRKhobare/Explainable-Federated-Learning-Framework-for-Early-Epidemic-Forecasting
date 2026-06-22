@@ -32,9 +32,9 @@ export default function SpatialGraph() {
   }
 
   const handleNodeClick = async (event) => {
-    const pointIndex = event.points?.[0]?.pointIndex
-    if (pointIndex === undefined || !data) return
-    const node = data.nodes[pointIndex]
+    const code = event.points?.[0]?.customdata
+    if (!code || !data) return
+    const node = data.nodes.find(n => n.censuscode === code)
     if (!node) return
     setSelected(node)
     setDetailLoading(true)
@@ -129,6 +129,7 @@ export default function SpatialGraph() {
                 type: 'scattergeo',
                 lon: nodes.map(n => n.lon),
                 lat: nodes.map(n => n.lat),
+                customdata: nodes.map(n => n.censuscode),
                 mode: 'markers',
                 marker: {
                   size: sizes,

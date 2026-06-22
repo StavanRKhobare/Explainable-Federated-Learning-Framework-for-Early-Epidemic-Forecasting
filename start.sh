@@ -21,12 +21,12 @@ fi
 
 # 2. Install / upgrade dependencies
 echo "[*] Installing requirements..."
-$PIP install --upgrade pip -q
-$PIP install -r requirements.txt -q
+"$PIP" install --upgrade pip -q
+"$PIP" install -r requirements.txt -q
 
 # Download spaCy model if not present
-$PYTHON -c "import spacy; spacy.load('en_core_web_sm')" 2>/dev/null || \
-    $PYTHON -m spacy download en_core_web_sm -q
+"$PYTHON" -c "import spacy; spacy.load('en_core_web_sm')" 2>/dev/null || \
+    "$PYTHON" -m spacy download en_core_web_sm -q
 
 echo ""
 echo "════════════════════════════════════════════════════════"
@@ -47,7 +47,7 @@ pkill -f "backend/server.py" 2>/dev/null || true
 sleep 1
 
 # 3. Launch central server (use explicit venv python so subshells keep the env)
-$PYTHON backend/server.py > logs/server.log 2>&1 &
+"$PYTHON" backend/server.py > logs/server.log 2>&1 &
 SERVER_PID=$!
 echo "[*] Central server started (PID $SERVER_PID) — waiting for boot..."
 sleep 6
@@ -58,22 +58,22 @@ if ! curl -s http://localhost:8000/api/model-info > /dev/null 2>&1; then
 fi
 
 # 4. Launch edge clients (explicit venv python — avoids subshell venv loss)
-$PYTHON -m client.client_app --port 8001 --censuscode 572 --name "Bangalore General Hospital" > logs/client_blr.log 2>&1 &
+"$PYTHON" -m client.client_app --port 8001 --censuscode 572 --name "Bangalore General Hospital" > logs/client_blr.log 2>&1 &
 echo "[*] Bangalore client started (PID $!)"
 
 sleep 2
 
-$PYTHON -m client.client_app --port 8002 --censuscode 632 --name "Coimbatore Medical College" > logs/client_cbe.log 2>&1 &
+"$PYTHON" -m client.client_app --port 8002 --censuscode 632 --name "Coimbatore Medical College" > logs/client_cbe.log 2>&1 &
 echo "[*] Coimbatore client started (PID $!)"
 
 sleep 2
 
-$PYTHON -m client.client_app --port 8003 --censuscode 94 --name "New Delhi Hospital" > logs/client_del.log 2>&1 &
+"$PYTHON" -m client.client_app --port 8003 --censuscode 94 --name "New Delhi Hospital" > logs/client_del.log 2>&1 &
 echo "[*] Delhi client started (PID $!)"
 
 sleep 2
 
-$PYTHON -m client.client_app --port 8004 --censuscode 577 --name "Mysore District Hospital" > logs/client_mys.log 2>&1 &
+"$PYTHON" -m client.client_app --port 8004 --censuscode 577 --name "Mysore District Hospital" > logs/client_mys.log 2>&1 &
 echo "[*] Mysore client started (PID $!)"
 
 # 5. Start frontend
