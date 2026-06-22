@@ -1,0 +1,30 @@
+====================================================
+  COIMBATORE MEDICAL COLLEGE HOSPITAL
+  CLINICAL ELECTRONIC HEALTH RECORD
+====================================================
+Patient Name  : Suganya Natarajan
+Age / Sex     : 55 / Female
+Date          : 2024-09-14
+Ward          : OPD / General Medicine
+
+SYMPTOMS & VITALS:
+  Subject reports mild cough, rhinorrhoea, and low-grade fever. No rash or joint pain.
+  Recorded Vitals:
+    - Blood Pressure : 130/81 mmHg
+    - Pulse          : 68 bpm
+    - Temperature    : 37.3 °C  (99.1 °F)  [Normal]
+    - SpO₂           : 97%
+
+DIAGNOSIS & LAB RESULTS:
+  Dengue NS1 Antigen Test : NEGATIVE
+  IgM Antibody            : Negative
+  Platelet Count          : 252,955 /µL  [Normal]
+  WBC Count               : 6.4 × 10³/µL  
+  Blood Smear (Malaria)   : Negative
+
+  DIAGNOSIS: Undifferentiated Viral Fever / Acute Viral URTI
+
+RECOMMENDATION:
+  Symptomatic management: antipyretics and ORS. Rest advised. Follow up if symptoms persist beyond 3 days.
+
+====================================================

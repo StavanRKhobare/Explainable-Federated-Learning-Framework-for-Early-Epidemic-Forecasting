@@ -1,0 +1,30 @@
+====================================================
+  NEW DELHI DISTRICT HOSPITAL
+  CLINICAL ELECTRONIC HEALTH RECORD
+====================================================
+Patient Name  : Vivek Singh
+Age / Sex     : 45 / Male
+Date          : 2024-08-05
+Ward          : Isolation / Dengue Ward
+
+SYMPTOMS & VITALS:
+  Subject reports sudden onset fever, severe backache, retroorbital pain, and positive tourniquet test.
+  Recorded Vitals:
+    - Blood Pressure : 96/66 mmHg
+    - Pulse          : 98 bpm
+    - Temperature    : 40.1 °C  (104.2 °F)  [High Fever]
+    - SpO₂           : 97%
+
+DIAGNOSIS & LAB RESULTS:
+  Dengue NS1 Antigen Test : POSITIVE (detected)
+  IgM Antibody            : Positive
+  Platelet Count          : 90,225 /µL  [Low]
+  WBC Count               : 4.0 × 10³/µL  [Leukopenia]
+  Blood Smear (Malaria)   : Negative
+
+  DIAGNOSIS: Dengue Fever – Non-Severe (WHO 2009 criteria)
+
+RECOMMENDATION:
+  Paracetamol 500 mg TDS for fever. Strict bed rest, aggressive oral/IV hydration. Avoid NSAIDs. Platelet monitoring every 24 hrs. Patient counselled on warning signs.
+
+====================================================

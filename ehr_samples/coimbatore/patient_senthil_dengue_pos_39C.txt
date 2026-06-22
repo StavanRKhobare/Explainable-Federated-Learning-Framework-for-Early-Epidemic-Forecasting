@@ -1,0 +1,30 @@
+====================================================
+  COIMBATORE MEDICAL COLLEGE HOSPITAL
+  CLINICAL ELECTRONIC HEALTH RECORD
+====================================================
+Patient Name  : Senthil Muthusamy
+Age / Sex     : 28 / Male
+Date          : 2024-06-10
+Ward          : Isolation / Dengue Ward
+
+SYMPTOMS & VITALS:
+  Subject reports high-grade fever with chills, myalgia, vomiting, and diffuse skin rash since 3 days.
+  Recorded Vitals:
+    - Blood Pressure : 102/66 mmHg
+    - Pulse          : 104 bpm  [Tachycardia]
+    - Temperature    : 39.4 °C  (102.9 °F)  [High Fever]
+    - SpO₂           : 98%
+
+DIAGNOSIS & LAB RESULTS:
+  Dengue NS1 Antigen Test : POSITIVE (detected)
+  IgM Antibody            : Positive
+  Platelet Count          : 61,435 /µL  [Low]
+  WBC Count               : 2.7 × 10³/µL  [Leukopenia]
+  Blood Smear (Malaria)   : Negative
+
+  DIAGNOSIS: Dengue Fever – Non-Severe (WHO 2009 criteria)
+
+RECOMMENDATION:
+  Paracetamol 500 mg TDS for fever. Strict bed rest, aggressive oral/IV hydration. Avoid NSAIDs. Platelet monitoring every 24 hrs. Patient counselled on warning signs.
+
+====================================================

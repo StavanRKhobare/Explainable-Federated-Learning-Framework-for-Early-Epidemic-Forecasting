@@ -1,0 +1,30 @@
+====================================================
+  NEW DELHI DISTRICT HOSPITAL
+  CLINICAL ELECTRONIC HEALTH RECORD
+====================================================
+Patient Name  : Rahul Sharma
+Age / Sex     : 31 / Male
+Date          : 2024-06-10
+Ward          : Isolation / Dengue Ward
+
+SYMPTOMS & VITALS:
+  Subject reports sudden onset fever, severe backache, retroorbital pain, and positive tourniquet test.
+  Recorded Vitals:
+    - Blood Pressure : 114/79 mmHg
+    - Pulse          : 110 bpm  [Tachycardia]
+    - Temperature    : 39.7 °C  (103.5 °F)  [High Fever]
+    - SpO₂           : 95%
+
+DIAGNOSIS & LAB RESULTS:
+  Dengue NS1 Antigen Test : POSITIVE (detected)
+  IgM Antibody            : Positive
+  Platelet Count          : 40,702 /µL  [CRITICAL]
+  WBC Count               : 4.5 × 10³/µL  
+  Blood Smear (Malaria)   : Negative
+
+  DIAGNOSIS: Dengue Fever – Severe (WHO 2009 criteria)
+
+RECOMMENDATION:
+  Paracetamol 500 mg TDS for fever. Strict bed rest, aggressive oral/IV hydration. Avoid NSAIDs. Platelet monitoring every 24 hrs. Patient counselled on warning signs.
+
+====================================================

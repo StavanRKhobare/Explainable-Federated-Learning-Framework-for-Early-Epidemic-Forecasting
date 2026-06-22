@@ -1,0 +1,30 @@
+====================================================
+  NEW DELHI DISTRICT HOSPITAL
+  CLINICAL ELECTRONIC HEALTH RECORD
+====================================================
+Patient Name  : Sunita Gupta
+Age / Sex     : 60 / Female
+Date          : 2024-09-14
+Ward          : OPD / General Medicine
+
+SYMPTOMS & VITALS:
+  Subject reports bilateral nasal congestion, post-nasal drip, and low-grade fever.
+  Recorded Vitals:
+    - Blood Pressure : 126/81 mmHg
+    - Pulse          : 70 bpm
+    - Temperature    : 37.4 °C  (99.3 °F)  [Normal]
+    - SpO₂           : 98%
+
+DIAGNOSIS & LAB RESULTS:
+  Dengue NS1 Antigen Test : NEGATIVE
+  IgM Antibody            : Negative
+  Platelet Count          : 247,060 /µL  [Normal]
+  WBC Count               : 9.7 × 10³/µL  
+  Blood Smear (Malaria)   : Negative
+
+  DIAGNOSIS: Undifferentiated Viral Fever / Acute Viral URTI
+
+RECOMMENDATION:
+  Symptomatic management: antipyretics and ORS. Rest advised. Follow up if symptoms persist beyond 3 days.
+
+====================================================

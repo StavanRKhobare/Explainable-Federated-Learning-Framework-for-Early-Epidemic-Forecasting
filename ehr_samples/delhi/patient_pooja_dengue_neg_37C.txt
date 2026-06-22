@@ -1,0 +1,30 @@
+====================================================
+  NEW DELHI DISTRICT HOSPITAL
+  CLINICAL ELECTRONIC HEALTH RECORD
+====================================================
+Patient Name  : Pooja Verma
+Age / Sex     : 26 / Female
+Date          : 2024-07-22
+Ward          : OPD / General Medicine
+
+SYMPTOMS & VITALS:
+  Subject reports loose stools, nausea, and mild abdominal pain. No rash.
+  Recorded Vitals:
+    - Blood Pressure : 114/78 mmHg
+    - Pulse          : 67 bpm
+    - Temperature    : 37.0 °C  (98.6 °F)  [Normal]
+    - SpO₂           : 97%
+
+DIAGNOSIS & LAB RESULTS:
+  Dengue NS1 Antigen Test : NEGATIVE
+  IgM Antibody            : Negative
+  Platelet Count          : 239,254 /µL  [Normal]
+  WBC Count               : 6.3 × 10³/µL  
+  Blood Smear (Malaria)   : Negative
+
+  DIAGNOSIS: Undifferentiated Viral Fever / Acute Viral URTI
+
+RECOMMENDATION:
+  Symptomatic management: antipyretics and ORS. Rest advised. Follow up if symptoms persist beyond 3 days.
+
+====================================================
