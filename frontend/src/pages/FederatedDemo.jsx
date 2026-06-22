@@ -23,6 +23,87 @@ const SAMPLE_JSON = {
   ]
 }
 
+function FeatureTable({ features }) {
+  if (!features) return null;
+  const groups = {
+    "Climate & Environment": [
+      { key: 'temp_k', label: 'Temp (K)', val: features.temp_k },
+      { key: 'preci_mm', label: 'Rain (mm)', val: features.preci_mm },
+      { key: 'LAI', label: 'LAI Vegetation', val: features.LAI }
+    ],
+    "Case History": [
+      { key: 'cases_lag1', label: 'Cases (t-1)', val: features.cases_lag1 },
+      { key: 'cases_lag2', label: 'Cases (t-2)', val: features.cases_lag2 },
+      { key: 'cases_lag3', label: 'Cases (t-3)', val: features.cases_lag3 }
+    ],
+    "Seasonality": [
+      { key: 'is_monsoon', label: 'Monsoon', val: features.is_monsoon === 1 ? 'Yes' : 'No' },
+      { key: 'week_sin', label: 'Week Sin', val: features.week_sin },
+      { key: 'week_cos', label: 'Week Cos', val: features.week_cos }
+    ],
+    "Clinical NER Mentions": [
+      { key: 'ner_symptoms', label: 'Symptoms', val: features.ner_symptoms },
+      { key: 'ner_diseases', label: 'Diseases', val: features.ner_diseases },
+      { key: 'ner_pathogens', label: 'Pathogens', val: features.ner_pathogens },
+      { key: 'ner_travel', label: 'Travel', val: features.ner_travel },
+      { key: 'ner_total_notes', label: 'Total Notes', val: features.ner_total_notes }
+    ]
+  };
+
+  return (
+    <div style={{ marginTop: '0.6rem', fontSize: '0.75rem' }}>
+      <div style={{ fontWeight: 600, color: 'var(--slate-500)', marginBottom: '4px' }}>Input Features:</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        {Object.entries(groups).map(([groupName, items]) => {
+          if (items.every(item => item.val === undefined)) return null;
+          return (
+            <div key={groupName} style={{ background: 'var(--slate-50)', padding: '6px 8px', borderRadius: '6px', border: '1px solid var(--slate-100)' }}>
+              <div style={{ fontWeight: 700, fontSize: '0.65rem', color: 'var(--slate-400)', textTransform: 'uppercase', marginBottom: '4px' }}>
+                {groupName}
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(90px, 1fr))', gap: '4px' }}>
+                {items.map(item => {
+                  if (item.val === undefined) return null;
+                  const formattedVal = typeof item.val === 'number' ? item.val.toFixed(2).replace(/\.00$/, '') : item.val;
+                  return (
+                    <div key={item.key} style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px dashed var(--slate-200)', paddingBottom: '2px' }}>
+                      <span style={{ color: 'var(--slate-500)', fontSize: '0.68rem' }}>{item.label}:</span>
+                      <span className="mono" style={{ fontWeight: 'bold', color: 'var(--slate-700)', fontSize: '0.68rem' }}>{formattedVal}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function EmbeddingViz({ values, label }) {
+  if (!values || !Array.isArray(values)) return null;
+  const displayValues = values.slice(0, 8);
+  return (
+    <div style={{ marginTop: '0.5rem' }}>
+      <div style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--slate-500)', marginBottom: '4px' }}>
+        {label} <span style={{ fontWeight: 400, color: 'var(--slate-400)' }}>(dims 0-{displayValues.length - 1})</span>
+      </div>
+      <div className="embedding-grid">
+        {displayValues.map((v, i) => {
+          const intensity = Math.min(Math.abs(v) * 2.5, 1);
+          const bg = v >= 0 ? `rgba(37, 99, 235, ${0.15 + intensity * 0.75})` : `rgba(239, 68, 68, ${0.15 + intensity * 0.75})`;
+          return (
+            <div key={i} className="embedding-cell" style={{ background: bg }} title={`[${i}]=${v}`}>
+              {v.toFixed(1)}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function PipelineDemo() {
   const [jsonInput, setJsonInput] = useState(JSON.stringify(SAMPLE_JSON, null, 2))
   const [data, setData] = useState(null)
@@ -76,8 +157,10 @@ function PipelineDemo() {
     { title: 'Dual-Task Prediction', desc: 'The final head produces outbreak probability (classification) and predicted case count (regression) for each district.' },
   ]
 
-  const DistrictColumn = ({ dist, color }) => (
-    dist.district ? (
+  const DistrictColumn = ({ dist, color }) => {
+    if (!dist.district) return null;
+    const prob = dist.outbreak_prob ?? dist.outbreak_prob_softened ?? 0;
+    return (
       <div>
         <div className="card" style={{ marginBottom: '0.8rem', borderLeft: `4px solid ${color}`, padding: '0.8rem 1rem' }}>
           <div style={{ fontWeight: 800, fontSize: '1.05rem' }}>{dist.district}</div>
@@ -104,12 +187,12 @@ function PipelineDemo() {
                     {stepNum === 5 && dist.spatial_embedding && <EmbeddingViz values={dist.spatial_embedding} label="After Spatial DGAT (graph-enriched)" />}
                     {stepNum === 6 && (
                       <div style={{ textAlign: 'center', marginTop: '0.8rem' }}>
-                        <div className="gauge-val" style={{ color: dist.outbreak_prob > 0.5 ? 'var(--red-500)' : dist.outbreak_prob > 0.1 ? '#d97706' : 'var(--emerald-500)' }}>
-                          {(dist.outbreak_prob * 100).toFixed(1)}%
+                        <div className="gauge-val" style={{ color: prob > 0.5 ? 'var(--red-500)' : prob > 0.1 ? '#d97706' : 'var(--emerald-500)' }}>
+                          {(prob * 100).toFixed(1)}%
                         </div>
                         <div className="metric-label">Outbreak Probability</div>
                         <div className="prob-bar" style={{ marginTop: '0.5rem' }}>
-                          <div className="prob-bar-fill" style={{ width: `${dist.outbreak_prob * 100}%`, background: dist.outbreak_prob > 0.3 ? 'linear-gradient(90deg, #f97316, #ef4444)' : 'linear-gradient(90deg, #10b981, #34d399)' }} />
+                          <div className="prob-bar-fill" style={{ width: `${prob * 100}%`, background: prob > 0.3 ? 'linear-gradient(90deg, #f97316, #ef4444)' : 'linear-gradient(90deg, #10b981, #34d399)' }} />
                         </div>
                         <div className="mono" style={{ marginTop: '0.4rem', fontSize: '0.75rem', color: 'var(--slate-400)' }}>
                           Predicted cases: {dist.cases_pred?.toFixed(2)}
@@ -123,8 +206,8 @@ function PipelineDemo() {
           })}
         </div>
       </div>
-    ) : null
-  )
+    )
+  }
 
   return (
     <div>
@@ -175,41 +258,45 @@ function PipelineDemo() {
         </div>
       )}
 
-      {data && step >= 6 && d.length >= 2 && (
-        <div className="card" style={{ marginTop: '1.5rem' }}>
-          <div className="card-title" style={{ marginBottom: '1rem' }}>🔗 Spatial Influence Analysis</div>
-          <div className="grid-3">
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontWeight: 700, color: 'var(--blue-600)' }}>{d1.district}</div>
-              <div className="serif" style={{ fontSize: '2rem', color: d1.outbreak_prob > 0.3 ? 'var(--red-500)' : 'var(--emerald-500)', marginTop: '0.3rem' }}>
-                {(d1.outbreak_prob * 100).toFixed(1)}%
-              </div>
-              <div className="metric-label">Outbreak Risk</div>
-            </div>
-            <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-              <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginBottom: '0.3rem' }}>
-                {data.are_neighbors ? 'Direct Border Connection' : 'Graph Distance'}
-              </div>
-              <div style={{ width: '100%', height: 3, background: 'linear-gradient(90deg, var(--blue-500), #8b5cf6)', borderRadius: 2 }} />
-              {d1.edge_weight_km && (
-                <div className="mono" style={{ fontSize: '0.78rem', color: 'var(--blue-600)', marginTop: '0.3rem' }}>
-                  {d1.edge_weight_km} km border
+      {data && step >= 6 && d.length >= 2 && (() => {
+        const prob1 = d1.outbreak_prob ?? d1.outbreak_prob_softened ?? 0;
+        const prob2 = d2.outbreak_prob ?? d2.outbreak_prob_softened ?? 0;
+        return (
+          <div className="card" style={{ marginTop: '1.5rem' }}>
+            <div className="card-title" style={{ marginBottom: '1rem' }}>🔗 Spatial Influence Analysis</div>
+            <div className="grid-3">
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontWeight: 700, color: 'var(--blue-600)' }}>{d1.district}</div>
+                <div className="serif" style={{ fontSize: '2rem', color: prob1 > 0.3 ? 'var(--red-500)' : 'var(--emerald-500)', marginTop: '0.3rem' }}>
+                  {(prob1 * 100).toFixed(1)}%
                 </div>
-              )}
-              <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', marginTop: '0.3rem' }}>
-                Spatial DGAT propagates disease signals along this connection
+                <div className="metric-label">Outbreak Risk</div>
               </div>
-            </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontWeight: 700, color: '#8b5cf6' }}>{d2.district}</div>
-              <div className="serif" style={{ fontSize: '2rem', color: d2.outbreak_prob > 0.3 ? 'var(--red-500)' : 'var(--emerald-500)', marginTop: '0.3rem' }}>
-                {(d2.outbreak_prob * 100).toFixed(1)}%
+              <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--slate-400)', marginBottom: '0.3rem' }}>
+                  {data.are_neighbors ? 'Direct Border Connection' : 'Graph Distance'}
+                </div>
+                <div style={{ width: '100%', height: 3, background: 'linear-gradient(90deg, var(--blue-500), #8b5cf6)', borderRadius: 2 }} />
+                {d1.edge_weight_km && (
+                  <div className="mono" style={{ fontSize: '0.78rem', color: 'var(--blue-600)', marginTop: '0.3rem' }}>
+                    {d1.edge_weight_km} km border
+                  </div>
+                )}
+                <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', marginTop: '0.3rem' }}>
+                  Spatial DGAT propagates disease signals along this connection
+                </div>
               </div>
-              <div className="metric-label">Outbreak Risk</div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontWeight: 700, color: '#8b5cf6' }}>{d2.district}</div>
+                <div className="serif" style={{ fontSize: '2rem', color: prob2 > 0.3 ? 'var(--red-500)' : 'var(--emerald-500)', marginTop: '0.3rem' }}>
+                  {(prob2 * 100).toFixed(1)}%
+                </div>
+                <div className="metric-label">Outbreak Risk</div>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   )
 }

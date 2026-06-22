@@ -45,7 +45,7 @@ def init_client(censuscode, server_url):
     global model, local_df, scaler_dyn, scaler_stat, avail_dyn
     
     # 1. Load full dataset to fit scalers exactly like backend to avoid mismatch
-    data_path = os.path.join(PROJECT_ROOT, "data", "training_dataset_enhanced_v2.csv")
+    data_path = os.path.join(PROJECT_ROOT, "data", "training_dataset_with_ner.csv")
     df = pd.read_csv(data_path)
     df = df.sort_values(["censuscode","iso_year","iso_week"]).reset_index(drop=True)
     

@@ -95,7 +95,7 @@
         }
 
         /* Metrics */
-        .metrics-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1.2rem; margin-bottom: 2rem; }
+        .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.2rem; margin-bottom: 2rem; }
         .metric-box {
             background: var(--white); border: 1px solid var(--slate-200);
             border-radius: var(--radius); padding: 1.5rem; text-align: center;
@@ -214,10 +214,7 @@
                 <div class="metric-val" id="metric-pred" style="color: var(--blue-600);">--</div>
                 <div class="metric-lbl">Predicted Cases</div>
             </div>
-            <div class="metric-box">
-                <div class="metric-val" id="metric-actual" style="color: var(--slate-600);">--</div>
-                <div class="metric-lbl">Actual EHR Cases</div>
-            </div>
+
             <div class="metric-box">
                 <div class="metric-val" id="metric-status" style="color: var(--slate-400); font-size: 1.4rem; padding-top: 8px;">WAITING</div>
                 <div class="metric-lbl" style="margin-top: 12px;">Central Sync Status</div>
@@ -453,7 +450,7 @@
             // Top metrics
             document.getElementById('metric-prob').innerText = (st.outbreak_prob * 100).toFixed(1) + '%';
             document.getElementById('metric-pred').innerText = st.pred_cases.toFixed(0);
-            document.getElementById('metric-actual').innerText = st.actual_cases;
+
             
             const probFill = document.getElementById('prob-fill');
             probFill.style.width = `${st.outbreak_prob * 100}%`;

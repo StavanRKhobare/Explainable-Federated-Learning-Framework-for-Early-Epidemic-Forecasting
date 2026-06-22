@@ -499,14 +499,10 @@ export default function MultiNodeSimulation() {
 
                 {nodeDetail?.district && (
                   <div style={{ marginTop: '1rem', borderTop: '1px solid var(--slate-100)', paddingTop: '1rem' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', marginBottom: '1rem' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.8rem', marginBottom: '1rem' }}>
                       <div className="mini-metric">
                         <div className="value">{nodeDetail.district.pred_cases}</div>
                         <div className="label">Pred. Cases</div>
-                      </div>
-                      <div className="mini-metric">
-                        <div className="value">{nodeDetail.district.actual_cases}</div>
-                        <div className="label">Actual Cases</div>
                       </div>
                     </div>
 

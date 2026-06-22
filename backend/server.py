@@ -28,7 +28,7 @@ np.random.seed(42)
 
 # ── Paths (relative to project root) ──────────────────────────────────────────
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DATA_PATH    = os.path.join(PROJECT_ROOT, "data", "training_dataset_enhanced_v2.csv")
+DATA_PATH    = os.path.join(PROJECT_ROOT, "data", "training_dataset_with_ner.csv")
 EDGE_PATH    = os.path.join(PROJECT_ROOT, "data", "graph", "graph_edges.csv")
 MODEL_PT     = os.path.join(PROJECT_ROOT, "model", "fedxgnn_best.pt")
 
@@ -547,12 +547,10 @@ def run_federated_demo(t_win_idx, district_indices):
         code = idx_to_code[n_idx]
         info = next((d for d in district_info if d["censuscode"] == code), {})
         raw_feats = {}
-        # Only use the 9 available features for inverse_transform
-        avail_features = ["temp_k", "preci_mm", "LAI", "cases_lag1", "cases_lag2", "cases_lag3", "week_sin", "week_cos", "is_monsoon"]
-        feat_indices_inv = [i for i, f in enumerate(CFG["dynamic_features"]) if f in avail_features]
-        last_week_values = x_d[n_idx, -1, feat_indices_inv].cpu().numpy()
+        # Use all 14 dynamic features for inverse_transform
+        last_week_values = x_d[n_idx, -1].cpu().numpy()
         raw_feats_array = scaler_dyn.inverse_transform([last_week_values])[0]
-        for fi, fname in enumerate(avail_features):
+        for fi, fname in enumerate(CFG["dynamic_features"]):
             raw_feats[fname] = round(float(raw_feats_array[fi]), 4)
 
         results.append({
@@ -879,10 +877,10 @@ def custom_predict(req: CustomPredictRequest):
         x_d = torch.nan_to_num(x_win_base.to(DEVICE), nan=0.0).clone()
 
         target_indices = []
-        # Only use features available in training data (scaler was trained on these)
+        # Use all 14 features since scaler is fitted on training_dataset_with_ner.csv
         all_dyn_feats = CFG["dynamic_features"]  # 14 features configured
-        feat_names = [f for f in all_dyn_feats if f in ["temp_k", "preci_mm", "LAI", "cases_lag1", "cases_lag2", "cases_lag3", "week_sin", "week_cos", "is_monsoon"]]  # 9 available
-        n_feats_input = len(feat_names)  # 9 for scaler
+        feat_names = all_dyn_feats  # 14 features available
+        n_feats_input = len(feat_names)  # 14 for scaler
         n_feats_total = len(all_dyn_feats)  # 14 for tensor
         
         # Track user-provided case counts for softening (FIX #1)
@@ -957,6 +955,8 @@ def custom_predict(req: CustomPredictRequest):
             h_gru = h_n[-1].cpu()
             h_tgat = model.client.tgat(x_d).cpu()
             local_emb = model.client(x_d, X_stat.to(DEVICE)).cpu()
+            # Compute server spatial GNN pass for display
+            spatial_emb = model.server(local_emb.to(DEVICE), edge_index.to(DEVICE), edge_attr.to(DEVICE)).cpu()
 
         results = []
         for n_idx in target_indices:
@@ -964,12 +964,11 @@ def custom_predict(req: CustomPredictRequest):
             info = next((d for d in district_info if d["censuscode"] == code), {})
             raw_feats = {}
             
-            # Extract only the 9 available features from x_d for inverse_transform
-            feat_indices = [feat_idx_map[fn] for fn in feat_names]
-            last_week_values = x_d[n_idx, -1, feat_indices].cpu().numpy()
+            # Extract all 14 features from x_d for inverse_transform
+            last_week_values = x_d[n_idx, -1].cpu().numpy()
             raw_feats_array = scaler_dyn.inverse_transform([last_week_values])[0]
             
-            for fi, fn in enumerate(feat_names):
+            for fi, fn in enumerate(CFG["dynamic_features"]):
                 raw_feats[fn] = round(float(raw_feats_array[fi]), 4)
 
             # Find edge weight between districts if there are 2
@@ -1001,6 +1000,8 @@ def custom_predict(req: CustomPredictRequest):
                 "gru_output": [round(float(v), 4) for v in h_gru[n_idx].tolist()],
                 "tgat_output": [round(float(v), 4) for v in h_tgat[n_idx].tolist()],
                 "client_embedding": [round(float(v), 4) for v in local_emb[n_idx].tolist()],
+                "spatial_embedding": [round(float(v), 4) for v in spatial_emb[n_idx].tolist()],
+                "outbreak_prob": round(float(probs[n_idx]), 4),
                 "outbreak_prob_raw": round(float(probs[n_idx]), 4),  # probs are already softened
                 "outbreak_prob_softened": round(float(probs[n_idx]), 4),
                 "cases_pred": round(float(preds_r[n_idx]), 4),
