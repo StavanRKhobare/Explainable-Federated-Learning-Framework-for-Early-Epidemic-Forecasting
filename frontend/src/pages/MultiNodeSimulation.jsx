@@ -5,7 +5,8 @@ import React from 'react'
 const PRESET_NODES = [
   { censuscode: 572, district: "Bangalore", hospital: "Bangalore General Hospital", port: 8001 },
   { censuscode: 632, district: "Coimbatore", hospital: "Chennai Medical College", port: 8002 },
-  { censuscode: 94, district: "New Delhi", hospital: "New Delhi Hospital", port: 8003 }
+  { censuscode: 94, district: "New Delhi", hospital: "New Delhi Hospital", port: 8003 },
+  { censuscode: 577, district: "Mysore", hospital: "Mysore District Hospital", port: 8004 }
 ]
 
 export default function MultiNodeSimulation() {
@@ -167,7 +168,7 @@ export default function MultiNodeSimulation() {
     }
   }
 
-  const CLIENT_CODES = new Set([572, 632, 94])
+  const CLIENT_CODES = new Set([572, 632, 94, 577])
 
   const handleNodeClick = async (event) => {
     const pointIndex = event.points?.[0]?.pointIndex
@@ -201,7 +202,7 @@ export default function MultiNodeSimulation() {
     } catch (e) { console.error(e) }
   }
 
-  const CLIENT_CODES_SET = new Set([572, 632, 94])
+  const CLIENT_CODES_SET = new Set([572, 632, 94, 577])
   // For the edge simulation map: show ALL districts with client cities highlighted
   const mapData = (data?.predictions || []).filter(p => CLIENT_CODES_SET.has(p.code) && p.lat && p.lon)
   // Background districts (non-client, from allDistricts fetch)
@@ -212,7 +213,7 @@ export default function MultiNodeSimulation() {
       <div className="page-header">
         <h1 className="page-title">Multi-System Edge Simulation</h1>
         <p className="page-subtitle">
-          Receive privacy-preserving 64-dim embeddings from distributed hospital edge systems (Bangalore, Chennai/Coimbatore, New Delhi) and propagate risk updates live.
+          Receive privacy-preserving 64-dim embeddings from distributed hospital edge systems (Bangalore, Coimbatore, New Delhi, Mysore) and propagate risk updates live.
         </p>
       </div>
 
