@@ -275,26 +275,70 @@ export default function LivePredict() {
                           </span>
                         </div>
                         {shapSummary?.matrix ? (() => {
+                          const FEATURE_EXPLANATIONS = {
+                            'temp_k': { name: 'Temperature (K)', desc: 'Higher temperatures speed up mosquito lifecycle.' },
+                            'preci_mm': { name: 'Precipitation (mm)', desc: 'Rainfall creates standing breeding pools.' },
+                            'lai': { name: 'Vegetation Index (LAI)', desc: 'Dense vegetation provides cover for vectors.' },
+                            'cases_lag1': { name: 'Cases (1 wk ago)', desc: 'Active cases propagate immediate local spread.' },
+                            'cases_lag2': { name: 'Cases (2 wks ago)', desc: 'Infected carriers from previous cycle.' },
+                            'cases_lag3': { name: 'Cases (3 wks ago)', desc: 'Establishes baseline epidemiological momentum.' },
+                            'week_sin': { name: 'Seasonality (Sin)', desc: 'Sinusoidal component of seasonal pattern.' },
+                            'week_cos': { name: 'Seasonality (Cos)', desc: 'Cos-component identifying monsoon timing.' },
+                            'is_monsoon': { name: 'Monsoon Status', desc: 'Identifies high-risk rain season.' },
+                            'ner_symptoms': { name: 'NLP: Symptomatic Notes', desc: 'Clinical notes mentioning fever or rash.' },
+                            'ner_diseases': { name: 'NLP: Dengue Mentions', desc: 'Mentions of Dengue or vector-borne disease.' },
+                            'ner_pathogens': { name: 'NLP: Pathogen Tests', desc: 'Clinical testing requests or pathogen matches.' },
+                            'ner_travel': { name: 'NLP: Travel History', desc: 'Indicates imported risk from hot zones.' },
+                            'ner_total_notes': { name: 'NLP: EHR Document Volume', desc: 'Total volume of processed electronic records.' }
+                          };
+
                           const topFeats = shapSummary.feature_importance.slice(0, 6)
-                          const featNames = topFeats.map(f => f.feature.replace(/_/g,' ').toUpperCase())
-                          const featIndices = topFeats.map(f => shapSummary.features.indexOf(f.feature))
-                          const z = featIndices.map(fi => shapSummary.matrix.map(row => row[fi]))
+                          const weekLabels = shapSummary.week_labels || ['t-4','t-3','t-2','t-1'];
+                          
+                          const z = [];
+                          const hoverText = [];
+                          for (const f of topFeats) {
+                            const fi = shapSummary.features.indexOf(f.feature);
+                            const fname_lower = f.feature.toLowerCase();
+                            const info = FEATURE_EXPLANATIONS[fname_lower] || { name: f.feature, desc: 'Dynamic feature contributing to temporal risk.' };
+                            
+                            const zRow = [];
+                            const textRow = [];
+                            for (let w = 0; w < shapSummary.matrix.length; w++) {
+                              const val = shapSummary.matrix[w][fi];
+                              zRow.push(val);
+                              
+                              const signText = val > 0 ? "⚠️ INCREASES risk" : "🟢 REDUCES risk";
+                              textRow.push(
+                                `<b>Feature:</b> ${info.name}<br>` +
+                                `<b>Time:</b> ${weekLabels[w]}<br>` +
+                                `<b>SHAP Impact (Log-odds):</b> ${val > 0 ? '+' : ''}${val.toFixed(4)} (${signText})<br>` +
+                                `<b>Explanation:</b> ${info.desc}`
+                              );
+                            }
+                            z.push(zRow);
+                            hoverText.push(textRow);
+                          }
+
+                          const featNames = topFeats.map(f => (FEATURE_EXPLANATIONS[f.feature.toLowerCase()]?.name || f.feature).toUpperCase())
                           return (
                             <Plot
                               data={[{
                                 type: 'heatmap',
                                 z,
-                                x: shapSummary.week_labels,
+                                x: weekLabels,
                                 y: featNames,
+                                text: hoverText,
+                                hoverinfo: 'text',
                                 colorscale: [[0,'#ef4444'],[0.5,'#f9fafb'],[1,'#22c55e']],
                                 zmid: 0,
                                 showscale: true,
                                 colorbar: { thickness: 8, len: 0.9, tickfont: { size: 7, color:'#94a3b8' } }
                               }]}
                               layout={{
-                                margin: { t:5, b:30, l:120, r:20 },
+                                margin: { t:5, b:30, l:150, r:20 },
                                 paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
-                                height: 175,
+                                height: 220,
                                 xaxis: { tickfont: { size:9, family:'DM Sans', color:'#64748b' } },
                                 yaxis: { tickfont: { size:8, family:'DM Sans', color:'#475569' }, automargin: true }
                               }}

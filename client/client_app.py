@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import requests
 import json
+from typing import Optional
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -105,6 +106,8 @@ class TransmitRequest(BaseModel):
     cases: int
     temp_k: float
     preci_mm: float
+    year: Optional[int] = None
+    week: Optional[int] = None
 
 @app.get("/", response_class=HTMLResponse)
 def get_dashboard():
@@ -334,7 +337,9 @@ def transmit_embedding(req: TransmitRequest):
         res = requests.post(server_endpoint, json={
             "censuscode": CLIENT_CONFIG["censuscode"],
             "embedding": emb_list,
-            "cases": req.cases
+            "cases": req.cases,
+            "year": req.year,
+            "week": req.week
         }, timeout=5)
         srv_resp = res.json() if res.status_code == 200 else {"error": f"HTTP {res.status_code}"}
         return {
@@ -358,6 +363,18 @@ def get_epidemic_status():
         res = requests.get(server_endpoint)
         if res.status_code == 200:
             return {"status": res.json()}
+        return {"error": "Server returned error"}
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.get("/api/sim-clock")
+def get_sim_clock():
+    """Proxy endpoint to get current central simulation clock."""
+    try:
+        server_endpoint = f"{CLIENT_CONFIG['server_url']}/api/sim-clock"
+        res = requests.get(server_endpoint)
+        if res.status_code == 200:
+            return res.json()
         return {"error": "Server returned error"}
     except Exception as e:
         return {"error": str(e)}

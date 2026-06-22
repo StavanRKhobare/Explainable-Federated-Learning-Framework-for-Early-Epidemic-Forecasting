@@ -36,8 +36,7 @@ class XAIEngine:
                 # Project through head trunk to get classification logit
                 h = self.model.head.trunk(torch.cat([emb, emb], dim=-1))
                 logit = self.model.head.clf_head(h).squeeze(-1)  # (B,)
-                prob = torch.sigmoid(logit)
-            return prob.detach().cpu().numpy()
+            return logit.detach().cpu().numpy()
 
         # Reshape input to flat array for SHAP
         flat_input = x_dyn_node.reshape(1, -1).cpu().numpy()

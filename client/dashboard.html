@@ -95,7 +95,7 @@
         }
 
         /* Metrics */
-        .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.2rem; margin-bottom: 2rem; }
+        .metrics-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1.2rem; margin-bottom: 2rem; }
         .metric-box {
             background: var(--white); border: 1px solid var(--slate-200);
             border-radius: var(--radius); padding: 1.5rem; text-align: center;
@@ -213,6 +213,10 @@
                 <div class="metric-val" id="metric-status" style="color: var(--slate-400); font-size: 1.4rem; padding-top: 8px;">WAITING</div>
                 <div class="metric-lbl" style="margin-top: 12px;">Central Sync Status</div>
             </div>
+            <div class="metric-box">
+                <div class="metric-val" id="metric-clock" style="color: var(--purple-600); font-size: 1.4rem; padding-top: 8px;">--</div>
+                <div class="metric-lbl" style="margin-top: 12px;">Simulation Clock</div>
+            </div>
         </div>
 
         <div class="grid-main">
@@ -231,7 +235,7 @@
                                 <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--blue-500);"></div>
                                 LOCAL CASE HISTORY
                             </div>
-                            <div id="timeline-chart" style="height: 160px; background: var(--slate-50); border-radius: var(--radius-xs); border: 1px solid var(--slate-100);"></div>
+                            <div id="timeline-chart" style="height: 230px; background: var(--slate-50); border-radius: var(--radius-xs); border: 1px solid var(--slate-100);"></div>
                         </div>
                         <!-- SHAP -->
                         <div>
@@ -239,7 +243,7 @@
                                 <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--purple-500);"></div>
                                 TOP RISK DRIVERS (SHAP)
                             </div>
-                            <div id="shap-chart" style="height: 160px; background: var(--slate-50); border-radius: var(--radius-xs); border: 1px solid var(--slate-100);"></div>
+                            <div id="shap-chart" style="height: 230px; background: var(--slate-50); border-radius: var(--radius-xs); border: 1px solid var(--slate-100);"></div>
                         </div>
                     </div>
                 </div>
@@ -317,8 +321,8 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Weekly Positive Cases (from NLP)</label>
-                        <input type="number" id="week-cases" value="0" readonly style="background: var(--slate-100); color: var(--slate-500); font-weight: bold;">
+                        <label>Weekly Positive Cases (NLP or manual override)</label>
+                        <input type="number" id="week-cases" value="0" style="font-weight: bold;">
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                         <div class="form-group">
@@ -385,14 +389,36 @@
             c.scrollTop = c.scrollHeight;
         }
 
-        // --- Polling Epidemic Status ---
+        // --- Polling Epidemic Status & Simulation Clock ---
         let pollInterval = null;
+        let clockInterval = null;
         let lastProbValue = null;
+        let currentClock = { year: null, week: null };
+
+        async function fetchSimClock() {
+            try {
+                const res = await fetch('/api/sim-clock');
+                if(!res.ok) return;
+                const data = await res.json();
+                if(data.year && data.week) {
+                    currentClock.year = data.year;
+                    currentClock.week = data.week;
+                    document.getElementById('metric-clock').innerText = `${data.year}-W${data.week}`;
+                }
+            } catch(e) { console.error("Sim clock error:", e); }
+        }
+
         function startPolling() {
             if(pollInterval) clearInterval(pollInterval);
-            // Poll every 60s — logs only appear on real state change or manual action
-            pollInterval = setInterval(fetchEpidemicStatus, 60000);
+            if(clockInterval) clearInterval(clockInterval);
+            
+            // Poll epidemic status every 15s
+            pollInterval = setInterval(fetchEpidemicStatus, 15000);
             fetchEpidemicStatus();
+            
+            // Poll simulation clock every 3s
+            clockInterval = setInterval(fetchSimClock, 3000);
+            fetchSimClock();
         }
 
         async function fetchEpidemicStatus() {
@@ -469,6 +495,23 @@
             }, {displayModeBar: false, responsive: true});
         }
 
+        const FEATURE_EXPLANATIONS = {
+            'temp_k': { name: 'Temperature (K)', desc: 'Higher temperatures speed up mosquito lifecycle.' },
+            'preci_mm': { name: 'Precipitation (mm)', desc: 'Rainfall creates standing breeding pools.' },
+            'lai': { name: 'Vegetation Index (LAI)', desc: 'Dense vegetation provides cover for vectors.' },
+            'cases_lag1': { name: 'Cases (1 wk ago)', desc: 'Active cases propagate immediate local spread.' },
+            'cases_lag2': { name: 'Cases (2 wks ago)', desc: 'Infected carriers from previous cycle.' },
+            'cases_lag3': { name: 'Cases (3 wks ago)', desc: 'Establishes baseline epidemiological momentum.' },
+            'week_sin': { name: 'Seasonality (Sin)', desc: 'Sinusoidal component of seasonal pattern.' },
+            'week_cos': { name: 'Seasonality (Cos)', desc: 'Cos-component identifying monsoon timing.' },
+            'is_monsoon': { name: 'Monsoon Status', desc: 'Identifies high-risk rain season.' },
+            'ner_symptoms': { name: 'NLP: Symptomatic Notes', desc: 'Clinical notes mentioning fever or rash.' },
+            'ner_diseases': { name: 'NLP: Dengue Mentions', desc: 'Mentions of Dengue or vector-borne disease.' },
+            'ner_pathogens': { name: 'NLP: Pathogen Tests', desc: 'Clinical testing requests or pathogen matches.' },
+            'ner_travel': { name: 'NLP: Travel History', desc: 'Indicates imported risk from hot zones.' },
+            'ner_total_notes': { name: 'NLP: EHR Document Volume', desc: 'Total volume of processed electronic records.' }
+        };
+
         // SHAP Temporal Heatmap — green = increases risk, red = decreases risk
         async function loadShapHeatmap(censuscode) {
             try {
@@ -478,19 +521,41 @@
 
                 // Take top 7 features by mean abs importance
                 const topFeats = [...data.feature_importance].slice(0, 7);
-                const featNames = topFeats.map(f => f.feature.replace(/_/g,' ').toUpperCase());
                 const weekLabels = data.week_labels || ['t-4','t-3','t-2','t-1'];
 
-                // Build z matrix: rows = features, cols = weeks
-                // data.matrix is [4 weeks x N features]; we need [N features x 4 weeks]
-                const featIndices = topFeats.map(f => data.features.indexOf(f.feature));
-                const z = featIndices.map(fi => data.matrix.map(weekRow => weekRow[fi]));
+                // Build z matrix and custom hoverText matrix
+                const z = [];
+                const hoverText = [];
+                for (const f of topFeats) {
+                    const fi = data.features.indexOf(f.feature);
+                    const fname_lower = f.feature.toLowerCase();
+                    const info = FEATURE_EXPLANATIONS[fname_lower] || { name: f.feature, desc: 'Dynamic feature contributing to temporal risk.' };
+                    
+                    const zRow = [];
+                    const textRow = [];
+                    for (let w = 0; w < data.matrix.length; w++) {
+                        const val = data.matrix[w][fi];
+                        zRow.push(val);
+                        
+                        const signText = val > 0 ? "⚠️ INCREASES risk" : "🟢 REDUCES risk";
+                        textRow.push(
+                            `<b>Feature:</b> ${info.name}<br>` +
+                            `<b>Time:</b> ${weekLabels[w]}<br>` +
+                            `<b>SHAP Value (Log-odds):</b> ${val > 0 ? '+' : ''}${val.toFixed(4)} (${signText})<br>` +
+                            `<b>Explanation:</b> ${info.desc}`
+                        );
+                    }
+                    z.push(zRow);
+                    hoverText.push(textRow);
+                }
 
                 const trace = {
                     type: 'heatmap',
                     z: z,
                     x: weekLabels,
-                    y: featNames,
+                    y: topFeats.map(f => (FEATURE_EXPLANATIONS[f.feature.toLowerCase()]?.name || f.feature).toUpperCase()),
+                    text: hoverText,
+                    hoverinfo: 'text',
                     colorscale: [[0,'#ef4444'],[0.5,'#f9fafb'],[1,'#22c55e']],
                     zmid: 0,
                     showscale: true,
@@ -498,7 +563,7 @@
                     colorbar: { thickness: 10, len: 0.8, tickfont: { size: 8, color:'#94a3b8' } }
                 };
                 Plotly.newPlot('shap-chart', [trace], {
-                    margin: {t:10, b:30, l:110, r:30},
+                    margin: {t:10, b:30, l:150, r:30},
                     paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
                     xaxis: { tickfont: { family:'DM Sans', size:10, color:'#64748b' } },
                     yaxis: { tickfont: { family:'DM Sans', size:9, color:'#475569' }, automargin: true }
@@ -610,7 +675,13 @@
                 const res = await fetch('/api/transmit', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({cases: parseInt(cases), temp_k: parseFloat(temp), preci_mm: parseFloat(precip)})
+                    body: JSON.stringify({
+                        cases: parseInt(cases),
+                        temp_k: parseFloat(temp),
+                        preci_mm: parseFloat(precip),
+                        year: currentClock.year,
+                        week: currentClock.week
+                    })
                 });
                 const text = await res.text();
                 let data;

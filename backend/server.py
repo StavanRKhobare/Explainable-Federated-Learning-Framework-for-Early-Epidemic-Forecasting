@@ -175,9 +175,10 @@ N_STAT = 0
 LB = 4
 scaler_dyn = None
 xai_engine = None
+CURRENT_SIM_WINDOW = None
 
 def load_everything():
-    global model, model_params, xai_engine
+    global model, model_params, xai_engine, CURRENT_SIM_WINDOW
     global X, X_stat, Y_clf, Obs_mask, edge_index, edge_attr, scaler_dyn
     global windows, ts, unique_codes, node_to_idx, idx_to_code
     global district_info, edges_raw, N_NODES, N_TIME, N_DYN, N_STAT, LB
@@ -306,6 +307,7 @@ def load_everything():
 
     # Initialize XAI Engine
     xai_engine = XAIEngine(model, DEVICE)
+    CURRENT_SIM_WINDOW = len(windows) - 1
 
     print(f"[BOOT] Ready — {N_NODES} districts, {N_TIME} timesteps, {len(windows)} windows")
 
@@ -525,7 +527,7 @@ def get_districts():
 @app.get("/api/graph")
 def get_graph(t: int = Query(default=-1, description="Window index, -1 for last")):
     """Return spatial graph with nodes, edges, and predictions."""
-    t_idx = t if t >= 0 else len(windows) - 1
+    t_idx = t if t >= 0 else CURRENT_SIM_WINDOW
     result = run_window(t_idx)
     if result is None:
         return {"error": "Invalid time window"}
@@ -627,7 +629,7 @@ def federated_demo(
     n2 = node_to_idx.get(d2)
     if n1 is None or n2 is None:
         return {"error": f"District codes {d1} or {d2} not found"}
-    t_idx = t if t >= 0 else len(windows) - 1
+    t_idx = t if t >= 0 else CURRENT_SIM_WINDOW
     results = run_federated_demo(t_idx, [n1, n2])
     if results is None:
         return {"error": "Invalid time window"}
@@ -656,7 +658,7 @@ def federated_demo(
 @app.get("/api/predict")
 def predict(t: int = Query(default=-1, description="Window index")):
     """Run full inference and return top-risk districts + all predictions."""
-    t_idx = t if t >= 0 else len(windows) - 1
+    t_idx = t if t >= 0 else CURRENT_SIM_WINDOW
     result = run_window(t_idx)
     if result is None:
         return {"error": "Invalid time window"}
@@ -732,7 +734,7 @@ def get_district_node(censuscode: int):
     n_idx = node_to_idx.get(censuscode)
     if n_idx is None:
         return {"error": f"District {censuscode} not found"}
-    t_idx = len(windows) - 1
+    t_idx = CURRENT_SIM_WINDOW
     result = run_federated_demo(t_idx, [n_idx])
     if result is None:
         return {"error": "Inference failed"}
@@ -795,7 +797,7 @@ def custom_predict(req: CustomPredictRequest):
             return {"error": "Provide 1-5 districts"}
 
         # Use the last window as a baseline
-        t_last = len(windows) - 1
+        t_last = CURRENT_SIM_WINDOW
         x_win_base, y_c, y_r, obs_m, t_target = windows[t_last]
         x_d = torch.nan_to_num(x_win_base.to(DEVICE), nan=0.0).clone()
         x_s = X_stat.to(DEVICE)
@@ -923,10 +925,21 @@ class ReceiveEdgeEmbeddingRequest(BaseModel):
     censuscode: int
     embedding: List[float]
     cases: int
+    year: Optional[int] = None
+    week: Optional[int] = None
 
 @app.post("/api/receive-edge-embedding")
 def receive_edge_embedding(req: ReceiveEdgeEmbeddingRequest):
     try:
+        if req.year is not None and req.week is not None:
+            x_win, y_c, y_r, obs_m, t_target = windows[CURRENT_SIM_WINDOW]
+            row_ts = ts.iloc[t_target]
+            curr_y = int(row_ts.iso_year)
+            curr_w = int(row_ts.iso_week)
+            if req.year != curr_y or req.week != curr_w:
+                return {
+                    "error": f"Out of sync. Client transmitted for {req.year}-W{req.week}, but central server is on {curr_y}-W{curr_w}. Please reload/fetch current simulation clock."
+                }
         n_idx = node_to_idx.get(req.censuscode)
         if n_idx is None:
             return {"error": f"Censuscode {req.censuscode} not found in spatial graph"}
@@ -973,10 +986,48 @@ def clear_active_clients():
     print("[EDGE CLIENT] Cleared all active client embeddings")
     return {"status": "success"}
 
+@app.get("/api/sim-clock")
+def get_sim_clock():
+    global CURRENT_SIM_WINDOW
+    if CURRENT_SIM_WINDOW is None or windows is None:
+        return {"error": "Server not ready"}
+    x_win, y_c, y_r, obs_m, t_target = windows[CURRENT_SIM_WINDOW]
+    row_ts = ts.iloc[t_target]
+    return {
+        "current_window": CURRENT_SIM_WINDOW,
+        "year": int(row_ts.iso_year),
+        "week": int(row_ts.iso_week),
+        "max_window": len(windows) - 1
+    }
+
+@app.post("/api/sim-clock/advance")
+def advance_sim_clock(step: int = 1, window_idx: int = None):
+    global CURRENT_SIM_WINDOW, live_edge_embeddings, live_edge_cases
+    if CURRENT_SIM_WINDOW is None or windows is None:
+        return {"error": "Server not ready"}
+    if window_idx is not None:
+        new_window = window_idx
+    else:
+        new_window = CURRENT_SIM_WINDOW + step
+        
+    if 0 <= new_window < len(windows):
+        CURRENT_SIM_WINDOW = new_window
+        live_edge_embeddings.clear()
+        live_edge_cases.clear()
+        x_win, y_c, y_r, obs_m, t_target = windows[CURRENT_SIM_WINDOW]
+        row_ts = ts.iloc[t_target]
+        return {
+            "status": "success",
+            "current_window": CURRENT_SIM_WINDOW,
+            "year": int(row_ts.iso_year),
+            "week": int(row_ts.iso_week)
+        }
+    return {"error": f"Invalid step or index. Min: 0, Max: {len(windows)-1}"}
+
 
 @app.get("/api/xai/temporal")
 def get_temporal_xai(censuscode: int, t: int = Query(default=-1)):
-    t_idx = t if t >= 0 else len(windows) - 1
+    t_idx = t if t >= 0 else CURRENT_SIM_WINDOW
     n_idx = node_to_idx.get(censuscode)
     if n_idx is None:
         raise HTTPException(status_code=404, detail="District not found")
@@ -1003,7 +1054,7 @@ def get_temporal_xai(censuscode: int, t: int = Query(default=-1)):
 
 @app.get("/api/xai/spatial")
 def get_spatial_xai(censuscode: int, t: int = Query(default=-1)):
-    t_idx = t if t >= 0 else len(windows) - 1
+    t_idx = t if t >= 0 else CURRENT_SIM_WINDOW
     n_idx = node_to_idx.get(censuscode)
     if n_idx is None:
         raise HTTPException(status_code=404, detail="District not found")
@@ -1036,7 +1087,7 @@ def get_epidemic_status(censuscode: int):
     n_idx = node_to_idx.get(censuscode)
     if n_idx is None:
         raise HTTPException(status_code=404, detail=f"Censuscode {censuscode} not found")
-    t_idx = len(windows) - 1
+    t_idx = CURRENT_SIM_WINDOW
     x_win, y_c, y_r, obs_m, t_target = windows[t_idx]
     row_ts = ts.iloc[t_target]
     with torch.no_grad():
@@ -1099,7 +1150,7 @@ def get_embedding_analytics():
     """Return analytics about current live edge embeddings: L2 norms, cosine similarities."""
     CLIENT_CODES = [572, 632, 94]
     CLIENT_NAMES = {572: "Bangalore", 632: "Coimbatore", 94: "New Delhi"}
-    t_idx = len(windows) - 1
+    t_idx = CURRENT_SIM_WINDOW
     x_win, y_c, y_r, _, t_target = windows[t_idx]
     row_ts = ts.iloc[t_target]
     with torch.no_grad():
@@ -1133,7 +1184,7 @@ def get_embedding_analytics():
 @app.get("/api/shap-summary/{censuscode}")
 def get_shap_summary(censuscode: int, t: int = Query(default=-1)):
     """Return full SHAP heatmap matrix [4 weeks x N features] for visualization."""
-    t_idx = t if t >= 0 else len(windows) - 1
+    t_idx = t if t >= 0 else CURRENT_SIM_WINDOW
     n_idx = node_to_idx.get(censuscode)
     if n_idx is None:
         raise HTTPException(status_code=404, detail="District not found")
@@ -1158,7 +1209,7 @@ def get_report_data(censuscode: int):
     n_idx = node_to_idx.get(censuscode)
     if n_idx is None:
         raise HTTPException(status_code=404, detail="District not found")
-    t_idx = len(windows) - 1
+    t_idx = CURRENT_SIM_WINDOW
     info = next((d for d in district_info if d["censuscode"] == censuscode), {})
     status = get_epidemic_status(censuscode)
     shap_data = get_shap_summary(censuscode, t=t_idx)

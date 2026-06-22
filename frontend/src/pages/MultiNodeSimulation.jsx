@@ -19,31 +19,12 @@ export default function MultiNodeSimulation() {
   const [temporalXAI, setTemporalXAI] = useState(null)
   const [spatialXAI, setSpatialXAI] = useState(null)
   const [embedAnalytics, setEmbedAnalytics] = useState(null)
+  const [simClock, setSimClock] = useState(null)
   const [simLogs, setSimLogs] = useState([
     { time: new Date().toLocaleTimeString(), type: "info", text: "Multi-System Simulation Dashboard initialized." },
     { time: new Date().toLocaleTimeString(), type: "info", text: "Awaiting incoming 64-dimensional edge embeddings..." }
   ])
   const [shapSummary, setShapSummary] = useState(null) // shap-summary for selected node
-
-
-  // Fetch active clients
-  const getClients = async () => {
-    try {
-      const res = await fetch('/api/active-clients')
-      const active = await res.json()
-      
-      // Update logs if a new client connects
-      active.forEach(c => {
-        if (!activeClients.some(ac => ac.censuscode === c.censuscode)) {
-          logSim("connect", `Edge client connected from ${c.district} (Census: ${c.censuscode})`);
-        }
-      })
-      
-      setActiveClients(active)
-    } catch (e) {
-      console.error(e)
-    }
-  }
 
   const logSim = (type, text) => {
     setSimLogs(prev => [
@@ -52,34 +33,63 @@ export default function MultiNodeSimulation() {
     ])
   }
 
-  useEffect(() => {
-    getClients()
-    // Poll every 60s — dependency MUST be [] to prevent interval stacking
-    const timer = setInterval(getClients, 60000)
-    return () => clearInterval(timer)
-  }, [])  // ← empty array: run once on mount only
+  // Fetch active clients
+  const getClients = async () => {
+    try {
+      const res = await fetch('/api/active-clients')
+      const active = await res.json()
+      if (Array.isArray(active)) {
+        setActiveClients(prev => {
+          active.forEach(c => {
+            if (!prev.some(ac => ac.censuscode === c.censuscode)) {
+              logSim("connect", `Edge client connected from ${c.district} (Census: ${c.censuscode})`);
+            }
+          });
+          if (JSON.stringify(prev) !== JSON.stringify(active)) {
+            return active;
+          }
+          return prev;
+        });
+      }
+    } catch (e) {
+      console.error(e)
+    }
+  }
 
-  // Load all India districts once for map backdrop
-  useEffect(() => {
-    fetch('/api/districts')
-      .then(r => r.json())
-      .then(setAllDistricts)
-      .catch(e => console.error('district load error', e))
-  }, [])
+  // Fetch simulation clock state
+  const fetchSimClock = async () => {
+    try {
+      const res = await fetch('/api/sim-clock')
+      const json = await res.json()
+      if (!json.error) {
+        setSimClock(prev => JSON.stringify(prev) !== JSON.stringify(json) ? json : prev)
+      }
+    } catch (e) { console.error(e) }
+  }
 
+  // Fetch embedding analytics
   const fetchAnalytics = async () => {
     try {
       const res = await fetch('/api/embedding-analytics')
       const json = await res.json()
-      if (!json.error) setEmbedAnalytics(json)
+      if (!json.error) {
+        setEmbedAnalytics(prev => {
+          if (prev && prev.nodes) {
+            json.nodes.forEach(node => {
+              const prevNode = prev.nodes.find(pn => pn.censuscode === node.censuscode);
+              if (prevNode && JSON.stringify(prevNode.embedding) !== JSON.stringify(node.embedding)) {
+                logSim("info", `Received updated 64-dim embedding from ${node.name} Hospital`);
+              }
+            });
+          }
+          if (JSON.stringify(prev) !== JSON.stringify(json)) {
+            return json;
+          }
+          return prev;
+        });
+      }
     } catch (e) { console.error(e) }
   }
-
-  useEffect(() => {
-    fetchAnalytics()
-    const timer = setInterval(fetchAnalytics, 60000)
-    return () => clearInterval(timer)
-  }, [])
 
   // Run prediction on current simulation window (defaulting to last window)
   const fetchSimPrediction = async () => {
@@ -90,8 +100,7 @@ export default function MultiNodeSimulation() {
       if (json.error) {
         logSim("error", `Inference error: ${json.error}`)
       } else {
-        setData(json)
-        logSim("info", `Inference executed (${useSim ? "Simulation Overlay" : "Historical Baseline"}). Year ${json.year} Week ${json.week}. Alerts: ${json.n_high_risk}`)
+        setData(prev => JSON.stringify(prev) !== JSON.stringify(json) ? json : prev)
       }
     } catch (e) {
       console.error(e)
@@ -100,8 +109,47 @@ export default function MultiNodeSimulation() {
     setLoading(false)
   }
 
+  // Clock advancement handler
+  const handleAdvanceClock = async () => {
+    setLoading(true)
+    try {
+      const res = await fetch('/api/sim-clock/advance?step=1', { method: 'POST' })
+      const json = await res.json()
+      if (json.error) {
+        logSim("error", `Clock advance error: ${json.error}`)
+      } else {
+        setSimClock(json)
+        logSim("info", `Simulation clock advanced to Year ${json.year} Week ${json.week}`)
+        // Fetch fresh state immediately
+        await getClients()
+        await fetchSimPrediction()
+        await fetchAnalytics()
+      }
+    } catch (e) {
+      logSim("error", `Failed to advance clock: ${e.message}`)
+    }
+    setLoading(false)
+  }
+
+  // Load all India districts once for map backdrop
   useEffect(() => {
-    fetchSimPrediction()
+    fetch('/api/districts')
+      .then(r => r.json())
+      .then(setAllDistricts)
+      .catch(e => console.error('district load error', e))
+  }, [])
+
+  // Fast 5-second polling loop
+  useEffect(() => {
+    const poll = async () => {
+      await getClients()
+      await fetchSimClock()
+      await fetchAnalytics()
+      await fetchSimPrediction()
+    }
+    poll()
+    const timer = setInterval(poll, 5000)
+    return () => clearInterval(timer)
   }, [useSim])
 
   const handleReset = async () => {
@@ -112,6 +160,7 @@ export default function MultiNodeSimulation() {
         setActiveClients([])
         logSim("info", "Cleared all simulation overrides on central server.")
         fetchSimPrediction()
+        fetchAnalytics()
       }
     } catch (e) {
       logSim("error", `Failed to reset simulation: ${e.message}`)
@@ -163,7 +212,7 @@ export default function MultiNodeSimulation() {
       <div className="page-header">
         <h1 className="page-title">Multi-System Edge Simulation</h1>
         <p className="page-subtitle">
-          Receive privacy-preserving 32-dim embeddings from distributed hospital edge systems (Bangalore, Chennai/Coimbatore, New Delhi) and propagate risk updates live.
+          Receive privacy-preserving 64-dim embeddings from distributed hospital edge systems (Bangalore, Chennai/Coimbatore, New Delhi) and propagate risk updates live.
         </p>
       </div>
 
@@ -207,39 +256,59 @@ export default function MultiNodeSimulation() {
       {/* Control Panel */}
       <div className="card" style={{ marginBottom: '1.5rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-            <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>Simulation Mode:</span>
-            <div style={{ display: 'flex', border: '1px solid var(--slate-200)', borderRadius: 8, overflow: 'hidden' }}>
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>Simulation Mode:</span>
+              <div style={{ display: 'flex', border: '1px solid var(--slate-200)', borderRadius: 8, overflow: 'hidden' }}>
+                <button 
+                  className={`btn`} 
+                  style={{ 
+                    borderRadius: 0,
+                    padding: '6px 16px',
+                    background: !useSim ? 'var(--blue-600)' : 'transparent',
+                    color: !useSim ? '#fff' : 'var(--slate-600)',
+                    border: 'none',
+                    fontSize: '0.8rem'
+                  }}
+                  onClick={() => setUseSim(false)}
+                >
+                  Historical Baseline
+                </button>
+                <button 
+                  className={`btn`} 
+                  style={{ 
+                    borderRadius: 0,
+                    padding: '6px 16px',
+                    background: useSim ? 'var(--emerald-600)' : 'transparent',
+                    color: useSim ? '#fff' : 'var(--slate-600)',
+                    border: 'none',
+                    fontSize: '0.8rem'
+                  }}
+                  onClick={() => setUseSim(true)}
+                >
+                  Simulation Overlay
+                </button>
+              </div>
+            </div>
+            
+            <div style={{ width: '1px', height: '24px', background: 'var(--slate-200)' }}></div>
+
+            <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
+              <span style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--purple-600)' }}>Global Week:</span>
+              <div style={{ padding: '6px 12px', background: 'var(--purple-50)', color: 'var(--purple-700)', border: '1px solid var(--purple-200)', borderRadius: 8, fontSize: '0.85rem', fontWeight: 'bold', fontFamily: 'monospace' }}>
+                {simClock ? `${simClock.year}-W${simClock.week}` : 'Loading...'}
+              </div>
               <button 
-                className={`btn`} 
-                style={{ 
-                  borderRadius: 0,
-                  padding: '6px 16px',
-                  background: !useSim ? 'var(--blue-600)' : 'transparent',
-                  color: !useSim ? '#fff' : 'var(--slate-600)',
-                  border: 'none',
-                  fontSize: '0.8rem'
-                }}
-                onClick={() => setUseSim(false)}
+                className="btn btn-outline" 
+                style={{ fontSize: '0.75rem', padding: '6px 12px', borderColor: 'var(--purple-300)', color: 'var(--purple-700)', background: 'var(--purple-50)' }}
+                onClick={handleAdvanceClock}
+                disabled={loading}
               >
-                Historical Baseline
-              </button>
-              <button 
-                className={`btn`} 
-                style={{ 
-                  borderRadius: 0,
-                  padding: '6px 16px',
-                  background: useSim ? 'var(--emerald-600)' : 'transparent',
-                  color: useSim ? '#fff' : 'var(--slate-600)',
-                  border: 'none',
-                  fontSize: '0.8rem'
-                }}
-                onClick={() => setUseSim(true)}
-              >
-                Simulation Overlay
+                Next Week ➡️
               </button>
             </div>
           </div>
+          
           <div style={{ display: 'flex', gap: '0.8rem' }}>
             <button className="btn btn-outline" onClick={fetchSimPrediction} disabled={loading}>
               Refresh State
@@ -482,26 +551,70 @@ export default function MultiNodeSimulation() {
                         </span>
                       </div>
                       {shapSummary?.matrix ? (() => {
+                        const FEATURE_EXPLANATIONS = {
+                          'temp_k': { name: 'Temperature (K)', desc: 'Higher temperatures speed up mosquito lifecycle.' },
+                          'preci_mm': { name: 'Precipitation (mm)', desc: 'Rainfall creates standing breeding pools.' },
+                          'lai': { name: 'Vegetation Index (LAI)', desc: 'Dense vegetation provides cover for vectors.' },
+                          'cases_lag1': { name: 'Cases (1 wk ago)', desc: 'Active cases propagate immediate local spread.' },
+                          'cases_lag2': { name: 'Cases (2 wks ago)', desc: 'Infected carriers from previous cycle.' },
+                          'cases_lag3': { name: 'Cases (3 wks ago)', desc: 'Establishes baseline epidemiological momentum.' },
+                          'week_sin': { name: 'Seasonality (Sin)', desc: 'Sinusoidal component of seasonal pattern.' },
+                          'week_cos': { name: 'Seasonality (Cos)', desc: 'Cos-component identifying monsoon timing.' },
+                          'is_monsoon': { name: 'Monsoon Status', desc: 'Identifies high-risk rain season.' },
+                          'ner_symptoms': { name: 'NLP: Symptomatic Notes', desc: 'Clinical notes mentioning fever or rash.' },
+                          'ner_diseases': { name: 'NLP: Dengue Mentions', desc: 'Mentions of Dengue or vector-borne disease.' },
+                          'ner_pathogens': { name: 'NLP: Pathogen Tests', desc: 'Clinical testing requests or pathogen matches.' },
+                          'ner_travel': { name: 'NLP: Travel History', desc: 'Indicates imported risk from hot zones.' },
+                          'ner_total_notes': { name: 'NLP: EHR Document Volume', desc: 'Total volume of processed electronic records.' }
+                        };
+
                         const topFeats = shapSummary.feature_importance.slice(0, 7)
-                        const featNames = topFeats.map(f => f.feature.replace(/_/g,' ').toUpperCase())
-                        const featIndices = topFeats.map(f => shapSummary.features.indexOf(f.feature))
-                        const z = featIndices.map(fi => shapSummary.matrix.map(row => row[fi]))
+                        const weekLabels = shapSummary.week_labels || ['t-4','t-3','t-2','t-1'];
+                        
+                        const z = [];
+                        const hoverText = [];
+                        for (const f of topFeats) {
+                          const fi = shapSummary.features.indexOf(f.feature);
+                          const fname_lower = f.feature.toLowerCase();
+                          const info = FEATURE_EXPLANATIONS[fname_lower] || { name: f.feature, desc: 'Dynamic feature contributing to temporal risk.' };
+                          
+                          const zRow = [];
+                          const textRow = [];
+                          for (let w = 0; w < shapSummary.matrix.length; w++) {
+                            const val = shapSummary.matrix[w][fi];
+                            zRow.push(val);
+                            
+                            const signText = val > 0 ? "⚠️ INCREASES risk" : "🟢 REDUCES risk";
+                            textRow.push(
+                              `<b>Feature:</b> ${info.name}<br>` +
+                              `<b>Time:</b> ${weekLabels[w]}<br>` +
+                              `<b>SHAP Impact (Log-odds):</b> ${val > 0 ? '+' : ''}${val.toFixed(4)} (${signText})<br>` +
+                              `<b>Explanation:</b> ${info.desc}`
+                            );
+                          }
+                          z.push(zRow);
+                          hoverText.push(textRow);
+                        }
+
+                        const featNames = topFeats.map(f => (FEATURE_EXPLANATIONS[f.feature.toLowerCase()]?.name || f.feature).toUpperCase())
                         return (
                           <Plot
                             data={[{
                               type: 'heatmap',
                               z,
-                              x: shapSummary.week_labels,
+                              x: weekLabels,
                               y: featNames,
+                              text: hoverText,
+                              hoverinfo: 'text',
                               colorscale: [[0,'#ef4444'],[0.5,'#f9fafb'],[1,'#22c55e']],
                               zmid: 0,
                               showscale: true,
                               colorbar: { thickness: 8, len: 0.9, tickfont: { size: 7, color:'#94a3b8' } }
                             }]}
                             layout={{
-                              margin: { t:5, b:30, l:115, r:20 },
+                              margin: { t:5, b:30, l:150, r:20 },
                               paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
-                              height: 180,
+                              height: 220,
                               xaxis: { tickfont: { size:9, family:'DM Sans', color:'#64748b' } },
                               yaxis: { tickfont: { size:8, family:'DM Sans', color:'#475569' }, automargin: true }
                             }}
