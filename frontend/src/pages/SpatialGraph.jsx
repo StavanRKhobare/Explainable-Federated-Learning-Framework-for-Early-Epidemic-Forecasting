@@ -145,7 +145,7 @@ export default function SpatialGraph() {
                   line: { width: 1, color: 'rgba(255,255,255,0.8)' },
                 },
                 text: nodes.map(n =>
-                  `<b>${n.name}</b>, ${n.state}<br>Risk: ${(n.prob * 100).toFixed(1)}%${n.truth ? '<br>⚠️ TRUE OUTBREAK' : ''}`
+                  `<b>${n.name}</b>, ${n.state}<br>Risk: ${(n.prob * 100).toFixed(1)}%${n.truth ? '<br>TRUE OUTBREAK' : ''}`
                 ),
                 hoverinfo: 'text',
                 showlegend: false,
@@ -198,7 +198,7 @@ export default function SpatialGraph() {
                 </div>
                 {selected.truth === 1 && (
                   <div className="alert-box alert-risk" style={{ marginTop: '0.8rem', justifyContent: 'center' }}>
-                    ⚠️ Confirmed outbreak this week
+                    Confirmed outbreak this week
                   </div>
                 )}
               </div>
@@ -230,7 +230,7 @@ export default function SpatialGraph() {
 
           <div className="card">
             <div className="card-title" style={{ marginBottom: '0.8rem' }}>
-              🔴 High-Risk Districts ({highRisk.length})
+              High-Risk Districts ({highRisk.length})
             </div>
             <div className="table-container" style={{ maxHeight: '320px' }}>
               <table>

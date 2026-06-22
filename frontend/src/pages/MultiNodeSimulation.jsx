@@ -503,7 +503,7 @@ export default function MultiNodeSimulation() {
                 onClick={handleAdvanceClock}
                 disabled={loading}
               >
-                Next Week ➡️
+                Next Week
               </button>
             </div>
           </div>
@@ -518,7 +518,7 @@ export default function MultiNodeSimulation() {
                 setFwLogs([]);
               }}
             >
-              🛡️ Privacy Firewall Demo
+              Privacy Firewall Demo
             </button>
             <button className="btn btn-outline" onClick={fetchSimPrediction} disabled={loading}>
               Refresh State
@@ -599,10 +599,10 @@ export default function MultiNodeSimulation() {
                     },
                     hovertext: mapData.map(p => {
                       const isActive = activeClients.some(ac => ac.censuscode === p.code)
-                      return `<b>${p.name}</b> ${isActive ? '🟢 Active' : '⚫ Offline'}<br>` +
+                      return `<b>${p.name}</b> ${isActive ? 'Active' : 'Offline'}<br>` +
                         `Risk: <b>${(p.prob * 100).toFixed(1)}%</b>${p.isSimulated ? ' (Simulated)' : ''}<br>` +
                         `Pred Cases: ${p.pred_cases.toFixed(0)}<br>` +
-                        (p.truth ? '⚠️ TRUE OUTBREAK THIS WEEK' : '') +
+                        (p.truth ? 'TRUE OUTBREAK THIS WEEK' : '') +
                         '<br><i>Click for details</i>'
                     }),
                     hoverinfo: 'text',
@@ -754,7 +754,7 @@ export default function MultiNodeSimulation() {
                     <div style={{ marginTop: '1.2rem', textAlign: 'center' }}>
                       <button className="btn btn-outline" style={{ width: '100%', fontSize: '0.8rem', padding: '8px' }}
                         onClick={() => window.open(`http://${window.location.hostname || 'localhost'}:8000/api/report-data/${selectedNode.code}`, '_blank')}>
-                        📄 View Snapshot JSON Report
+                        View Snapshot JSON Report
                       </button>
                     </div>
 
@@ -1173,7 +1173,7 @@ export default function MultiNodeSimulation() {
               {/* Left Side: Edge Local Environment */}
               <div style={{ border: '1px solid var(--slate-200)', borderRadius: 'var(--radius-xs)', padding: '0.8rem', background: '#ffffff', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em', color: 'var(--blue-600)' }}>🏥 EDGE NODE (LOCAL HOSPITAL CLINIC)</span>
+                  <span style={{ fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em', color: 'var(--blue-600)' }}>EDGE NODE (LOCAL HOSPITAL CLINIC)</span>
                 </div>
                 
                 <div>
@@ -1189,7 +1189,7 @@ export default function MultiNodeSimulation() {
 
                 {fwMode === 'federated' && (
                   <div>
-                    <label style={{ fontSize: '0.68rem', fontWeight: 600, color: 'var(--emerald-600)', display: 'block', marginBottom: '2px' }}>🛡️ Local De-identification Output (PII Redacted):</label>
+                    <label style={{ fontSize: '0.68rem', fontWeight: 600, color: 'var(--emerald-600)', display: 'block', marginBottom: '2px' }}>Local De-identification Output (PII Redacted):</label>
                     <div style={{
                       fontFamily: 'monospace', fontSize: '0.68rem', background: '#f0fdf4',
                       padding: '6px 8px', borderRadius: 'var(--radius-xs)', border: '1px solid var(--emerald-200)',
@@ -1239,7 +1239,7 @@ export default function MultiNodeSimulation() {
               <div style={{ border: '1px solid var(--slate-200)', borderRadius: 'var(--radius-xs)', padding: '0.8rem', background: 'var(--slate-50)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                    <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--slate-700)', fontFamily: 'monospace' }}>🖥️ SECURITY FIREWALL TERMINAL</span>
+                    <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--slate-700)', fontFamily: 'monospace' }}>SECURITY FIREWALL TERMINAL</span>
                     <span className={`badge ${
                       fwStatus === 'blocked' ? 'badge-red' : fwStatus === 'passed' ? 'badge-green' : 'badge-blue'
                     }`} style={{ fontSize: '0.66rem', padding: '2px 8px', border: '1px solid transparent', borderColor: fwStatus === 'blocked' ? '#fca5a5' : fwStatus === 'passed' ? '#86efac' : 'var(--blue-200)' }}>
@@ -1275,7 +1275,7 @@ export default function MultiNodeSimulation() {
                       onClick={runSecurityAudit}
                       disabled={fwStatus === 'scanning'}
                     >
-                      🛡️ Run Transmission Audit
+                      Run Transmission Audit
                     </button>
                     <button 
                       className="btn btn-outline"
@@ -1291,7 +1291,6 @@ export default function MultiNodeSimulation() {
 
             {/* Banner/Helper Info */}
             <div style={{ background: 'var(--blue-50)', border: '1px solid var(--blue-100)', padding: '8px', borderRadius: 'var(--radius-sm)', fontSize: '0.7rem', color: 'var(--blue-900)', display: 'flex', alignItems: 'center', gap: '10px', lineHeight: '1.3' }}>
-              <span style={{ fontSize: '1.2rem' }}>💡</span>
               <div>
                 <strong>How the Federated Firewall protects patient records:</strong> The local hospital node uses NLP to extract features locally. In <strong>Federated Mode</strong>, only anonymous 64-dimensional float embeddings are transmitted. If you switch to <strong>Direct Mode</strong>, the firewall intercepts the raw data block immediately and triggers a HIPAA security alarm.
               </div>

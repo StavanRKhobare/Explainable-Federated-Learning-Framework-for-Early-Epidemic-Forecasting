@@ -107,17 +107,17 @@ export default function LivePredict() {
               {timeIdx === 549 && <span style={{ color: 'var(--emerald-500)', marginLeft: 6 }}>★ Peak monsoon (default)</span>}
             </div>
             <div style={{ fontSize: '0.7rem', color: 'var(--slate-400)', marginTop: 2 }}>
-              💡 Default shows 2019 W34 — peak outbreak season with 33 true outbreaks. Slide to explore other periods.
+              Default shows 2019 W34 — peak outbreak season with 33 true outbreaks. Slide to explore other periods.
             </div>
           </div>
           <div style={{ display: 'flex', gap: '0.8rem' }}>
             <button className="btn btn-outline" onClick={() => runPrediction(timeIdx)} disabled={loading || isPlaying}>
-              {loading && !isPlaying ? '⏳ Running...' : '🧠 Run Inference'}
+              {loading && !isPlaying ? 'Running...' : 'Run Inference'}
             </button>
             <button className={`btn ${isPlaying ? 'btn-outline' : 'btn-primary'}`} 
               onClick={() => setIsPlaying(!isPlaying)}
               style={!isPlaying ? { background: 'var(--emerald-500)' } : {}}>
-              {isPlaying ? '⏸ Pause' : '▶ Play Timeline'}
+              {isPlaying ? 'Pause' : 'Play Timeline'}
             </button>
           </div>
         </div>
@@ -168,7 +168,7 @@ export default function LivePredict() {
                         bgcolor: 'rgba(255,255,255,0.9)', borderwidth: 0, outlinewidth: 0,
                       },
                     },
-                    text: mapData.map(p => `<b>${p.name}</b>, ${p.state}<br>Risk: ${(p.prob * 100).toFixed(1)}%${p.truth ? '<br>⚠️ TRUE OUTBREAK' : ''}<br><i>Click for details</i>`),
+                    text: mapData.map(p => `<b>${p.name}</b>, ${p.state}<br>Risk: ${(p.prob * 100).toFixed(1)}%${p.truth ? '<br>TRUE OUTBREAK' : ''}<br><i>Click for details</i>`),
                     hoverinfo: 'text',
                   }]}
                   layout={{
@@ -236,10 +236,10 @@ export default function LivePredict() {
                   </div>
 
                   {selectedNode.truth === 1 && (
-                    <div className="alert-box alert-risk" style={{ justifyContent: 'center', marginBottom: '0.5rem' }}>⚠️ Confirmed outbreak</div>
+                    <div className="alert-box alert-risk" style={{ justifyContent: 'center', marginBottom: '0.5rem' }}>Confirmed outbreak</div>
                   )}
                   {selectedNode.truth === 0 && selectedNode.prob < 0.1 && (
-                    <div className="alert-box alert-safe" style={{ justifyContent: 'center', marginBottom: '0.5rem' }}>✓ No outbreak detected</div>
+                    <div className="alert-box alert-safe" style={{ justifyContent: 'center', marginBottom: '0.5rem' }}>No outbreak detected</div>
                   )}
 
                   {nodeDetail?.district && (
@@ -267,7 +267,7 @@ export default function LivePredict() {
                         <div className="card-title" style={{ fontSize: '0.75rem', color: 'var(--slate-500)', marginBottom: '0.4rem' }}>
                           SHAP Temporal Feature Importance
                           <span style={{ fontSize: '0.6rem', fontWeight: 400, marginLeft: 6, color: 'var(--slate-400)' }}>
-                            🟢 green = risk-increasing &nbsp;🔴 red = risk-reducing
+                            green = risk-increasing &nbsp;red = risk-reducing
                           </span>
                         </div>
                         {shapSummary?.matrix ? (() => {
@@ -304,7 +304,7 @@ export default function LivePredict() {
                               const val = shapSummary.matrix[w][fi];
                               zRow.push(val);
                               
-                              const signText = val > 0 ? "⚠️ INCREASES risk" : "🟢 REDUCES risk";
+                              const signText = val > 0 ? "INCREASES risk" : "REDUCES risk";
                               textRow.push(
                                 `<b>Feature:</b> ${info.name}<br>` +
                                 `<b>Time:</b> ${weekLabels[w]}<br>` +
@@ -355,7 +355,7 @@ export default function LivePredict() {
                             {spatialXAI.slice(0, 3).map(n => (
                               <div key={n.censuscode} style={{ fontSize: '0.7rem' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
-                                  <span style={{ color: 'var(--slate-700)', fontWeight: 500 }}>{n.district} ({n.importance > 0.5 ? '🔥 High' : 'Low'})</span>
+                                  <span style={{ color: 'var(--slate-700)', fontWeight: 500 }}>{n.district} ({n.importance > 0.5 ? 'High' : 'Low'})</span>
                                   <span style={{ color: 'var(--slate-400)' }}>{(n.importance * 100).toFixed(0)}%</span>
                                 </div>
                                 <div style={{ width: '100%', background: '#e2e8f0', height: 6, borderRadius: 3 }}>
@@ -375,7 +375,7 @@ export default function LivePredict() {
 
               {/* Top 10 */}
               <div className="card">
-                <div className="card-title" style={{ marginBottom: '0.8rem' }}>🏆 Top 10 Riskiest</div>
+                <div className="card-title" style={{ marginBottom: '0.8rem' }}>Top 10 Riskiest</div>
                 <div className="table-container" style={{ maxHeight: '400px' }}>
                   <table>
                     <thead><tr><th>#</th><th>District</th><th>Risk</th></tr></thead>

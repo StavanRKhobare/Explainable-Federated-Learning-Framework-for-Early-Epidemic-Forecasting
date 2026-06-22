@@ -526,11 +526,13 @@ def get_analytics_stats():
         except:
             pass
             
+    temperatures = [r["temperature_c"] for r in rows]
     return {
         "total_records": len(rows),
         "status_counts": status_counts,
         "temp_counts": temp_counts,
-        "symptom_counts": symptom_counts
+        "symptom_counts": symptom_counts,
+        "temperatures": temperatures
     }
 
 class AISummaryRequest(BaseModel):
@@ -574,7 +576,7 @@ def get_ai_summary(req: AISummaryRequest):
         if pos_rate > 40: alert_level = "CRITICAL OUTBREAK WARNING"
         
         return (
-            f"### 📋 Clinician AI Intelligence Report — {hospital_name}\n"
+            f"### Clinician AI Intelligence Report — {hospital_name}\n"
             f"**District Census ID:** {district_code} | **Status:** `{alert_level}`\n\n"
             f"#### 1. Clinical Status Assessment\n"
             f"The node has processed a total of **{total} electronic health records (EHRs)**. "

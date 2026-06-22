@@ -203,7 +203,7 @@
     </div>
 
     <div id="alert-banner">
-        ⚠️ ALERT: Outbreak probability updated
+        ALERT: Outbreak probability updated
     </div>
 
     <div class="page">
@@ -237,10 +237,10 @@
         <!-- Navigation Tabs -->
         <div style="display: flex; gap: 12px; margin-bottom: 1.5rem; background: var(--white); padding: 6px; border-radius: var(--radius-sm); border: 1px solid var(--slate-200); box-shadow: 0 2px 4px rgba(0,0,0,0.01);">
             <button class="tab-btn active" onclick="switchTab('ops')" style="flex: 1;">
-                ⚡ Edge Operations
+                Edge Operations
             </button>
             <button class="tab-btn" onclick="switchTab('analytics')" style="flex: 1;">
-                📊 Clinical Analytics & AI Reports
+                Clinical Analytics & AI Reports
             </button>
         </div>
 
@@ -281,16 +281,15 @@
                         <span style="font-size: 0.7rem; font-weight: normal; color: var(--slate-400);">No raw data leaves device</span>
                     </div>
                     <div style="display: flex; gap: 1.5rem; align-items: stretch;">
-                        <div style="flex: 1; display: flex; flex-direction: column;">
                             <div style="flex: 1; border: 2px dashed var(--slate-300); border-radius: var(--radius-sm); padding: 1.2rem 1.5rem; text-align: center; cursor: pointer; background: var(--slate-50); transition: all 0.2s; display: flex; flex-direction: column; justify-content: center; align-items: center;" onclick="document.getElementById('file-input').click()" onmouseover="this.style.borderColor='var(--blue-400)'; this.style.background='var(--blue-50)'" onmouseout="this.style.borderColor='var(--slate-300)'; this.style.background='var(--slate-50)'">
-                                <div style="font-size: 2rem; margin-bottom: 8px;">📄</div>
+                                <div style="font-size: 2.2rem; margin-bottom: 8px; font-weight: 300; color: var(--slate-400);">DOC</div>
                                 <p style="font-size: 0.85rem; font-weight: 600; color: var(--slate-700); margin: 0;" id="file-label">Upload EHR (.pdf / .txt / .docx)</p>
                                 <p style="font-size: 0.72rem; color: var(--slate-500); margin-top: 6px;">Parsed locally via clinical NLP</p>
                                 <input type="file" id="file-input" style="display: none;" accept=".pdf,.txt,.docx" onchange="handleFileUpload(event)">
                             </div>
                             <!-- CSV bulk upload -->
                             <div style="margin-top: 10px; border: 2px dashed var(--slate-300); border-radius: var(--radius-sm); padding: 0.9rem 1rem; text-align: center; cursor: pointer; background: var(--slate-50); transition: all 0.2s;" onclick="document.getElementById('csv-input').click()" onmouseover="this.style.borderColor='var(--purple-400)'; this.style.background='#faf5ff'" onmouseout="this.style.borderColor='var(--slate-300)'; this.style.background='var(--slate-50)'">
-                                <p style="font-size: 0.82rem; font-weight: 600; color: var(--slate-700); margin: 0;">📊 Bulk Upload Patient CSV</p>
+                                <p style="font-size: 0.82rem; font-weight: 600; color: var(--slate-700); margin: 0;">Bulk Upload Patient CSV</p>
                                 <p style="font-size: 0.7rem; color: var(--slate-500); margin-top: 4px;">Columns: <code>temperature,dengue_status</code> (0/1)</p>
                                 <input type="file" id="csv-input" style="display: none;" accept=".csv" onchange="handleCsvUpload(event)">
                             </div>
@@ -326,7 +325,7 @@
                     
                     <div class="flow-container" id="flow-anim">
                         <div class="flow-node">
-                            <div class="flow-icon">🏥</div>
+                            <div class="flow-icon" style="font-size: 0.72rem; font-weight: bold; color: var(--blue-600);">NLP</div>
                             <div class="flow-lbl">Edge NLP</div>
                         </div>
                         <div class="flow-arrow-container">
@@ -334,7 +333,7 @@
                             <div class="flow-fill"></div>
                         </div>
                         <div class="flow-node">
-                            <div class="flow-icon">🔐</div>
+                            <div class="flow-icon" style="font-size: 0.72rem; font-weight: bold; color: var(--purple-600);">TGAT</div>
                             <div class="flow-lbl">T-GAT</div>
                         </div>
                         <div class="flow-arrow-container">
@@ -342,7 +341,7 @@
                             <div class="flow-fill"></div>
                         </div>
                         <div class="flow-node">
-                            <div class="flow-icon">🌐</div>
+                            <div class="flow-icon" style="font-size: 0.72rem; font-weight: bold; color: var(--emerald-600);">SRV</div>
                             <div class="flow-lbl">Server</div>
                         </div>
                     </div>
@@ -362,10 +361,10 @@
                         </div>
                     </div>
                     <button class="btn" onclick="fetchLiveWeather()" style="margin-top:6px; width:100%; background:var(--slate-100); color:var(--slate-700); border:1px solid var(--slate-300); font-size:0.82rem; padding: 8px; border-radius:8px; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='var(--slate-200)'" onmouseout="this.style.background='var(--slate-100)'">
-                        🌤️ Fetch Live Weather (Auto-fill)
+                        Fetch Live Weather (Auto-fill)
                     </button>
                     <button class="btn btn-emerald" onclick="sendEmbedding()" style="margin-top: 8px;">
-                        🚀 Transmit Vector & Sync
+                        Transmit Vector & Sync
                     </button>
                 </div>
 
@@ -377,7 +376,7 @@
                 </div>
 
                 <button class="btn btn-primary" onclick="generateReport()" style="margin-top: 1.5rem;">
-                    📄 Download Professional PDF Report
+                    Download Professional PDF Report
                 </button>
             </div>
         </div>
@@ -431,7 +430,7 @@
                             <input type="text" id="groq-key" placeholder="gsk_..." style="font-size: 0.8rem; padding: 10px;">
                         </div>
                         <button class="btn btn-primary" onclick="generateAiSummary()" id="btn-summary">
-                            ✨ Generate AI Summary Report
+                            Generate AI Summary Report
                         </button>
                     </div>
                     
@@ -555,11 +554,11 @@
             if(st.alert_level === 'HIGH') {
                 banner.style.display = 'block';
                 banner.className = 'alert-high';
-                banner.innerHTML = `🚨 <strong>CRITICAL ALERT:</strong> High Outbreak Risk (${(st.outbreak_prob*100).toFixed(1)}%) detected for ${st.district}. Please review mitigation strategies.`;
+                banner.innerHTML = `<strong>CRITICAL ALERT:</strong> High Outbreak Risk (${(st.outbreak_prob*100).toFixed(1)}%) detected for ${st.district}. Please review mitigation strategies.`;
             } else if(st.alert_level === 'MEDIUM') {
                 banner.style.display = 'block';
                 banner.className = 'alert-medium';
-                banner.innerHTML = `⚠️ <strong>WARNING:</strong> Elevated Outbreak Risk (${(st.outbreak_prob*100).toFixed(1)}%) in ${st.district}. Monitor cases closely.`;
+                banner.innerHTML = `<strong>WARNING:</strong> Elevated Outbreak Risk (${(st.outbreak_prob*100).toFixed(1)}%) in ${st.district}. Monitor cases closely.`;
             } else {
                 banner.style.display = 'none';
             }
@@ -693,7 +692,7 @@
                         const val = data.matrix[w][fi];
                         zRow.push(val);
                         
-                        const signText = val > 0 ? "⚠️ INCREASES risk" : "🟢 REDUCES risk";
+                        const signText = val > 0 ? "INCREASES risk" : "REDUCES risk";
                         textRow.push(
                             `<b>Feature:</b> ${info.name}<br>` +
                             `<b>Time:</b> ${weekLabels[w]}<br>` +
@@ -932,7 +931,7 @@
                 const data = await res.json();
                 drawCaseChart(data.status_counts);
                 drawSymptomChart(data.symptom_counts);
-                drawTempChart(data.temp_counts);
+                drawTempChart(data.temperatures);
             } catch(e) { console.error("Error loading analytics data", e); }
         }
 
@@ -989,25 +988,61 @@
             Plotly.newPlot('chart-symptoms', data, layout, {displayModeBar: false, responsive: true});
         }
 
-        function drawTempChart(counts) {
-            const data = [{
-                x: ['AFEBRILE (<37.5°C)', 'FEBRILE (≥37.5°C)'],
-                y: [counts.afebrile, counts.febrile],
-                type: 'bar',
+        function drawTempChart(temperatures) {
+            const trace = {
+                x: temperatures,
+                type: 'histogram',
+                xbins: {
+                    start: 35.5,
+                    end: 41.5,
+                    size: 0.3
+                },
                 marker: {
-                    color: ['#3b82f6', '#f97316'],
-                    line: { color: ['#2563eb', '#ea580c'], width: 1.5 }
-                }
-            }];
+                    color: 'rgba(59, 130, 246, 0.45)', // translucent blue
+                    line: { color: 'var(--blue-500)', width: 1.5 }
+                },
+                name: 'Temperature'
+            };
             const layout = {
-                margin: { t: 10, b: 30, l: 35, r: 20 },
+                margin: { t: 15, b: 35, l: 35, r: 25 },
                 paper_bgcolor: 'transparent',
                 plot_bgcolor: 'transparent',
-                xaxis: { tickfont: { size: 9, family: 'DM Sans' } },
-                yaxis: { showgrid: true, gridcolor: '#e2e8f0', tickfont: { size: 9, family: 'DM Sans' } },
+                xaxis: { 
+                    title: { text: 'Temp (°C)', font: { size: 9, family: 'DM Sans' } },
+                    tickfont: { size: 9, family: 'DM Sans' } 
+                },
+                yaxis: { 
+                    title: { text: 'Patients', font: { size: 9, family: 'DM Sans' } },
+                    showgrid: true, 
+                    gridcolor: '#e2e8f0', 
+                    tickfont: { size: 9, family: 'DM Sans' } 
+                },
+                shapes: [{
+                    type: 'line',
+                    x0: 37.5,
+                    y0: 0,
+                    x1: 37.5,
+                    y1: 1,
+                    yref: 'paper',
+                    line: {
+                        color: 'var(--red-500)',
+                        width: 2,
+                        dash: 'dash'
+                    }
+                }],
+                annotations: [{
+                    x: 37.5,
+                    y: 0.95,
+                    yref: 'paper',
+                    text: 'Fever (37.5°C)',
+                    showarrow: false,
+                    font: { size: 8, color: 'var(--red-600)', family: 'DM Sans', weight: 'bold' },
+                    xanchor: 'left',
+                    xshift: 5
+                }],
                 height: 220
             };
-            Plotly.newPlot('chart-temps', data, layout, {displayModeBar: false, responsive: true});
+            Plotly.newPlot('chart-temps', [trace], layout, {displayModeBar: false, responsive: true});
         }
 
         async function generateAiSummary() {
@@ -1022,7 +1057,7 @@
             const reportBox = document.getElementById('ai-report-box');
             
             btn.disabled = true;
-            btn.innerText = "⏳ Generating AI Report...";
+            btn.innerText = "Generating AI Report...";
             reportBox.innerHTML = '<div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:180px;"><div class="pulse-dot" style="width:16px; height:16px; margin:0 0 10px 0;"></div><span style="font-weight:600; color:var(--slate-500);">Analyzing patient metrics...</span></div>';
             
             try {
@@ -1037,7 +1072,7 @@
                 reportBox.innerHTML = `<span style="color:var(--red-600); font-weight:bold;">Error generating AI report: ${e}</span>`;
             }
             btn.disabled = false;
-            btn.innerText = "✨ Generate AI Summary Report";
+            btn.innerText = "Generate AI Summary Report";
         }
 
         function formatMarkdown(text) {

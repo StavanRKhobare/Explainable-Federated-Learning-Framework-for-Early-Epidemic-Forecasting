@@ -154,7 +154,7 @@ function PipelineDemo() {
     { title: 'Raw District Data (4 Weeks)', desc: 'Each district holds local weather, case history, and population data. This data is PRIVATE and stays on the client device.' },
     { title: 'GRU Temporal Encoding', desc: '2-layer GRU processes the 4-week lookback sequence to capture time-series disease progression trends.' },
     { title: 'Temporal GAT Attention', desc: '4-head Graph Attention Network learns which of the 4 past weeks matter most for predicting the current week\'s outbreak.' },
-    { title: 'Client Embedding (64-dim)', desc: 'GRU + TGAT + Static features are fused into a compact 64-dimensional vector. ⚡ Only THIS embedding crosses the client → server boundary — NO raw patient data is shared.' },
+    { title: 'Client Embedding (64-dim)', desc: 'GRU + TGAT + Static features are fused into a compact 64-dimensional vector. Only THIS embedding crosses the client → server boundary — NO raw patient data is shared.' },
     { title: 'Server: Spatial DGAT', desc: `The central server receives embeddings from ALL ${data?.total_nodes_in_graph || 284} districts and runs a 4-head Spatial DGAT using ${data?.are_neighbors ? 'direct border connection' : 'graph distance'} between the two selected districts.` },
     { title: 'Dual-Task Prediction', desc: 'The final head produces outbreak probability (classification) and predicted case count (regression) for each district.' },
   ]
@@ -214,7 +214,7 @@ function PipelineDemo() {
   return (
     <div>
       <div className="card" style={{ marginBottom: '1.5rem' }}>
-        <div className="card-title" style={{ marginBottom: '0.8rem' }}>📥 Input District Data (JSON)</div>
+        <div className="card-title" style={{ marginBottom: '0.8rem' }}>Input District Data (JSON)</div>
         <p style={{ fontSize: '0.8rem', color: 'var(--slate-500)', marginBottom: '0.8rem' }}>
           Paste JSON with 4 weeks of features for 1–2 districts.
           Each week accepts <strong>14 features</strong>: <code>temp_k, preci_mm, LAI, cases_lag1–3, week_sin, week_cos, is_monsoon</code> + NER features <code>ner_symptoms, ner_diseases, ner_pathogens, ner_travel, ner_total_notes</code> (NER fields default to 0 if omitted).
@@ -254,7 +254,7 @@ function PipelineDemo() {
           </div>
           {selectedPreset !== 'sample' && PRESETS[selectedPreset] && (
             <div style={{ fontSize: '0.78rem', color: 'var(--slate-500)', marginTop: '0.5rem', borderTop: '1px dashed var(--slate-200)', paddingTop: '0.5rem' }}>
-              💡 <strong>Scenario Info:</strong> {PRESETS[selectedPreset].description}
+              <strong>Scenario Info:</strong> {PRESETS[selectedPreset].description}
             </div>
           )}
         </div>
@@ -264,17 +264,17 @@ function PipelineDemo() {
           setSelectedPreset('custom');
         }}
           rows={12} style={{ marginBottom: '0.8rem' }} spellCheck={false} />
-        {error && <div className="alert-box alert-risk" style={{ marginBottom: '0.8rem' }}>❌ {error}</div>}
+        {error && <div className="alert-box alert-risk" style={{ marginBottom: '0.8rem' }}>{error}</div>}
         <div style={{ display: 'flex', gap: '0.8rem', flexWrap: 'wrap' }}>
           <button className="btn btn-primary" onClick={runCustomPredict} disabled={loading}>
-            {loading ? '⏳ Processing...' : '🧠 Run Through Model'}
+            {loading ? 'Processing...' : 'Run Through Model'}
           </button>
           <button className="btn btn-outline" onClick={() => setJsonInput(JSON.stringify(SAMPLE_JSON, null, 2))}>
             Reset to Sample
           </button>
           {data && (
             <button className="btn btn-primary" onClick={startDemo} style={{ background: 'var(--emerald-500)' }}>
-              ▶ Animate Step-by-Step
+              Animate Step-by-Step
             </button>
           )}
           {data && <button className="btn btn-outline" onClick={() => setStep(totalSteps)}>Skip to End</button>}
@@ -283,7 +283,6 @@ function PipelineDemo() {
 
       {data && step >= 4 && (
         <div className="privacy-banner">
-          <span className="icon">🔒</span>
           <span className="text">Privacy Preserved — Only 64-dimensional embeddings cross the client→server boundary. No raw health, EHR, or weather data is ever shared.</span>
         </div>
       )}
@@ -308,7 +307,7 @@ function PipelineDemo() {
         const prob2 = d2.outbreak_prob ?? d2.outbreak_prob_softened ?? 0;
         return (
           <div className="card" style={{ marginTop: '1.5rem' }}>
-            <div className="card-title" style={{ marginBottom: '1rem' }}>🔗 Spatial Influence Analysis</div>
+            <div className="card-title" style={{ marginBottom: '1rem' }}>Spatial Influence Analysis</div>
             <div className="grid-3">
               <div style={{ textAlign: 'center' }}>
                 <div style={{ fontWeight: 700, color: 'var(--blue-600)' }}>{d1.district}</div>
