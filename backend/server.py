@@ -781,16 +781,16 @@ def model_info():
             "client": {
                 "gru": "2-layer GRU (64 hidden)",
                 "tgat": "Temporal GAT (4 heads, 64 dim)",
-                "fusion": "Linear(144→128→64) with LayerNorm + GELU",
+                "fusion": "Linear(144->128->64) with LayerNorm + GELU",
             },
             "server": {
                 "dgat": "Spatial Double GAT (4 heads, 64 dim)",
-                "edge_encoder": "Linear(1→4) border-length encoding",
+                "edge_encoder": "Linear(1->4) border-length encoding",
             },
             "head": {
-                "trunk": "Linear(64→64) with LayerNorm + GELU",
-                "regression": "Linear(64→32→1) case count",
-                "classification": "Linear(64→32→1) outbreak probability",
+                "trunk": "Linear(64->64) with LayerNorm + GELU",
+                "regression": "Linear(64->32->1) case count",
+                "classification": "Linear(64->32->1) outbreak probability",
             }
         }
     }
@@ -987,7 +987,7 @@ def custom_predict(req: CustomPredictRequest):
             # Sanity check: if user provided cases, log if prediction seems unrealistic
             if user_cases > 0:
                 # Very rough heuristic: more cases should generally correlate with higher probability
-                print(f"[SANITY CHECK] Node {n_idx}: {user_cases} cases → probability {predicted_prob:.2%}")
+                print(f"[SANITY CHECK] Node {n_idx}: {user_cases} cases -> probability {predicted_prob:.2%}")
 
             results.append({
                 "node_idx": n_idx,

@@ -325,7 +325,7 @@ def transmit_embedding(req: TransmitRequest):
     # Static features
     x_stat = torch.zeros(1, len(CFG["static_features"]), dtype=torch.float32)
 
-    # Run Client Temporal Model → produces 64-dim embedding
+    # Run Client Temporal Model -> produces 64-dim embedding
     with torch.no_grad():
         client_model = model.client
         embedding = client_model(x_dyn, x_stat)  # (1, 64)
