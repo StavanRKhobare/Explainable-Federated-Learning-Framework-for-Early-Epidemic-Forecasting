@@ -12,7 +12,7 @@ A split-federated spatio-temporal graph neural network architecture that forecas
 
 ## SECTION 2 — TABLE OF CONTENTS
 
-- [SECTION 1 — HEADER BLOCK](#section-1--header-block)
+- [SECTION 1 — HEADER BLOCK](#fedxgnn-explainable-split-federated-graph-epidemic-intelligence)
 - [SECTION 2 — TABLE OF CONTENTS](#section-2--table-of-contents)
 - [SECTION 3 — PROJECT OVERVIEW](#section-3--project-overview)
   - [3a. The Problem](#3a-the-problem)
@@ -92,15 +92,15 @@ The system is designed for public health authorities, regional epidemiologists, 
 
 ```mermaid
 graph TD
-    subgraph Edge_Client_1 ["<b>Hospital Edge Client (Bangalore: 572)</b>"]
+    subgraph Edge_Client_1 ["Hospital Edge Client - Bangalore 572"]
         EHR1["Patient EHR Text Files"]
-        NLP1["spaCy NLP Extraction engine"]
-        Dyn1["Dynamic features (Cases, Weather)"]
+        NLP1["spaCy NLP Extraction"]
+        Dyn1["Dynamic Features - Cases & Weather"]
         GRU1["GRU Sequential Layer"]
         TGAT1["Temporal GAT Attention Head"]
         Fuse1["Local Embedding Fusion"]
-        Emb1["Local Embedding (32-dim)"]
-        
+        Emb1["Local Embedding 32-dim"]
+
         EHR1 -->|Local File| NLP1
         NLP1 -->|Parsed Symptoms| Dyn1
         Dyn1 --> GRU1
@@ -110,15 +110,15 @@ graph TD
         Fuse1 --> Emb1
     end
 
-    subgraph Edge_Client_2 ["<b>Hospital Edge Client (Coimbatore: 632)</b>"]
+    subgraph Edge_Client_2 ["Hospital Edge Client - Coimbatore 632"]
         EHR2["Patient EHR Text Files"]
-        NLP2["spaCy NLP Extraction engine"]
-        Dyn2["Dynamic features (Cases, Weather)"]
+        NLP2["spaCy NLP Extraction"]
+        Dyn2["Dynamic Features - Cases & Weather"]
         GRU2["GRU Sequential Layer"]
         TGAT2["Temporal GAT Attention Head"]
         Fuse2["Local Embedding Fusion"]
-        Emb2["Local Embedding (32-dim)"]
-        
+        Emb2["Local Embedding 32-dim"]
+
         EHR2 -->|Local File| NLP2
         NLP2 -->|Parsed Symptoms| Dyn2
         Dyn2 --> GRU2
@@ -131,23 +131,23 @@ graph TD
     Emb1 -- "HTTP POST /api/transmit (JSON)" --> Server_Agg
     Emb2 -- "HTTP POST /api/transmit (JSON)" --> Server_Agg
 
-    subgraph Central_Server ["<b>Central Spatial GNN Server (Port: 8000)</b>"]
+    subgraph Central_Server ["Central Spatial GNN Server - Port 8000"]
         Server_Agg["Central State Override Buffer"]
-        AdjGraph[("District Adjacency Graph<br/>284 Nodes, Border-weighted")]
-        SDGAT["Spatial DGAT (4-Head Message Passing)"]
-        
-        subgraph Dual_Task_Head ["<b>Dual-Task Prediction Head</b>"]
-            RegHead["Case Regression Head (MLP)"]
-            ClfHead["Outbreak Classification Head (MLP)"]
+        AdjGraph[("District Adjacency Graph - 284 Nodes")]
+        SDGAT["Spatial DGAT - 4-Head Message Passing"]
+
+        subgraph Dual_Task_Head ["Dual-Task Prediction Head"]
+            RegHead["Case Regression Head MLP"]
+            ClfHead["Outbreak Classification Head MLP"]
         end
-        
+
         Server_Agg --> SDGAT
         AdjGraph -->|Border Edge weights| SDGAT
         SDGAT --> RegHead
         SDGAT --> ClfHead
     end
 
-    subgraph Frontend_Dashboard ["<b>Vite React UI Dashboard</b>"]
+    subgraph Frontend_Dashboard ["Vite React UI Dashboard"]
         Map["Dynamic Plotly India Map"]
         SHAP["Temporal SHAP Heatmap Viewer"]
         GNNExp["Spatial GNNExplainer Chart"]
@@ -236,10 +236,10 @@ graph TD
 
 #### Formula (1) — Client Gated Recurrent Unit (GRU) equations
 The local dynamic sequences are passed through a GRU cell to capture sequential climate dependencies:
-$$r_t = \sigma(W_r x_t + U_r h_{t-1} + b_r) \label{eq:gru_reset}$$
-$$z_t = \sigma(W_z x_t + U_z h_{t-1} + b_z) \label{eq:gru_update}$$
-$$\tilde{h}_t = \tanh(W_h x_t + U_h (r_t \odot h_{t-1}) + b_h) \label{eq:gru_candidate}$$
-$$h_t = (1 - z_t) \odot h_{t-1} + z_t \odot \tilde{h}_t \label{eq:gru_hidden}$$
+$$r_t = \sigma(W_r x_t + U_r h_{t-1} + b_r)$$
+$$z_t = \sigma(W_z x_t + U_z h_{t-1} + b_z)$$
+$$\tilde{h}_t = \tanh(W_h x_t + U_h (r_t \odot h_{t-1}) + b_h)$$
+$$h_t = (1 - z_t) \odot h_{t-1} + z_t \odot \tilde{h}_t$$
 
 Where:
 *   $x_t \in \mathbb{R}^9$ is the feature input vector at lookback step $t \in \{1, 2, 3, 4\}$.
@@ -251,9 +251,9 @@ Where:
 
 #### Formula (2) — Temporal Graph Attention (Temporal-GAT)
 To identify which week in the lookback window holds the highest predictive importance, a temporal self-attention mechanism is applied:
-$$e_{ij} = \text{LeakyReLU}\left(\mathbf{a}^T [W h_i \parallel W h_j]\right) \label{eq:temp_att_energy}$$
-$$\alpha_{ij} = \frac{\exp(e_{ij})}{\sum_{k=1}^T \exp(e_{ik})} \label{eq:temp_att_norm}$$
-$$z_i = \sigma\left(\sum_{j=1}^T \alpha_{ij} W h_j\right) \label{eq:temp_att_out}$$
+$$e_{ij} = \text{LeakyReLU}\left(\mathbf{a}^T [W h_i \parallel W h_j]\right)$$
+$$\alpha_{ij} = \frac{\exp(e_{ij})}{\sum_{k=1}^T \exp(e_{ik})}$$
+$$z_i = \sigma\left(\sum_{j=1}^T \alpha_{ij} W h_j\right)$$
 
 Where:
 *   $h_i, h_j \in \mathbb{R}^{32}$ are the GRU representations for lookback weeks $i$ and $j$.
@@ -265,8 +265,8 @@ Where:
 
 #### Formula (3) — Spatial Message Passing (Spatial-DGAT)
 The central server applies spatial graph attention convolutions over the district boundary adjacency graph:
-$$\tilde{\alpha}_{uv} = \frac{\exp\left(\text{LeakyReLU}\left(\mathbf{g}^T [\Theta z_u \parallel \Theta z_v \parallel \mathbf{e}_{uv}]\right)\right)}{\sum_{w \in \mathcal{N}(u)} \exp\left(\text{LeakyReLU}\left(\mathbf{g}^T [\Theta z_u \parallel \Theta z_w \parallel \mathbf{e}_{uw}]\right)\right)} \label{eq:spatial_att}$$
-$$\tilde{z}_u = \Vert_{k=1}^K \text{ELU}\left(\sum_{v \in \mathcal{N}(u)} \tilde{\alpha}_{uv}^{(k)} \Theta^{(k)} z_v\right) \label{eq:spatial_mp}$$
+$$\tilde{\alpha}_{uv} = \frac{\exp\left(\text{LeakyReLU}\left(\mathbf{g}^T [\Theta z_u \parallel \Theta z_v \parallel \mathbf{e}_{uv}]\right)\right)}{\sum_{w \in \mathcal{N}(u)} \exp\left(\text{LeakyReLU}\left(\mathbf{g}^T [\Theta z_u \parallel \Theta z_w \parallel \mathbf{e}_{uw}]\right)\right)}$$
+$$\tilde{z}_u = \Vert_{k=1}^K \text{ELU}\left(\sum_{v \in \mathcal{N}(u)} \tilde{\alpha}_{uv}^{(k)} \Theta^{(k)} z_v\right)$$
 
 Where:
 *   $z_u, z_v \in \mathbb{R}^{32}$ are the node embeddings.
@@ -278,7 +278,7 @@ Where:
 
 #### Formula (4) — Outbreak Probability Loss with Observation Masking
 To prevent the model from learning from unreporting "ghost" nodes, training loss is computed only on districts with active observation masks:
-$$\mathcal{L}_{clf} = -\frac{1}{M} \sum_{i \in \mathcal{M}} \left[ w_{pos} \cdot y_i \cdot \log(\sigma(\hat{y}_i)) + (1 - y_i) \cdot \log(1 - \sigma(\hat{y}_i)) \right] \label{eq:masked_loss}$$
+$$\mathcal{L}_{clf} = -\frac{1}{M} \sum_{i \in \mathcal{M}} \left[ w_{pos} \cdot y_i \cdot \log(\sigma(\hat{y}_i)) + (1 - y_i) \cdot \log(1 - \sigma(\hat{y}_i)) \right]$$
 
 Where:
 *   $\mathcal{M} = \{i \mid obs\_m_i = 1\}$ is the set of reporting nodes.
@@ -288,8 +288,8 @@ Where:
 
 #### Formula (5) — Kernel SHAP Feature Attribution
 To explain the local temporal predictions, SHAP constructs an additive explanation model:
-$$g(z') = \phi_0 + \sum_{k=1}^M \phi_k z'_k \label{eq:shap_additive}$$
-$$\phi_i(f, x) = \sum_{S \subseteq F \setminus \{i\}} \frac{|S|!(|F| - |S| - 1)!}{|F|!} \left[ f_x(S \cup \{i\}) - f_x(S) \right] \label{eq:shap_values}$$
+$$g(z') = \phi_0 + \sum_{k=1}^M \phi_k z'_k$$
+$$\phi_i(f, x) = \sum_{S \subseteq F \setminus \{i\}} \frac{|S|!(|F| - |S| - 1)!}{|F|!} \left[ f_x(S \cup \{i\}) - f_x(S) \right]$$
 
 Where:
 *   $F$ is the set of all dynamic input features (size $M = 36$).
@@ -418,7 +418,7 @@ CREATE TABLE graph_edges (
 );
 ```
 
-#### Historical Surveillance Schema (`data/training_dataset_enhanced_v2.csv` [ASSUMED])
+#### Historical Surveillance Schema (`data/training_dataset_enhanced_v2.csv`)
 | Column | Type | Nullable | Default | Description |
 |---|---|---|---|---|
 | `t_idx` | INTEGER | NO | None | Temporal simulation index |
@@ -471,7 +471,7 @@ The Central Server uses a polling structure. The edge clients maintain connectio
 #### NLP Model Configuration — spaCy `en_core_web_sm`
 *   **Model Identifier**: `en_core_web_sm` (v3.7.0).
 *   **Parsing Logic**: We use spaCy's pattern matcher to scan clinical text files for symptom keywords (e.g., "fever", "chills", "nausea", "headache"). Symptom counts are normalized into a clinical symptom density score:
-$$\text{Symptom Density} = \frac{\text{Symptom Matches}}{\max(1, \text{Total Tokens})} \label{eq:symptom_density}$$
+$$\text{Symptom Density} = \frac{\text{Symptom Matches}}{\max(1, \text{Total Tokens})}$$
 *   **Fallback**: If spaCy model loading fails during client startup, the system catches the exception and falls back to a basic regex-based pattern matching routine.
 
 ---
@@ -554,14 +554,14 @@ The React application uses a React Context provider to manage the global simulat
 ## SECTION 13 — SETUP & INSTALLATION
 
 ### Prerequisites
-*   **Operating System**: Linux (Ubuntu 20.04+ recommended) or macOS
+*   **Operating System**: Windows 10/11, Linux (Ubuntu 20.04+), or macOS
 *   **Python**: Version 3.10 or 3.11 installed locally
 *   **Node.js**: Version 18.0 or newer with npm
-*   **System Tools**: `curl`, `fuser`, `git`
+*   **System Tools**: `git` (Windows: use `start.bat`; Linux/macOS: use `start.sh`)
 
 ### a) Clone Repository
 ```bash
-git clone https://github.com/google-deepmind/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting.git
+git clone https://github.com/StavanRKhobare/Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting.git
 cd Explainable-Federated-Learning-Framework-for-Early-Epidemic-Forecasting
 ```
 
