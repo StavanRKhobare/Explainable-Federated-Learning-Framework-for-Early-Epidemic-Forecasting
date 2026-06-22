@@ -7,6 +7,8 @@ import numpy as np
 import pandas as pd
 import requests
 import json
+import sqlite3
+import datetime
 from typing import Optional
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
@@ -40,6 +42,127 @@ scaler_dyn = None
 scaler_stat = None
 uploaded_cases = [] # parsed cases for the current simulation week
 avail_dyn = []     # features the scaler was actually fitted on (may be 9 if NER cols missing)
+
+def get_db_path(censuscode):
+    return os.path.join(PROJECT_ROOT, "client", f"client_{censuscode}.db")
+
+def init_client_db(censuscode, local_df):
+    db_path = get_db_path(censuscode)
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS local_history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            year INTEGER,
+            week INTEGER,
+            temp_k REAL,
+            preci_mm REAL,
+            LAI REAL,
+            cases INTEGER,
+            UNIQUE(year, week)
+        )
+    """)
+    conn.commit()
+    
+    # Check if empty, and pre-populate from local_df
+    cursor.execute("SELECT COUNT(*) FROM local_history")
+    count = cursor.fetchone()[0]
+    if count == 0:
+        print(f"[*] Pre-populating local database client_{censuscode}.db with historical CSV data...")
+        records = local_df.to_dict(orient="records")
+        for r in records:
+            c_val = int(np.expm1(r["cases"])) if "cases" in r else 0
+            cursor.execute("""
+                INSERT OR IGNORE INTO local_history (year, week, temp_k, preci_mm, LAI, cases)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (int(r["iso_year"]), int(r["iso_week"]), float(r["temp_k"]), float(r["preci_mm"]), float(r["LAI"] or 2.5), c_val))
+        conn.commit()
+    conn.close()
+
+def log_local_history(censuscode, year, week, temp_k, preci_mm, LAI, cases):
+    db_path = get_db_path(censuscode)
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("""
+        INSERT INTO local_history (year, week, temp_k, preci_mm, LAI, cases)
+        VALUES (?, ?, ?, ?, ?, ?)
+        ON CONFLICT(year, week) DO UPDATE SET
+            temp_k = excluded.temp_k,
+            preci_mm = excluded.preci_mm,
+            LAI = excluded.LAI,
+            cases = excluded.cases
+    """, (year, week, temp_k, preci_mm, LAI, cases))
+    conn.commit()
+    conn.close()
+
+def fetch_local_history(censuscode, limit=20):
+    db_path = get_db_path(censuscode)
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM local_history ORDER BY year ASC, week ASC")
+    rows = cursor.fetchall()
+    conn.close()
+    return [dict(row) for row in rows][-limit:]
+
+def build_raw_history_from_db(censuscode):
+    db_path = get_db_path(censuscode)
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM local_history ORDER BY year ASC, week ASC")
+    rows = [dict(r) for r in cursor.fetchall()]
+    conn.close()
+
+    if len(rows) < 4:
+        return None
+        
+    last_4_indices = range(len(rows) - 4, len(rows))
+    raw_history = []
+    
+    for idx in last_4_indices:
+        r = rows[idx]
+        
+        # Get cases for w-1, w-2, w-3
+        c_lag1 = rows[idx - 1]["cases"] if idx - 1 >= 0 else 0
+        c_lag2 = rows[idx - 2]["cases"] if idx - 2 >= 0 else 0
+        c_lag3 = rows[idx - 3]["cases"] if idx - 3 >= 0 else 0
+        
+        log_lag1 = float(np.log1p(max(c_lag1, 0)))
+        log_lag2 = float(np.log1p(max(c_lag2, 0)))
+        log_lag3 = float(np.log1p(max(c_lag3, 0)))
+        
+        import math
+        w_val = r["week"]
+        week_sin = math.sin(2 * math.pi * w_val / 52.0)
+        week_cos = math.cos(2 * math.pi * w_val / 52.0)
+        
+        is_monsoon = 1.0 if r["preci_mm"] > 50.0 else 0.0
+        
+        is_latest = (idx == len(rows) - 1)
+        symptoms = float(sum(1 for e in uploaded_cases if e.get('dengue_status', -1) == 1)) if is_latest else 0.0
+        diseases = float(len(uploaded_cases)) if is_latest else 0.0
+        total_notes = float(len(uploaded_cases)) if is_latest else 0.0
+        
+        raw_row = [
+            float(r["temp_k"]),
+            float(r["preci_mm"]),
+            float(r["LAI"] or 2.5),
+            log_lag1,
+            log_lag2,
+            log_lag3,
+            float(week_sin),
+            float(week_cos),
+            float(is_monsoon),
+            symptoms,
+            diseases,
+            0.0,
+            0.0,
+            total_notes
+        ]
+        raw_history.append(raw_row)
+        
+    return raw_history
 
 def init_client(censuscode, server_url):
     global model, local_df, scaler_dyn, scaler_stat, avail_dyn
@@ -93,6 +216,7 @@ def init_client(censuscode, server_url):
     if isinstance(ckpt, dict) and "model_state" in ckpt:
         model.load_state_dict(ckpt["model_state"])
     model.eval()
+    init_client_db(censuscode, local_df)
     print(f"[*] Initialized edge client for {CLIENT_CONFIG['name']} (Census: {censuscode})")
 
 # HTML Template for Dashboard
@@ -112,7 +236,6 @@ class TransmitRequest(BaseModel):
 @app.get("/", response_class=HTMLResponse)
 def get_dashboard():
     # Inject server config into the template
-    import json
     init_json = json.dumps({
         "censuscode": CLIENT_CONFIG["censuscode"],
         "name": CLIENT_CONFIG["name"],
@@ -127,19 +250,35 @@ def get_dashboard():
 
 @app.get("/api/local-timeline")
 def get_local_timeline():
-    # Return the last 4 weeks of records from local_df
-    records = local_df.tail(4).to_dict(orient="records")
-    out = []
-    for r in records:
-        out.append({
-            "year": int(r["iso_year"]),
-            "week": int(r["iso_week"]),
-            "temp_k": float(r["temp_k"]),
-            "preci_mm": float(r["preci_mm"]),
-            "LAI": float(r["LAI"]),
-            "cases": int(np.expm1(r["cases"])) if "cases" in r else 0
-        })
-    return out
+    # Return the last 20 weeks of records from local SQLite DB for a better timeline plot
+    try:
+        records = fetch_local_history(CLIENT_CONFIG["censuscode"], limit=20)
+        out = []
+        for r in records:
+            out.append({
+                "year": int(r["year"]),
+                "week": int(r["week"]),
+                "temp_k": float(r["temp_k"]),
+                "preci_mm": float(r["preci_mm"]),
+                "LAI": float(r["LAI"]),
+                "cases": int(r["cases"])
+            })
+        return out
+    except Exception as e:
+        print(f"[DB ERROR] fetch timeline: {e}")
+        # Fallback to local_df if DB fails
+        records = local_df.tail(4).to_dict(orient="records")
+        out = []
+        for r in records:
+            out.append({
+                "year": int(r["iso_year"]),
+                "week": int(r["iso_week"]),
+                "temp_k": float(r["temp_k"]),
+                "preci_mm": float(r["preci_mm"]),
+                "LAI": float(r["LAI"]),
+                "cases": int(np.expm1(r["cases"])) if "cases" in r else 0
+            })
+        return out
 
 @app.post("/api/upload-ehr")
 async def upload_ehr(file: UploadFile = File(...)):
@@ -256,47 +395,67 @@ def live_weather():
 
 @app.post("/api/transmit")
 def transmit_embedding(req: TransmitRequest):
-    # 1. Prepare dynamic input features (last 3 weeks from local_df + current weekly report)
-    # The model expects lookback=4.
-    last_3 = local_df.tail(3).copy()
+    # Log the new weekly data to SQLite first to preserve local case history
+    year = req.year
+    week = req.week
+    if not year or not week:
+        try:
+            clk = get_sim_clock()
+            year = clk.get("year", 2024)
+            week = clk.get("week", 1)
+        except:
+            year = 2024
+            week = 1
+
+    log_local_history(
+        censuscode=CLIENT_CONFIG["censuscode"],
+        year=year,
+        week=week,
+        temp_k=req.temp_k,
+        preci_mm=req.preci_mm,
+        LAI=2.5,
+        cases=req.cases
+    )
+
+    # Prepare dynamic input features (4-week lookback) from SQLite DB
+    raw_history = build_raw_history_from_db(CLIENT_CONFIG["censuscode"])
     
-    # Convert last_3 features back to scale so we can append new one and scale everything together
-    # Wait, we can just construct a raw data array, transform it using scaler_dyn, and then feed it to the model.
-    raw_history = []
-    for row in last_3.itertuples():
-        raw_row = []
-        for feat in CFG["dynamic_features"]:
-            raw_row.append(getattr(row, feat, 0.0))
-        raw_history.append(raw_row)
-        
-    # Append the new week's features (all 14 dynamic features)
-    is_monsoon = 1.0 if req.preci_mm > 50.0 else 0.0
-    current_raw = [
-        req.temp_k,
-        req.preci_mm,
-        2.5,                                                  # LAI default
-        float(np.log1p(max(req.cases, 0))),                   # cases_lag1 (log1p)
-        float(raw_history[-1][3]) if len(raw_history) > 0 else 0.0,  # cases_lag2
-        float(raw_history[-2][3]) if len(raw_history) > 1 else 0.0,  # cases_lag3
-        0.5,   # week_sin
-        0.8,   # week_cos
-        is_monsoon,
-        # NER features — pulled from uploaded EHR records if available, else 0
-        float(sum(1 for e in uploaded_cases if e.get('dengue_status', -1) == 1)),  # ner_symptoms
-        float(len(uploaded_cases)),                           # ner_diseases (note count proxy)
-        0.0,                                                  # ner_pathogens
-        0.0,                                                  # ner_travel
-        float(len(uploaded_cases)),                           # ner_total_notes
-    ]
-    raw_history.append(current_raw)
+    # Fallback to local_df static data if database is empty/corrupted
+    if not raw_history:
+        print("[*] SQLite history incomplete. Falling back to local_df...")
+        last_3 = local_df.tail(3).copy()
+        raw_history = []
+        for row in last_3.itertuples():
+            raw_row = []
+            for feat in CFG["dynamic_features"]:
+                raw_row.append(getattr(row, feat, 0.0))
+            raw_history.append(raw_row)
+            
+        is_monsoon = 1.0 if req.preci_mm > 50.0 else 0.0
+        current_raw = [
+            req.temp_k,
+            req.preci_mm,
+            2.5,
+            float(np.log1p(max(req.cases, 0))),
+            float(raw_history[-1][3]) if len(raw_history) > 0 else 0.0,
+            float(raw_history[-2][3]) if len(raw_history) > 1 else 0.0,
+            0.5,
+            0.8,
+            is_monsoon,
+            float(sum(1 for e in uploaded_cases if e.get('dengue_status', -1) == 1)),
+            float(len(uploaded_cases)),
+            0.0,
+            0.0,
+            float(len(uploaded_cases)),
+        ]
+        raw_history.append(current_raw)
 
     # Verify we have exactly 14 features matching the model
     n_feats = len(CFG["dynamic_features"])
     for i, row in enumerate(raw_history):
         if len(row) < n_feats:
-            # Pad missing NER features with 0 for historical rows
             raw_history[i] = row + [0.0] * (n_feats - len(row))
-        raw_history[i] = raw_history[i][:n_feats]  # truncate if somehow over
+        raw_history[i] = raw_history[i][:n_feats]
     
     # Scale only the features the scaler was fitted on (avail_dyn, typically 9)
     # Then assemble the full 14-feature tensor, leaving NER slots at 0
@@ -394,7 +553,6 @@ def get_shap_summary(censuscode: int):
 @app.get("/api/download-report")
 def download_report():
     """Generate and stream a premium PDF report using the AeroSmart/EpiGraph AI design."""
-    import datetime
     from fastapi.responses import StreamingResponse
     from client.report_generator import generate_report
 

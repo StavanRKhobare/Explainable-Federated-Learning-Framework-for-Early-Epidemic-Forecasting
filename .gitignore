@@ -48,3 +48,5 @@ scratch*.py
 test_*.py
 predictions.json
 
+# SQLite databases
+*.db
