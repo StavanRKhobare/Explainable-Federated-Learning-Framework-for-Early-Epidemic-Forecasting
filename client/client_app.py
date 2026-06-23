@@ -757,12 +757,15 @@ def transmit_embedding(req: TransmitRequest):
 
     scaled_avail = scaler_dyn.transform(history_for_scale)  # (4, len(avail_dyn))
 
-    # Assemble full (4, 14) array: scaled where available, raw-0 for NER
+    # Assemble full (4, 14) array: scaled where available, raw for NER
     scaled_history = np.zeros((len(raw_history), n_all), dtype=np.float32)
     for row_i, scaled_row in enumerate(scaled_avail):
         for col_j, feat_idx in enumerate(avail_indices):
             scaled_history[row_i, feat_idx] = scaled_row[col_j]
-    # NER features (not in scaler) stay 0 — already initialized above
+        # Insert unscaled features (like NER NLP metrics)
+        for col_j, feat_name in enumerate(all_feat_names):
+            if feat_name not in avail_dyn:
+                scaled_history[row_i, col_j] = raw_history[row_i][col_j]
 
     # Convert to tensor expected by ClientTemporalModel: (1, 4, 14)
     x_dyn = torch.tensor(scaled_history, dtype=torch.float32).unsqueeze(0)
